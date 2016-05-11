@@ -1,5 +1,13 @@
-Version 3.8.1 - 2015-12-22
+Version 4.0.0 - 2016-05-02
 * Bug fixes (see mercurial logs for details)
+* Move tax Rounding configuration from account_invoice
+* Get the tax type from the base sign:
+  The tax signs for credit note must be inverted manually.
+* New reports design: General Ledger, Trial Balance and Aged Balance
+* Add Python3 support
+* Merge Third Party Balance into Aged Balance
+* Add date to Aged Balance
+* Add date on Reconciliation
 
 Version 3.8.0 - 2015-11-02
 * Bug fixes (see mercurial logs for details)

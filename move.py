@@ -7,7 +7,7 @@ from operator import itemgetter
 from collections import defaultdict
 
 from sql import Null
-from sql.aggregate import Sum
+from sql.aggregate import Sum, Max
 from sql.conditionals import Coalesce, Case
 
 from trytond.model import ModelView, ModelSQL, fields, Check
@@ -30,7 +30,6 @@ __all__ = ['Move', 'Reconciliation', 'Line', 'OpenJournalAsk',
     'CancelMoves', 'CancelMovesDefault',
     'FiscalYearLine', 'FiscalYear2',
     'PrintGeneralJournalStart', 'PrintGeneralJournal', 'GeneralJournal']
-__metaclass__ = PoolMeta
 
 _MOVE_STATES = {
     'readonly': Eval('state') == 'posted',
@@ -115,8 +114,8 @@ class Move(ModelSQL, ModelView):
     @classmethod
     def __register__(cls, module_name):
         TableHandler = backend.get('TableHandler')
-        cursor = Transaction().cursor
-        table = TableHandler(cursor, cls, module_name)
+        cursor = Transaction().connection.cursor()
+        table = TableHandler(cls, module_name)
         sql_table = cls.__table__()
         pool = Pool()
         Period = pool.get('account.period')
@@ -145,7 +144,7 @@ class Move(ModelSQL, ModelView):
                     where=period.id == sql_table.period)
             cursor.execute(*sql_table.update([sql_table.company], [value]))
 
-        table = TableHandler(cursor, cls, module_name)
+        table = TableHandler(cls, module_name)
         table.index_action(['journal', 'period'], 'add')
 
         # Add index on create_date
@@ -315,7 +314,7 @@ class Move(ModelSQL, ModelView):
         MoveLine = pool.get('account.move.line')
         line = MoveLine.__table__()
 
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         amounts = {}
         move2draft_lines = {}
@@ -461,6 +460,8 @@ class Reconciliation(ModelSQL, ModelView):
     name = fields.Char('Name', size=None, required=True)
     lines = fields.One2Many('account.move.line', 'reconciliation',
             'Lines')
+    date = fields.Date('Date', required=True, select=True,
+        help='Highest date of the reconciled lines')
 
     @classmethod
     def __setup__(cls):
@@ -483,6 +484,32 @@ class Reconciliation(ModelSQL, ModelView):
                     'reconciliation where debit "%(debit)s" and credit '
                     '"%(credit)s" differ.'),
                 })
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        cursor = Transaction().connection.cursor()
+        table = TableHandler(cls, module_name)
+        sql_table = cls.__table__()
+        pool = Pool()
+        Move = pool.get('account.move')
+        Line = pool.get('account.move.line')
+        move = Move.__table__()
+        line = Line.__table__()
+
+        date_exist = table.column_exist('date')
+
+        super(Reconciliation, cls).__register__(module_name)
+
+        # Migration from 3.8: new date field
+        if not date_exist and TableHandler.table_exist(Line._table):
+            cursor.execute(*sql_table.update(
+                    [sql_table.date],
+                    line.join(move,
+                        condition=move.id == line.move
+                        ).select(Max(move.date),
+                        where=line.reconciliation == sql_table.id,
+                        group_by=line.reconciliation)))
 
     @classmethod
     def create(cls, vlist):
@@ -568,6 +595,7 @@ class Line(ModelSQL, ModelView):
             domain=[('kind', '!=', 'view')],
             select=True)
     move = fields.Many2One('account.move', 'Move', select=True, required=True,
+        ondelete='CASCADE',
         states={
             'required': False,
             'readonly': Eval('state') == 'valid',
@@ -681,8 +709,7 @@ class Line(ModelSQL, ModelView):
     @classmethod
     def __register__(cls, module_name):
         TableHandler = backend.get('TableHandler')
-        cursor = Transaction().cursor
-        table = TableHandler(cursor, cls, module_name)
+        table = TableHandler(cls, module_name)
 
         # Migration from 2.4: reference renamed into description
         if table.column_exist('reference'):
@@ -690,7 +717,7 @@ class Line(ModelSQL, ModelView):
 
         super(Line, cls).__register__(module_name)
 
-        table = TableHandler(cursor, cls, module_name)
+        table = TableHandler(cls, module_name)
         # Index for General Ledger
         table.index_action(['move', 'account'], 'add')
 
@@ -1041,7 +1068,7 @@ class Line(ModelSQL, ModelView):
     @fields.depends('move', 'party', 'account', 'debit', 'credit', 'journal')
     def on_change_party(self):
         Journal = Pool().get('account.journal')
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
         if (not self.party) or self.account:
             return
 
@@ -1580,6 +1607,7 @@ class Line(ModelSQL, ModelView):
                     ], limit=1)
         return Reconciliation.create([{
                     'lines': [('add', [x.id for x in lines])],
+                    'date': max(l.date for l in lines),
                     }])[0]
 
 
@@ -1692,6 +1720,7 @@ class OpenAccount(Wizard):
         action['pyson_domain'] = [
             ('period', 'in', [p.id for p in periods]),
             ('account', '=', Transaction().context['active_id']),
+            ('state', '=', 'valid'),
             ]
         if Transaction().context.get('posted'):
             action['pyson_domain'].append(('move.state', '=', 'posted'))
@@ -1807,17 +1836,20 @@ class Reconcile(Wizard):
     def get_accounts(self):
         'Return a list of account id to reconcile'
         pool = Pool()
+        Rule = pool.get('ir.rule')
         Line = pool.get('account.move.line')
         line = Line.__table__()
         Account = pool.get('account.account')
         account = Account.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
+        account_rule = Rule.query_get(Account.__name__)
 
         balance = line.debit - line.credit
         cursor.execute(*line.join(account,
                 condition=line.account == account.id).select(
                 account.id,
-                where=(line.reconciliation == Null) & account.reconcile,
+                where=((line.reconciliation == Null) & account.reconcile
+                    & account.id.in_(account_rule)),
                 group_by=account.id,
                 having=(
                     Sum(Case((balance > 0, 1), else_=0)) > 0)
@@ -1830,7 +1862,7 @@ class Reconcile(Wizard):
         pool = Pool()
         Line = pool.get('account.move.line')
         line = Line.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         balance = line.debit - line.credit
         cursor.execute(*line.select(line.party,
@@ -2036,6 +2068,7 @@ class FiscalYearLine(ModelSQL):
 
 
 class FiscalYear2:
+    __metaclass__ = PoolMeta
     __name__ = 'account.fiscalyear'
     close_lines = fields.Many2Many('account.fiscalyear-account.move.line',
             'fiscalyear', 'line', 'Close Lines')
