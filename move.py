@@ -298,7 +298,6 @@ class Move(ModelSQL, ModelView):
         new_moves = []
         for move in moves:
             new_move, = super(Move, cls).copy([move], default=default)
-            Line.delete(new_move.lines)
             Line.copy(move.lines, default={
                     'move': new_move.id,
                     })
