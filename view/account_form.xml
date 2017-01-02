@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
 this repository contains the full copyright notices and license terms. -->
-<form string="Account" col="6">
+<form col="6">
     <label name="name"/>
     <field name="name"/>
     <label name="code"/>
@@ -35,10 +35,10 @@ this repository contains the full copyright notices and license terms. -->
         <page string="Children" id="children">
             <field name="childs" colspan="4"/>
         </page>
-        <page string="Deferrals" id="deferrals">
+        <page name="deferrals">
             <field name="deferrals"/>
         </page>
-        <page string="Notes" id="notes">
+        <page name="note">
             <field name="note"/>
         </page>
     </notebook>

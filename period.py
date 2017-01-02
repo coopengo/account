@@ -20,7 +20,6 @@ class Period(ModelSQL, ModelView):
     'Period'
     __name__ = 'account.period'
     name = fields.Char('Name', required=True)
-    code = fields.Char('Code')
     start_date = fields.Date('Starting Date', required=True, states=_STATES,
         domain=[('start_date', '<=', Eval('end_date', None))],
         depends=_DEPENDS + ['end_date'], select=True)
@@ -113,10 +112,13 @@ class Period(ModelSQL, ModelView):
             period.check_post_move_sequence()
 
     def check_dates(self):
-        cursor = Transaction().connection.cursor()
         if self.type != 'standard':
             return True
+        transaction = Transaction()
+        connection = transaction.connection
+        transaction.database.lock(connection, self._table)
         table = self.__table__()
+        cursor = connection.cursor()
         cursor.execute(*table.select(table.id,
                 where=(((table.start_date <= self.start_date)
                         & (table.end_date >= self.start_date))
@@ -182,7 +184,7 @@ class Period(ModelSQL, ModelView):
                 language = Transaction().language
                 languages = Lang.search([('code', '=', language)])
                 if not languages:
-                    languages = Lang.search([('code', '=', 'en_US')])
+                    languages = Lang.search([('code', '=', 'en')])
                 language = languages[0]
                 formatted = Lang.strftime(date, language.code,
                     language.date)
@@ -320,17 +322,6 @@ class Period(ModelSQL, ModelView):
     @property
     def post_move_sequence_used(self):
         return self.post_move_sequence or self.fiscalyear.post_move_sequence
-
-    @classmethod
-    def search_rec_name(cls, name, clause):
-        if clause[1].startswith('!') or clause[1].startswith('not '):
-            bool_op = 'AND'
-        else:
-            bool_op = 'OR'
-        return [bool_op,
-            ('code',) + tuple(clause[1:]),
-            (cls._rec_name,) + tuple(clause[1:]),
-            ]
 
 
 class ClosePeriod(Wizard):

@@ -23,7 +23,6 @@ class FiscalYear(ModelSQL, ModelView):
     'Fiscal Year'
     __name__ = 'account.fiscalyear'
     name = fields.Char('Name', size=None, required=True, depends=DEPENDS)
-    code = fields.Char('Code', size=None)
     start_date = fields.Date('Starting Date', required=True, states=STATES,
         domain=[('start_date', '<=', Eval('end_date', None))],
         depends=DEPENDS + ['end_date'])
@@ -105,7 +104,10 @@ class FiscalYear(ModelSQL, ModelView):
             year.check_post_move_sequence()
 
     def check_dates(self):
-        cursor = Transaction().connection.cursor()
+        transaction = Transaction()
+        connection = transaction.connection
+        transaction.database.lock(connection, self._table)
+        cursor = connection.cursor()
         table = self.__table__()
         cursor.execute(*table.select(table.id,
                 where=(((table.start_date <= self.start_date)
@@ -223,7 +225,7 @@ class FiscalYear(ModelSQL, ModelView):
                 language = Transaction().language
                 languages = Lang.search([('code', '=', language)])
                 if not languages:
-                    languages = Lang.search([('code', '=', 'en_US')])
+                    languages = Lang.search([('code', '=', 'en')])
                 language, = languages
                 formatted = Lang.strftime(date, language.code, language.date)
                 cls.raise_user_error('no_fiscalyear_date', (formatted,))
@@ -249,6 +251,7 @@ class FiscalYear(ModelSQL, ModelView):
             deferral.fiscalyear = self
             deferral.debit = account.debit
             deferral.credit = account.credit
+            deferral.amount_second_currency = account.amount_second_currency
             return deferral
 
     @classmethod
@@ -314,17 +317,6 @@ class FiscalYear(ModelSQL, ModelView):
             cls.write([fiscalyear], {
                 'state': 'open',
                 })
-
-    @classmethod
-    def search_rec_name(cls, name, clause):
-        if clause[1].startswith('!') or clause[1].startswith('not '):
-            bool_op = 'AND'
-        else:
-            bool_op = 'OR'
-        return [bool_op,
-            ('code',) + tuple(clause[1:]),
-            (cls._rec_name,) + tuple(clause[1:]),
-            ]
 
 
 class BalanceNonDeferralStart(ModelView):

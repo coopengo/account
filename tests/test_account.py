@@ -8,11 +8,13 @@ from dateutil.relativedelta import relativedelta
 from trytond.pool import Pool
 import trytond.tests.test_tryton
 from trytond.tests.test_tryton import ModuleTestCase, with_transaction
-from trytond.tests.test_tryton import doctest_setup, doctest_teardown
+from trytond.tests.test_tryton import doctest_teardown
 from trytond.tests.test_tryton import doctest_checker
 from trytond.transaction import Transaction
+from trytond.exceptions import UserError
 
 from trytond.modules.company.tests import create_company, set_company
+from trytond.modules.currency.tests import create_currency
 
 
 def create_chart(company, tax=False):
@@ -94,6 +96,70 @@ def get_fiscalyear(company, today=None):
     return fiscalyear
 
 
+def close_fiscalyear(fiscalyear):
+    pool = Pool()
+    Sequence = pool.get('ir.sequence')
+    Journal = pool.get('account.journal')
+    Period = pool.get('account.period')
+    AccountType = pool.get('account.account.type')
+    Account = pool.get('account.account')
+    Move = pool.get('account.move')
+    FiscalYear = pool.get('account.fiscalyear')
+    BalanceNonDeferral = pool.get(
+        'account.fiscalyear.balance_non_deferral', type='wizard')
+
+    # Balance non-deferral
+    journal_sequence, = Sequence.search([
+            ('code', '=', 'account.journal'),
+            ])
+    journal_closing, = Journal.create([{
+                'name': 'Closing',
+                'code': 'CLO',
+                'type': 'situation',
+                'sequence': journal_sequence.id,
+                }])
+    period_closing, = Period.create([{
+                'name': 'Closing',
+                'start_date': fiscalyear.end_date,
+                'end_date': fiscalyear.end_date,
+                'fiscalyear': fiscalyear.id,
+                'type': 'adjustment',
+                }])
+    type_equity, = AccountType.search([
+            ('name', '=', 'Equity'),
+            ])
+    revenue, = Account.search([
+            ('kind', '=', 'revenue'),
+            ])
+    account_pl, = Account.create([{
+                'name': 'P&L',
+                'type': type_equity.id,
+                'deferral': True,
+                'parent': revenue.parent.id,
+                'kind': 'other',
+                }])
+
+    session_id = BalanceNonDeferral.create()[0]
+    balance_non_deferral = BalanceNonDeferral(session_id)
+
+    balance_non_deferral.start.fiscalyear = fiscalyear
+    balance_non_deferral.start.journal = journal_closing
+    balance_non_deferral.start.period = period_closing
+    balance_non_deferral.start.credit_account = account_pl
+    balance_non_deferral.start.debit_account = account_pl
+
+    balance_non_deferral._execute('balance')
+
+    moves = Move.search([
+            ('state', '=', 'draft'),
+            ('period.fiscalyear', '=', fiscalyear.id),
+            ])
+    Move.post(moves)
+
+    # Close fiscalyear
+    FiscalYear.close([fiscalyear])
+
+
 class AccountTestCase(ModuleTestCase):
     'Test Account module'
     module = 'account'
@@ -142,14 +208,9 @@ class AccountTestCase(ModuleTestCase):
         pool = Pool()
         Party = pool.get('party.party')
         FiscalYear = pool.get('account.fiscalyear')
-        Period = pool.get('account.period')
         Journal = pool.get('account.journal')
         Account = pool.get('account.account')
-        AccountType = pool.get('account.account.type')
         Move = pool.get('account.move')
-        Sequence = pool.get('ir.sequence')
-        BalanceNonDeferral = pool.get(
-            'account.fiscalyear.balance_non_deferral', type='wizard')
 
         party = Party(name='Party')
         party.save()
@@ -161,6 +222,8 @@ class AccountTestCase(ModuleTestCase):
             FiscalYear.create_period([fiscalyear])
             period = fiscalyear.periods[0]
             create_chart(company)
+
+            sec_cur = create_currency('sec')
 
             journal_revenue, = Journal.search([
                     ('code', '=', 'REV'),
@@ -180,6 +243,13 @@ class AccountTestCase(ModuleTestCase):
             payable, = Account.search([
                     ('kind', '=', 'payable'),
                     ])
+            cash, = Account.search([
+                    ('kind', '=', 'other'),
+                    ('name', '=', 'Main Cash'),
+                    ])
+            cash_cur, = Account.copy([cash], default={
+                    'second_currency': sec_cur.id,
+                    })
             # Create some moves
             vlist = [
                 {
@@ -194,6 +264,25 @@ class AccountTestCase(ModuleTestCase):
                                     'account': receivable.id,
                                     'debit': Decimal(100),
                                     'party': party.id,
+                                    }]),
+                        ],
+                    },
+                {
+                    'period': period.id,
+                    'journal': journal_revenue.id,
+                    'date': period.start_date,
+                    'lines': [
+                        ('create', [{
+                                    'account': receivable.id,
+                                    'credit': Decimal(80),
+                                    'second_currency': sec_cur.id,
+                                    'amount_second_currency': -Decimal(50),
+                                    'party': party.id,
+                                    }, {
+                                    'account': cash_cur.id,
+                                    'debit': Decimal(80),
+                                    'second_currency': sec_cur.id,
+                                    'amount_second_currency': Decimal(50),
                                     }]),
                         ],
                     },
@@ -220,6 +309,11 @@ class AccountTestCase(ModuleTestCase):
                 (Decimal(0), Decimal(100)))
             self.assertEqual(revenue.balance, Decimal(-100))
 
+            self.assertEqual((cash_cur.debit, cash_cur.credit),
+                (Decimal(80), Decimal(0)))
+            self.assertEqual(
+                cash_cur.amount_second_currency, Decimal(50))
+
             # Use next fiscalyear
             today = datetime.date.today()
             next_fiscalyear = get_fiscalyear(company,
@@ -234,6 +328,10 @@ class AccountTestCase(ModuleTestCase):
                     (Decimal(0), Decimal(0)))
                 self.assertEqual(revenue.balance, Decimal(-100))
 
+                cash_cur = Account(cash_cur.id)
+                self.assertEqual(
+                    cash_cur.amount_second_currency, Decimal(50))
+
             # Test debit/credit cumulate for next year
             with Transaction().set_context(fiscalyear=next_fiscalyear.id,
                     cumulate=True):
@@ -242,53 +340,11 @@ class AccountTestCase(ModuleTestCase):
                     (Decimal(0), Decimal(100)))
                 self.assertEqual(revenue.balance, Decimal(-100))
 
-            # Balance non-deferral
-            journal_sequence, = Sequence.search([
-                    ('code', '=', 'account.journal'),
-                    ])
-            journal_closing, = Journal.create([{
-                        'name': 'Closing',
-                        'code': 'CLO',
-                        'type': 'situation',
-                        'sequence': journal_sequence.id,
-                        }])
-            period_closing, = Period.create([{
-                        'name': 'Closing',
-                        'start_date': fiscalyear.end_date,
-                        'end_date': fiscalyear.end_date,
-                        'fiscalyear': fiscalyear.id,
-                        'type': 'adjustment',
-                        }])
-            type_equity, = AccountType.search([
-                    ('name', '=', 'Equity'),
-                    ])
-            account_pl, = Account.create([{
-                        'name': 'P&L',
-                        'type': type_equity.id,
-                        'deferral': True,
-                        'parent': revenue.parent.id,
-                        'kind': 'other',
-                        }])
+                cash_cur = Account(cash_cur.id)
+                self.assertEqual(
+                    cash_cur.amount_second_currency, Decimal(50))
 
-            session_id = BalanceNonDeferral.create()[0]
-            balance_non_deferral = BalanceNonDeferral(session_id)
-
-            balance_non_deferral.start.fiscalyear = fiscalyear
-            balance_non_deferral.start.journal = journal_closing
-            balance_non_deferral.start.period = period_closing
-            balance_non_deferral.start.credit_account = account_pl
-            balance_non_deferral.start.debit_account = account_pl
-
-            balance_non_deferral._execute('balance')
-
-            moves = Move.search([
-                    ('state', '=', 'draft'),
-                    ('period.fiscalyear', '=', fiscalyear.id),
-                    ])
-            Move.post(moves)
-
-            # Close fiscalyear
-            FiscalYear.close([fiscalyear])
+            close_fiscalyear(fiscalyear)
 
             # Check deferral
             self.assertEqual(revenue.deferrals, ())
@@ -296,8 +352,13 @@ class AccountTestCase(ModuleTestCase):
             deferral_receivable, = receivable.deferrals
             self.assertEqual(
                 (deferral_receivable.debit, deferral_receivable.credit),
-                (Decimal(100), Decimal(0)))
+                (Decimal(100), Decimal(80)))
             self.assertEqual(deferral_receivable.fiscalyear, fiscalyear)
+
+            cash_cur = Account(cash_cur.id)
+            deferral_cash_cur, = cash_cur.deferrals
+            self.assertEqual(
+                deferral_cash_cur.amount_second_currency, Decimal(50))
 
             # Test debit/credit
             with Transaction().set_context(fiscalyear=fiscalyear.id):
@@ -308,8 +369,12 @@ class AccountTestCase(ModuleTestCase):
 
                 receivable = Account(receivable.id)
                 self.assertEqual((receivable.debit, receivable.credit),
-                    (Decimal(100), Decimal(0)))
-                self.assertEqual(receivable.balance, Decimal(100))
+                    (Decimal(100), Decimal(80)))
+                self.assertEqual(receivable.balance, Decimal(20))
+
+                cash_cur = Account(cash_cur.id)
+                self.assertEqual(
+                    cash_cur.amount_second_currency, Decimal(50))
 
             # Test debit/credit for next year
             with Transaction().set_context(fiscalyear=next_fiscalyear.id):
@@ -321,7 +386,11 @@ class AccountTestCase(ModuleTestCase):
                 receivable = Account(receivable.id)
                 self.assertEqual((receivable.debit, receivable.credit),
                     (Decimal(0), Decimal(0)))
-                self.assertEqual(receivable.balance, Decimal(100))
+                self.assertEqual(receivable.balance, Decimal(20))
+
+                cash_cur = Account(cash_cur.id)
+                self.assertEqual(
+                    cash_cur.amount_second_currency, Decimal(50))
 
             # Test debit/credit cumulate for next year
             with Transaction().set_context(fiscalyear=next_fiscalyear.id,
@@ -333,8 +402,95 @@ class AccountTestCase(ModuleTestCase):
 
                 receivable = Account(receivable.id)
                 self.assertEqual((receivable.debit, receivable.credit),
-                    (Decimal(100), Decimal(0)))
-                self.assertEqual(receivable.balance, Decimal(100))
+                    (Decimal(100), Decimal(80)))
+                self.assertEqual(receivable.balance, Decimal(20))
+
+                cash_cur = Account(cash_cur.id)
+                self.assertEqual(
+                    cash_cur.amount_second_currency, Decimal(50))
+
+    @with_transaction()
+    def test_move_post(self):
+        "Test posting move"
+        pool = Pool()
+        Party = pool.get('party.party')
+        FiscalYear = pool.get('account.fiscalyear')
+        Journal = pool.get('account.journal')
+        Account = pool.get('account.account')
+        Move = pool.get('account.move')
+        Line = pool.get('account.move.line')
+        Period = pool.get('account.period')
+
+        party = Party(name='Party')
+        party.save()
+
+        company = create_company()
+        with set_company(company):
+            fiscalyear = get_fiscalyear(company)
+            fiscalyear.save()
+            FiscalYear.create_period([fiscalyear])
+            period = fiscalyear.periods[0]
+            create_chart(company)
+
+            journal_revenue, = Journal.search([
+                    ('code', '=', 'REV'),
+                    ])
+            revenue, = Account.search([
+                    ('kind', '=', 'revenue'),
+                    ])
+            receivable, = Account.search([
+                    ('kind', '=', 'receivable'),
+                    ])
+
+            move = Move()
+            move.period = period
+            move.journal = journal_revenue
+            move.date = period.start_date
+            move.lines = [
+                Line(account=revenue, credit=Decimal(100)),
+                Line(account=receivable, debit=Decimal(100), party=party),
+                ]
+            move.save()
+            Move.post([move])
+            move_id = move.id
+
+            self.assertEqual(move.state, 'posted')
+
+            # Can not post an empty move
+            with self.assertRaises(UserError):
+                move = Move()
+                move.period = period
+                move.journal = journal_revenue
+                move.date = period.start_date
+                move.save()
+                Move.post([move])
+            Move.delete([move])
+
+            # Can not modify posted move
+            with self.assertRaises(UserError):
+                move = Move(move_id)
+                move.date = period.end_date
+                move.save()
+
+            # Can not go back to draft
+            with self.assertRaises(UserError):
+                move = Move(move_id)
+                move.state = 'draft'
+                move.save()
+
+            Period.close([period])
+
+            # Can not create move with lines on closed period
+            with self.assertRaises(UserError):
+                move = Move()
+                move.period = period
+                move.journal = journal_revenue
+                move.date = period.start_date
+                move.lines = [
+                    Line(account=revenue, credit=Decimal(100)),
+                    Line(account=receivable, debit=Decimal(100), party=party),
+                    ]
+                move.save()
 
     @with_transaction()
     def test_tax_compute(self):
@@ -797,11 +953,39 @@ class AccountTestCase(ModuleTestCase):
             moves = Move.create(vlist)
             Move.post(moves)
 
-            party = Party(party.id)
-            self.assertEqual(party.receivable, Decimal('300'))
-            self.assertEqual(party.receivable_today, Decimal('100'))
-            self.assertEqual(party.payable, Decimal('90'))
-            self.assertEqual(party.payable_today, Decimal('30'))
+            def check_fields():
+                party_test = Party(party.id)
+
+                for field, value in [('receivable', Decimal('300')),
+                        ('receivable_today', Decimal('100')),
+                        ('payable', Decimal('90')),
+                        ('payable_today', Decimal('30')),
+                        ]:
+                    msg = 'field: %s, value: %s' % (field, value)
+                    self.assertEqual(
+                        getattr(party_test, field), value, msg=msg)
+                    self.assertEqual(
+                        Party.search([(field, '=', value)]),
+                        [party_test], msg=msg)
+                    self.assertEqual(
+                        Party.search([(field, '!=', value)]),
+                        [], msg=msg)
+
+            check_fields()
+            close_fiscalyear(fiscalyear)
+            check_fields()
+
+    @with_transaction()
+    def test_sort_taxes(self):
+        "Test sort_taxes"
+        pool = Pool()
+        Tax = pool.get('account.tax')
+
+        tax1 = Tax(sequence=None, id=-3)
+        tax2 = Tax(sequence=None, id=-2)
+        tax3 = Tax(sequence=1, id=-1)
+        self.assertSequenceEqual(
+            Tax.sort_taxes([tax3, tax2, tax1]), [tax1, tax2, tax3])
 
     @with_transaction()
     def test_sort_taxes(self):
@@ -822,22 +1006,22 @@ def suite():
         AccountTestCase))
     suite.addTests(doctest.DocFileSuite(
             'scenario_account_reconciliation.rst',
-            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_move_cancel.rst',
-            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_move_template.rst',
-            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_reports.rst',
-            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     return suite

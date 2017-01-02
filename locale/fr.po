@@ -4,327 +4,372 @@ msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 msgctxt "error:account.account.deferral:"
 msgid "Deferral must be unique by account and fiscal year"
-msgstr "Odlog mora biti enoličen po kontu in poslovnem letu"
+msgstr "Le report doit être unique par compte et par année fiscale"
 
 msgctxt "error:account.account.deferral:"
 msgid "You can not modify Account Deferral records"
-msgstr "Zapisov odloženih kontov ni možno popravljati"
+msgstr "Vous ne pouvez pas modifier les enregistrements de report de compte"
+
+msgctxt "error:account.account:"
+msgid ""
+"The Account \"%(account)s\" can not have a second currency because it is not"
+" deferral."
+msgstr ""
+"Le compte « %(account)s » ne peut pas avoir une devise secondaire parce "
+"qu'il n'est pas à reporter."
+
+msgctxt "error:account.account:"
+msgid ""
+"The currency \"%(currency)s\" of Account \"%(account)s\" is not compatible "
+"with existing lines."
+msgstr ""
+"La devise « %(currency) » du compte « %(account)s » n'est pas compatible "
+"avec les lignes existantes."
+
+msgctxt "error:account.account:"
+msgid ""
+"The kind of Account \"%(account)s\" does not allow to set a second currency.\n"
+"Only \"Other\" type allows."
+msgstr ""
+"Le genre du compte « %(account)s » ne permet pas de définir une devise secondaire.\n"
+"Seulement le type « Autre » le permet."
 
 msgctxt "error:account.account:"
 msgid "You can not delete account \"%s\" because it has move lines."
-msgstr "Konta \"%s\" ni možno brisati zaradi obstoječih knjiženih postavk."
+msgstr ""
+"Vous ne pouvez supprimer le compte « %s » car il contient des lignes de "
+"mouvement."
 
 msgctxt "error:account.account:"
 msgid "You can not delete accounts that have children."
-msgstr "Kontov s podkonti ni možno brisati."
+msgstr "Vous ne pouvez supprimer un compte qui a des enfants."
 
 msgctxt "error:account.fiscalyear:"
 msgid "Fiscal year \"%(first)s\" and \"%(second)s\" have the same post move sequence."
-msgstr "Poslovni leti \"%(first)s\" in \"%(second)s\" imata enako štetje knjižb."
+msgstr ""
+"Les années fiscales « %(first)s » et « %(second)s » ont la même séquence de "
+"mouvement."
 
 msgctxt "error:account.fiscalyear:"
 msgid "Fiscal year \"%(first)s\" and \"%(second)s\" overlap."
-msgstr "Poslovni leti \"%(first)s\" in \"%(second)s\" se prekrivata."
+msgstr "Les années fiscales « %(first)s » et « %(second)s » se chevauchent."
 
 msgctxt "error:account.fiscalyear:"
 msgid "No fiscal year defined for \"%s\"."
-msgstr "Poslovno leto \"%s\" ne obstaja."
+msgstr "Aucune année fiscale n'est définie pour « %s »."
 
 msgctxt "error:account.fiscalyear:"
 msgid "The balance of the account \"%s\" must be zero."
-msgstr "Saldo konta \"%s\" mora biti nič."
+msgstr "La balance du compte « %s » doit être zéro."
 
 msgctxt "error:account.fiscalyear:"
 msgid "You can not change the post move sequence in fiscal year \"%s\"."
-msgstr "Štetje knjižb v poslovnem letu \"%s\" ni možno spreminjati."
+msgstr ""
+"Vous ne pouvez changer la séquence des mouvements postés pour l'année "
+"fiscale « %s »."
 
 msgctxt "error:account.fiscalyear:"
 msgid ""
 "You can not close fiscal year \"%s\" until you close all previous fiscal "
 "years."
 msgstr ""
-"Poslovnega leta \"%s\" ni možno zaključiti, dokler niso zaključena vsa "
-"prejšnja poslovna leta."
+"Vous ne pouvez clôturer l'année fiscale « %s » tant que les années "
+"antérieures ne sont pas clôturées."
 
 msgctxt "error:account.fiscalyear:"
 msgid ""
 "You can not reopen fiscal year \"%s\" until you reopen all later fiscal "
 "years."
 msgstr ""
-"Poslovnega leta \"%s\" ni možno ponovno odpreti, dokler niso ponovno odprta "
-"vsa prejšnja leta."
+"Vous ne pouvez ré-ouvir l'année fiscale « %s » tant que les année fiscale "
+"suivantes ne sont pas ré-ouvertes."
 
 msgctxt "error:account.journal.period:"
 msgid "You can not create a journal - period on closed period \"%s\"."
-msgstr "Dnevnika za zaključeno obdobje \"%s\" ni možno izdelati."
+msgstr ""
+"Vous ne pouvez créer une relation journal - période sur la période clôturée "
+"« %s »."
 
 msgctxt "error:account.journal.period:"
 msgid "You can not modify/delete journal - period \"%s\" because it has moves."
 msgstr ""
-"Dnevnika za obdobje \"%s\" ni možno popravljati/brisati zaradi obstoječih "
-"knjižb."
+"Vous ne pouvez modifier ou supprimer le journal - période « %s » car il "
+"contient des mouvements."
 
 msgctxt "error:account.journal.period:"
 msgid ""
 "You can not open journal - period \"%(journal_period)s\" because period "
 "\"%(period)s\" is closed."
 msgstr ""
-"Dnevnika za obdobje \"%(journal_period)s\" ni možno odpirati zaradi "
-"zaključenega obdobja \"%(period)s\"."
+"Vous ne pouvez ouvrir la relation journal - période « %(journal_period)s » "
+"car la période « %(period)s » est clôturée."
 
 msgctxt "error:account.journal.period:"
 msgid "You can only open one journal per period."
-msgstr "Na obdobje je možen samo en dnevnik."
+msgstr "Vous ne pouvez ouvrir qu'un seul journal par période."
 
 msgctxt "error:account.journal.type:"
 msgid "The code must be unique."
-msgstr "Šifra mora biti enolična."
+msgstr "Le code doit être unique."
 
 msgctxt "error:account.move.line:"
 msgid "Line \"%s\" (%d) already reconciled."
-msgstr "Postavka \"%s\" (%d) je že usklajena."
+msgstr "La ligne « %s » (%d) est déjà réconciliée."
 
 msgctxt "error:account.move.line:"
 msgid "Move line cannot be created because there is no journal defined."
-msgstr "Knjižbe ni možno izdelati zaradi neobstoječega dnevnika."
+msgstr ""
+"Les lignes de mouvement ne peuvent être créées car aucun journal n'est "
+"défini."
 
 msgctxt "error:account.move.line:"
 msgid "Party is required on line \"%s\""
-msgstr "Partner obvezen na postavki \"%s\""
+msgstr "Un tiers est requis sur la ligne « %s »"
 
 msgctxt "error:account.move.line:"
 msgid "Party must not be set on line \"%s\""
-msgstr "Partner ne sme biti na postavki \"%s\""
+msgstr "Un tiers ne doit pas être mis sur la ligne « %s »"
 
 msgctxt "error:account.move.line:"
 msgid "Wrong credit/debit values."
-msgstr "Napačne vrednosti za debet/kredit."
+msgstr "Valeurs de débit/crédit incorrectes."
 
 msgctxt "error:account.move.line:"
 msgid "Wrong second currency sign."
-msgstr "Napačen predznak druge valute."
+msgstr "Mauvais signe pour la devise secondaire."
 
 msgctxt "error:account.move.line:"
 msgid "You can not add/modify lines in closed journal period \"%s\"."
 msgstr ""
-"Postavk dnevnika na zaključenem obdobju \"%s\" ni možno "
-"dodajati/popravljati."
+"Vous ne pouvez ajouter ou modifier des lignes dans la période de journal "
+"clôturée « %s »."
 
 msgctxt "error:account.move.line:"
 msgid ""
 "You can not create a move line with account \"%s\" because it is a view "
 "account."
-msgstr "Knjižbe na konto \"%s\" ni možno izdelati, ker je konto samo za vpogled."
+msgstr ""
+"Vous ne pouvez pas créer une ligne de mouvement avec le compte « %s » car "
+"c'est un compte de type vue."
 
 msgctxt "error:account.move.line:"
 msgid "You can not create a move line with account \"%s\" because it is inactive."
-msgstr "Knjižbe na konto \"%s\" ni možno izdelati, ker je neaktiven."
+msgstr ""
+"Vous ne pouvez pas créer une ligne de mouvement avec le compte « %s » car il"
+" est inactif."
 
 msgctxt "error:account.move.line:"
 msgid "You can not modify line \"%s\" because it is reconciled."
-msgstr "Postavke \"%s\" ni možno popravljati, ker je že usklajena."
+msgstr "Vous ne pouvez modifier la ligne « %s » car elle est réconciliée."
 
 msgctxt "error:account.move.line:"
 msgid "You can not modify lines of move \"%s\" because it is already posted."
-msgstr "Postavk \"%s\" ni možno popravljati, ker so že knjižene."
+msgstr ""
+"Vous ne pouvez modifier les lignes du mouvement « %s » car il est déjà "
+"posté."
 
 msgctxt "error:account.move.line:"
 msgid "wrong_second_currency_sign"
-msgstr "Napačen predznak druge valute"
+msgstr "wrong_second_currency_sign"
 
 msgctxt "error:account.move.reconciliation:"
 msgid ""
 "You can not create a reconciliation where debit \"%(debit)s\" and credit "
 "\"%(credit)s\" differ."
 msgstr ""
-"Uskladitve, kjer se debet \"%(debit)s\" in kredit \"%(credit)s\" "
-"razlikujeta, ni možno izdelati."
+"Vous ne pouvez créer une réconciliation où le débit « %(debit)s » et le "
+"crédit « %(credit)s » diffèrent."
 
 msgctxt "error:account.move.reconciliation:"
 msgid "You can not modify a reconciliation."
-msgstr "Uskladitve ni možno popravljati."
+msgstr "Vous ne pouvez modifier une réconciliation."
 
 msgctxt "error:account.move.reconciliation:"
 msgid ""
 "You can not reconcile line \"%(line)s\" because its account \"%(account)s\" "
 "is configured as not reconcilable."
 msgstr ""
-"Postavke \"%(line)s\" ni možno uskladiti, ker je konto \"%(account)s\" "
-"nastavljen kot neuskladljiv."
+"Vous ne pouvez réconcilier la ligne « %(line)s » car son compte « "
+"%(account)s » est configuré comme non-réconciliable."
 
 msgctxt "error:account.move.reconciliation:"
 msgid ""
 "You can not reconcile line \"%(line)s\" because its account \"%(account1)s\""
 " is different from \"%(account2)s\"."
 msgstr ""
-"Postavke \"%(line)s\" ni možno uskladiti, ker je konto \"%(account1)s\" "
-"različen od konta \"%(account2)s\"."
+"Vous ne pouvez pas réconcilier la ligne « %(line)s » car son compte « "
+"%(account1)s » est différent de « %(account2)s »."
 
 msgctxt "error:account.move.reconciliation:"
 msgid ""
 "You can not reconcile line \"%(line)s\" because its party \"%(party1)s\" is "
 "different from \"%(party2)s\"."
 msgstr ""
-"Postavke \"%(line)s\" ni možno uskladiti, ker je partner \"%(party1)s\" "
-"različen od partnerja \"%(party2)s\"."
+"Vous ne pouvez pas réconcilier la ligne « %(line)s » car son tiers « "
+"%(party1)s » est différent de « %(party2)s »."
 
 msgctxt "error:account.move.reconciliation:"
 msgid "You can not reconcile line \"%s\" because it is not in valid state."
-msgstr "Postavke \"%s\" ni možno uskladiti zaradi neveljavnega stanja."
+msgstr ""
+"Vous ne pouvez réconcilier la ligne « %s » car elle n'est pas dans un état "
+"valide."
 
 msgctxt "error:account.move:"
 msgid ""
 "The period of move \"%s\" is closed.\n"
 "Use the current period?"
 msgstr ""
-"Obdobje knjižbe \"%s\" je zaključeno.\n"
-"Vzamem trenutno obdobje?"
+"La période du mouvement « %s » est cloturée.\n"
+"Utiliser la période courante ?"
 
 msgctxt "error:account.move:"
 msgid ""
 "You can not create move \"%(move)s\" because its date is outside its period."
-msgstr "Knjižbe \"%(move)s\" ni možno narediti, ker je datum izven obdobja."
+msgstr ""
+"Vous ne pouvez pas créer de mouvement « %(move)s » car sa date est en dehors"
+" de sa période."
 
 msgctxt "error:account.move:"
 msgid "You can not modify move \"%s\" because it is already posted."
-msgstr "Knjižene postavke \"%s\" ni možno popravljati."
+msgstr "Vous ne pouvez modifier le mouvement « %s » car il est déjà posté."
 
 msgctxt "error:account.move:"
 msgid "You can not post move \"%s\" because it is an unbalanced."
-msgstr "Neuravnovešene postavke \"%s\" ni možno knjižiti."
+msgstr "Vous ne pouvez poster le mouvement « %s » car il n'est pas balancé."
 
 msgctxt "error:account.move:"
 msgid "You can not post move \"%s\" because it is empty."
-msgstr "Prazne postavke \"%s\" ni možno knjižiti."
-
-msgctxt "error:account.move:"
-msgid "You can not set posted move \"%(move)s\" to draft in journal \"%(journal)s\"."
-msgstr ""
-"Knjižene postavke \"%(move)s\" v dnevniku \"%(journal)s\" ni možno "
-"prestaviti v stanje priprave."
-
-msgctxt "error:account.move:"
-msgid ""
-"You can not set to draft move \"%(move)s\" because period \"%(period)s\" is "
-"closed."
-msgstr ""
-"Knjižbe \"%(move)s\" ni možno preklopiti v stanje priprave zaradi "
-"zaključenega obdobja \"%(period)s\"."
+msgstr "Vous ne pouvez poster le mouvement « %s » car il est vide."
 
 msgctxt "error:account.period:"
 msgid "\"%(first)s\" and \"%(second)s\" periods overlap."
-msgstr "Obdobji \"%(first)s\" in \"%(second)s\" se prekrivata."
+msgstr "Les périodes « %(first)s » et « %(second)s » se chevauchent."
 
 msgctxt "error:account.period:"
 msgid "Dates of period \"%s\" are outside are outside it's fiscal year dates."
-msgstr "Datumi obdobja \"%s\" so izven časovnega okvira poslovnega leta."
+msgstr ""
+"Les dates de la période « %s » sont en dehors des dates de son année "
+"fiscale."
 
 msgctxt "error:account.period:"
 msgid "No period defined for date \"%s\"."
-msgstr "Za datum \"%s\" obdobja ni možno najti."
+msgstr "Pas de période de définie pour la date « %s »."
 
 msgctxt "error:account.period:"
 msgid "Period \"%(first)s\" and \"%(second)s\" have the same sequence."
-msgstr "Obdobji \"%(first)s\" in \"%(second)s\" imata enaki štetji."
+msgstr "Les périodes « %(first)s » et « %(second)s » ont la même séquence."
 
 msgctxt "error:account.period:"
 msgid ""
 "You can not change the post move sequence of period \"%s\" because there are"
 " already posted moves in the period."
 msgstr ""
-"Štetja knjižb obdobja \"%s\" ni možno spreminjati zaradi obstoječih knjižb."
+"Vous ne pouvez changer la séquence des mouvements posté de la période « %s »"
+" car elle contient déjà des mouvements postés."
 
 msgctxt "error:account.period:"
 msgid ""
 "You can not close period \"%(period)s\" because there are non posted moves "
 "\"%(move)s\" in this period."
 msgstr ""
-"Obdobja \"%(period)s\" ni možno zaključiti, ker v tem obdobju obstajajo "
-"neknjižene postavke \"%(move)s\"."
+"Vous ne pouvez pas clôturer la period « %(period)s » car il y a des "
+"mouvements non-postés « %(move)s » dans celle-ci."
 
 msgctxt "error:account.period:"
 msgid "You can not create a period on fiscal year \"%s\" because it is closed."
-msgstr "Obdobja na zaključenem poslovnem letu \"%s\" ni možno izdelati."
+msgstr ""
+"Vous ne pouvez créer une période sur l'année fiscale « %s » car elle est "
+"clôturée."
 
 msgctxt "error:account.period:"
 msgid "You can not modify/delete period \"%s\" because it has moves."
-msgstr "Obdobja \"%s\" ni možno popravljati/brisati zaradi obstoječih knjižb."
+msgstr ""
+"Vous ne pouvez modifier ou supprimez la période « %s » car elle contient des"
+" mouvements."
 
 msgctxt "error:account.period:"
 msgid ""
 "You can not open period \"%(period)s\" because its fiscal year "
 "\"%(fiscalyear)s\" is closed."
 msgstr ""
-"Obdobja \"%(period)s\" ni možno odpirati zaradi zaključenega poslovnega leta"
-" \"%(fiscalyear)s\"."
+"Vous ne pouvez ouvrir la période « %(period)s » car son année fiscale « "
+"%(fiscalyear)s » est clôturée."
 
 msgctxt "error:account.tax.template:"
 msgid ""
 "\"Update Unit Price\" can not be set on tax \"%(template)s\" which has a "
 "parent."
-msgstr "Popravka cene ni možno nastaviti na poddavek \"%(template)s\"."
+msgstr ""
+"« Mettre à jour le prix unitaire » ne peut pas coché sur la taxe « "
+"%(template)s » qui a un parent."
 
 msgctxt "error:account.tax:"
 msgid ""
 "\"Update Unit Price\" can not be set on tax \"%(template)s\" which has a "
 "parent."
-msgstr "Popravka cene ni možno nastaviti na poddavek \"%(template)s\"."
+msgstr ""
+"« Mettre à jour le prix unitaire » ne peut pas coché sur la taxe « "
+"%(template)s » qui a un parent."
 
 msgctxt "field:account.account,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
+
+msgctxt "field:account.account,amount_second_currency:"
+msgid "Amount Second Currency"
+msgstr "Montant en devise secondaire"
 
 msgctxt "field:account.account,balance:"
 msgid "Balance"
-msgstr "Saldo"
+msgstr "Balance"
 
 msgctxt "field:account.account,childs:"
 msgid "Children"
-msgstr "Podkonti"
+msgstr "Enfants"
 
 msgctxt "field:account.account,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.account,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.account,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "field:account.account,currency:"
 msgid "Currency"
-msgstr "Valuta"
+msgstr "Devise"
 
 msgctxt "field:account.account,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.account,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.account,deferral:"
 msgid "Deferral"
-msgstr "Odlog"
+msgstr "Report"
 
 msgctxt "field:account.account,deferrals:"
 msgid "Deferrals"
-msgstr "Odlogi"
+msgstr "Reports"
 
 msgctxt "field:account.account,general_ledger_balance:"
 msgid "General Ledger Balance"
-msgstr "Bilance glavne knjige"
+msgstr "Balance du grand livre"
 
 msgctxt "field:account.account,id:"
 msgid "ID"
@@ -332,75 +377,79 @@ msgstr "ID"
 
 msgctxt "field:account.account,kind:"
 msgid "Kind"
-msgstr "Vrsta"
+msgstr "Genre"
 
 msgctxt "field:account.account,left:"
 msgid "Left"
-msgstr "Levo"
+msgstr "Gauche"
 
 msgctxt "field:account.account,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.account,note:"
 msgid "Note"
-msgstr "Opomba"
+msgstr "Note"
 
 msgctxt "field:account.account,parent:"
 msgid "Parent"
-msgstr "Matični konto"
+msgstr "Parent"
 
 msgctxt "field:account.account,party_required:"
 msgid "Party Required"
-msgstr "Partner obvezen"
+msgstr "Tiers requis"
 
 msgctxt "field:account.account,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account,reconcile:"
 msgid "Reconcile"
-msgstr "Uskladitev"
+msgstr "A réconcilier"
 
 msgctxt "field:account.account,right:"
 msgid "Right"
-msgstr "Desno"
+msgstr "Droite"
 
 msgctxt "field:account.account,second_currency:"
 msgid "Secondary Currency"
-msgstr "Druga valuta"
+msgstr "Devise secondaire"
+
+msgctxt "field:account.account,second_currency_digits:"
+msgid "Second Currency Digits"
+msgstr "Décimales de la seconde devise"
 
 msgctxt "field:account.account,taxes:"
 msgid "Default Taxes"
-msgstr "Privzeti davki"
+msgstr "Taxes par défaut"
 
 msgctxt "field:account.account,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.account,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.account,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account-account.tax,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.account-account.tax,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account-account.tax,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account-account.tax,id:"
 msgid "ID"
@@ -408,51 +457,59 @@ msgstr "ID"
 
 msgctxt "field:account.account-account.tax,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account-account.tax,tax:"
 msgid "Tax"
-msgstr "Davek"
+msgstr "Taxe"
 
 msgctxt "field:account.account-account.tax,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account-account.tax,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account.deferral,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
+
+msgctxt "field:account.account.deferral,amount_second_currency:"
+msgid "Amount Second Currency"
+msgstr "Montant en devise secondaire"
 
 msgctxt "field:account.account.deferral,balance:"
 msgid "Balance"
-msgstr "Saldo"
+msgstr "Balance"
 
 msgctxt "field:account.account.deferral,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account.deferral,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account.deferral,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
+
+msgctxt "field:account.account.deferral,currency:"
+msgid "Currency"
+msgstr "Devise"
 
 msgctxt "field:account.account.deferral,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.account.deferral,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.account.deferral,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.account.deferral,id:"
 msgid "ID"
@@ -460,39 +517,47 @@ msgstr "ID"
 
 msgctxt "field:account.account.deferral,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
+
+msgctxt "field:account.account.deferral,second_currency:"
+msgid "Second Currency"
+msgstr "Devise secondaire"
+
+msgctxt "field:account.account.deferral,second_currency_digits:"
+msgid "Second Currency Digits"
+msgstr "Décimales de la seconde devise"
 
 msgctxt "field:account.account.deferral,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account.deferral,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account.template,childs:"
 msgid "Children"
-msgstr "Podkonti"
+msgstr "Enfants"
 
 msgctxt "field:account.account.template,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.account.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account.template,deferral:"
 msgid "Deferral"
-msgstr "Odlog"
+msgstr "Report"
 
 msgctxt "field:account.account.template,general_ledger_balance:"
 msgid "General Ledger Balance"
-msgstr "Bilance glavne knjige"
+msgstr "Balance du grand livre"
 
 msgctxt "field:account.account.template,id:"
 msgid "ID"
@@ -500,55 +565,55 @@ msgstr "ID"
 
 msgctxt "field:account.account.template,kind:"
 msgid "Kind"
-msgstr "Vrsta"
+msgstr "Genre"
 
 msgctxt "field:account.account.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.account.template,parent:"
 msgid "Parent"
-msgstr "Matični konto"
+msgstr "Parent"
 
 msgctxt "field:account.account.template,party_required:"
 msgid "Party Required"
-msgstr "Partner obvezen"
+msgstr "Tiers requis"
 
 msgctxt "field:account.account.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account.template,reconcile:"
 msgid "Reconcile"
-msgstr "Uskladitev"
+msgstr "A réconcilier"
 
 msgctxt "field:account.account.template,taxes:"
 msgid "Default Taxes"
-msgstr "Privzeti davki"
+msgstr "Taxes par défaut"
 
 msgctxt "field:account.account.template,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.account.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account.template-account.tax.template,account:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "field:account.account.template-account.tax.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account.template-account.tax.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account.template-account.tax.template,id:"
 msgid "ID"
@@ -556,51 +621,55 @@ msgstr "ID"
 
 msgctxt "field:account.account.template-account.tax.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account.template-account.tax.template,tax:"
 msgid "Tax Template"
-msgstr "Predloga davka"
+msgstr "Modèle de taxe"
 
 msgctxt "field:account.account.template-account.tax.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account.template-account.tax.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account.type,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
+
+msgctxt "field:account.account.type,amount_cmp:"
+msgid "Amount"
+msgstr "Montant"
 
 msgctxt "field:account.account.type,balance_sheet:"
 msgid "Balance Sheet"
-msgstr "Bilanca stanja"
+msgstr "Bilan"
 
 msgctxt "field:account.account.type,childs:"
 msgid "Children"
-msgstr "Podtipi"
+msgstr "Enfants"
 
 msgctxt "field:account.account.type,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.account.type,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account.type,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account.type,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.account.type,display_balance:"
 msgid "Display Balance"
-msgstr "Prikaz bilance"
+msgstr "Afficher la balance"
 
 msgctxt "field:account.account.type,id:"
 msgid "ID"
@@ -608,55 +677,55 @@ msgstr "ID"
 
 msgctxt "field:account.account.type,income_statement:"
 msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
+msgstr "Compte de résultat"
 
 msgctxt "field:account.account.type,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.account.type,parent:"
 msgid "Parent"
-msgstr "Matični tip"
+msgstr "Parent"
 
 msgctxt "field:account.account.type,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account.type,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.account.type,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.account.type,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account.type,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.account.type.template,balance_sheet:"
 msgid "Balance Sheet"
-msgstr "Bilanca stanja"
+msgstr "Bilan"
 
 msgctxt "field:account.account.type.template,childs:"
 msgid "Children"
-msgstr "Podtipi"
+msgstr "Enfants"
 
 msgctxt "field:account.account.type.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.account.type.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.account.type.template,display_balance:"
 msgid "Display Balance"
-msgstr "Prikaz bilance"
+msgstr "Afficher la balance"
 
 msgctxt "field:account.account.type.template,id:"
 msgid "ID"
@@ -664,51 +733,51 @@ msgstr "ID"
 
 msgctxt "field:account.account.type.template,income_statement:"
 msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
+msgstr "Compte de résultat"
 
 msgctxt "field:account.account.type.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.account.type.template,parent:"
 msgid "Parent"
-msgstr "Matični tip"
+msgstr "Parent"
 
 msgctxt "field:account.account.type.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.account.type.template,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.account.type.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.account.type.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.aged_balance,balance:"
 msgid "Balance"
-msgstr "Saldo"
+msgstr "Balance"
 
 msgctxt "field:account.aged_balance,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.aged_balance,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.aged_balance,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.aged_balance,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.aged_balance,id:"
 msgid "ID"
@@ -716,43 +785,43 @@ msgstr "ID"
 
 msgctxt "field:account.aged_balance,party:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "field:account.aged_balance,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.aged_balance,term0:"
 msgid "Now"
-msgstr "Trenutno"
+msgstr "Maintenant"
 
 msgctxt "field:account.aged_balance,term1:"
 msgid "First Term"
-msgstr "Prvi rok"
+msgstr "Premier terme"
 
 msgctxt "field:account.aged_balance,term2:"
 msgid "Second Term"
-msgstr "Drugi rok"
+msgstr "Deuxième terme"
 
 msgctxt "field:account.aged_balance,term3:"
 msgid "Third Term"
-msgstr "Tretji rok"
+msgstr "Troisième terme"
 
 msgctxt "field:account.aged_balance,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.aged_balance,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.aged_balance.context,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.aged_balance.context,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.aged_balance.context,id:"
 msgid "ID"
@@ -760,35 +829,43 @@ msgstr "ID"
 
 msgctxt "field:account.aged_balance.context,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.aged_balance.context,term1:"
 msgid "First Term"
-msgstr "Prvi rok"
+msgstr "Premier terme"
 
 msgctxt "field:account.aged_balance.context,term2:"
 msgid "Second Term"
-msgstr "Drugi rok"
+msgstr "Deuxième terme"
 
 msgctxt "field:account.aged_balance.context,term3:"
 msgid "Third Term"
-msgstr "Tretji rok"
+msgstr "Troisième terme"
 
 msgctxt "field:account.aged_balance.context,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.aged_balance.context,unit:"
 msgid "Unit"
-msgstr "Enota"
+msgstr "Unité"
 
 msgctxt "field:account.balance_sheet.context,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
+
+msgctxt "field:account.balance_sheet.context,comparison:"
+msgid "Comparison"
+msgstr "Comparaison"
 
 msgctxt "field:account.balance_sheet.context,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
+
+msgctxt "field:account.balance_sheet.context,date_cmp:"
+msgid "Date"
+msgstr "Date"
 
 msgctxt "field:account.balance_sheet.context,id:"
 msgid "ID"
@@ -796,23 +873,23 @@ msgstr "ID"
 
 msgctxt "field:account.balance_sheet.context,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.configuration,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.configuration,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.configuration,default_account_payable:"
 msgid "Default Account Payable"
-msgstr "Privzeti obveznostni konto"
+msgstr "Compte fournisseur par défaut"
 
 msgctxt "field:account.configuration,default_account_receivable:"
 msgid "Default Account Receivable"
-msgstr "Privzeti terjatveni konto"
+msgstr "Compte client par défaut"
 
 msgctxt "field:account.configuration,id:"
 msgid "ID"
@@ -820,39 +897,39 @@ msgstr "ID"
 
 msgctxt "field:account.configuration,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.configuration,tax_rounding:"
 msgid "Tax Rounding"
-msgstr "Zaokrožitev davka"
+msgstr "Arrondi de taxe"
 
 msgctxt "field:account.configuration,tax_roundings:"
 msgid "Tax Roundings"
-msgstr "Zaokroževanje davkov"
+msgstr "Arrondis de taxe"
 
 msgctxt "field:account.configuration,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.configuration,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.configuration.tax_rounding,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.configuration.tax_rounding,configuration:"
 msgid "Configuration"
-msgstr "Nastavitve"
+msgstr "Configuration"
 
 msgctxt "field:account.configuration.tax_rounding,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.configuration.tax_rounding,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.configuration.tax_rounding,id:"
 msgid "ID"
@@ -860,31 +937,31 @@ msgstr "ID"
 
 msgctxt "field:account.configuration.tax_rounding,method:"
 msgid "Method"
-msgstr "Metoda"
+msgstr "Méthode"
 
 msgctxt "field:account.configuration.tax_rounding,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.configuration.tax_rounding,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.configuration.tax_rounding,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.configuration.tax_rounding,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.create_chart.account,account_template:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "field:account.create_chart.account,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.create_chart.account,id:"
 msgid "ID"
@@ -892,15 +969,15 @@ msgstr "ID"
 
 msgctxt "field:account.create_chart.properties,account_payable:"
 msgid "Default Payable Account"
-msgstr "Privzeti obveznostni konto"
+msgstr "Compte fournisseur par défaut"
 
 msgctxt "field:account.create_chart.properties,account_receivable:"
 msgid "Default Receivable Account"
-msgstr "Privzeti terjatveni konto"
+msgstr "Compte client par défaut"
 
 msgctxt "field:account.create_chart.properties,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.create_chart.properties,id:"
 msgid "ID"
@@ -912,27 +989,23 @@ msgstr "ID"
 
 msgctxt "field:account.fiscalyear,close_lines:"
 msgid "Close Lines"
-msgstr "Zapri postavke"
-
-msgctxt "field:account.fiscalyear,code:"
-msgid "Code"
-msgstr "Šifra"
+msgstr "Lignes de clôtures"
 
 msgctxt "field:account.fiscalyear,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.fiscalyear,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.fiscalyear,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.fiscalyear,end_date:"
 msgid "Ending Date"
-msgstr "Do"
+msgstr "Date de fin"
 
 msgctxt "field:account.fiscalyear,id:"
 msgid "ID"
@@ -940,47 +1013,47 @@ msgstr "ID"
 
 msgctxt "field:account.fiscalyear,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.fiscalyear,periods:"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "field:account.fiscalyear,post_move_sequence:"
 msgid "Post Move Sequence"
-msgstr "Štetje knjižb"
+msgstr "Séquence de mouvement posté"
 
 msgctxt "field:account.fiscalyear,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.fiscalyear,start_date:"
 msgid "Starting Date"
-msgstr "Od"
+msgstr "Date de début"
 
 msgctxt "field:account.fiscalyear,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.fiscalyear,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.fiscalyear,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.fiscalyear-account.move.line,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.fiscalyear-account.move.line,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.fiscalyear-account.move.line,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.fiscalyear-account.move.line,id:"
 msgid "ID"
@@ -988,35 +1061,35 @@ msgstr "ID"
 
 msgctxt "field:account.fiscalyear-account.move.line,line:"
 msgid "Line"
-msgstr "Postavka"
+msgstr "Ligne"
 
 msgctxt "field:account.fiscalyear-account.move.line,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.fiscalyear-account.move.line,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.fiscalyear-account.move.line,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,credit_account:"
 msgid "Credit Account"
-msgstr "Kreditni konto"
+msgstr "Compte de crédit"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,debit_account:"
 msgid "Debit Account"
-msgstr "Debetni konto"
+msgstr "Compte de débit"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,id:"
 msgid "ID"
@@ -1024,15 +1097,15 @@ msgstr "ID"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.fiscalyear.close.start,close_fiscalyear:"
 msgid "Fiscal Year to close"
-msgstr "Zaključitev poslovnega leta"
+msgstr "Année fiscale à clôturer"
 
 msgctxt "field:account.fiscalyear.close.start,id:"
 msgid "ID"
@@ -1040,51 +1113,51 @@ msgstr "ID"
 
 msgctxt "field:account.general_ledger.account,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.general_ledger.account,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.general_ledger.account,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.general_ledger.account,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.general_ledger.account,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.general_ledger.account,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "field:account.general_ledger.account,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.general_ledger.account,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.general_ledger.account,end_balance:"
 msgid "End Balance"
-msgstr "Končni saldo"
+msgstr "Balance finale"
 
 msgctxt "field:account.general_ledger.account,end_credit:"
 msgid "End Credit"
-msgstr "Končni kredit"
+msgstr "Crédit final"
 
 msgctxt "field:account.general_ledger.account,end_debit:"
 msgid "End Debit"
-msgstr "Končni debet"
+msgstr "Débit final"
 
 msgctxt "field:account.general_ledger.account,general_ledger_balance:"
 msgid "General Ledger Balance"
-msgstr "Bilanca glavne knjige"
+msgstr "Balance du grand livre"
 
 msgctxt "field:account.general_ledger.account,id:"
 msgid "ID"
@@ -1092,47 +1165,47 @@ msgstr "ID"
 
 msgctxt "field:account.general_ledger.account,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.general_ledger.account,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.general_ledger.account,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.general_ledger.account,start_balance:"
 msgid "Start Balance"
-msgstr "Začetni saldo"
+msgstr "Balance de départ"
 
 msgctxt "field:account.general_ledger.account,start_credit:"
 msgid "Start Credit"
-msgstr "Začetni kredit"
+msgstr "Crédit de départ"
 
 msgctxt "field:account.general_ledger.account,start_debit:"
 msgid "Start Debit"
-msgstr "Začetni debet"
+msgstr "Débit de départ"
 
 msgctxt "field:account.general_ledger.account,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.general_ledger.account,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.general_ledger.account.context,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.general_ledger.account.context,end_period:"
 msgid "End Period"
-msgstr "Do"
+msgstr "Période de fin"
 
 msgctxt "field:account.general_ledger.account.context,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.general_ledger.account.context,id:"
 msgid "ID"
@@ -1140,51 +1213,51 @@ msgstr "ID"
 
 msgctxt "field:account.general_ledger.account.context,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.general_ledger.account.context,start_period:"
 msgid "Start Period"
-msgstr "Od"
+msgstr "Période de départ"
 
 msgctxt "field:account.general_ledger.line,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.general_ledger.line,balance:"
 msgid "Balance"
-msgstr "Saldo"
+msgstr "Balance"
 
 msgctxt "field:account.general_ledger.line,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.general_ledger.line,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.general_ledger.line,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.general_ledger.line,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "field:account.general_ledger.line,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.general_ledger.line,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.general_ledger.line,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.general_ledger.line,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.general_ledger.line,id:"
 msgid "ID"
@@ -1192,51 +1265,51 @@ msgstr "ID"
 
 msgctxt "field:account.general_ledger.line,move:"
 msgid "Move"
-msgstr "Knjižba"
+msgstr "Mouvement"
 
 msgctxt "field:account.general_ledger.line,move_description:"
 msgid "Move Description"
-msgstr "Opis knjižbe"
+msgstr "Description du mouvement"
 
 msgctxt "field:account.general_ledger.line,origin:"
 msgid "Origin"
-msgstr "Poreklo"
+msgstr "Origine"
 
 msgctxt "field:account.general_ledger.line,party:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "field:account.general_ledger.line,party_required:"
 msgid "Party Required"
-msgstr "Partner obvezen"
+msgstr "Tiers requis"
 
 msgctxt "field:account.general_ledger.line,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.general_ledger.line,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.general_ledger.line,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.general_ledger.line,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.general_ledger.line.context,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.general_ledger.line.context,end_period:"
 msgid "End Period"
-msgstr "Do"
+msgstr "Période de fin"
 
 msgctxt "field:account.general_ledger.line.context,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.general_ledger.line.context,id:"
 msgid "ID"
@@ -1244,27 +1317,39 @@ msgstr "ID"
 
 msgctxt "field:account.general_ledger.line.context,party_cumulate:"
 msgid "Cumulate per Party"
-msgstr "Nabiranje po partnerju"
+msgstr "Cumuler par tiers"
 
 msgctxt "field:account.general_ledger.line.context,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.general_ledger.line.context,start_period:"
 msgid "Start Period"
-msgstr "Od"
+msgstr "Période de début"
 
 msgctxt "field:account.income_statement.context,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
+
+msgctxt "field:account.income_statement.context,comparison:"
+msgid "Comparison"
+msgstr "Comparaison"
 
 msgctxt "field:account.income_statement.context,end_period:"
 msgid "End Period"
-msgstr "Do"
+msgstr "Période de fin"
+
+msgctxt "field:account.income_statement.context,end_period_cmp:"
+msgid "End Period"
+msgstr "Période de fin"
 
 msgctxt "field:account.income_statement.context,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
+
+msgctxt "field:account.income_statement.context,fiscalyear_cmp:"
+msgid "Fiscal Year"
+msgstr "Année fiscale"
 
 msgctxt "field:account.income_statement.context,id:"
 msgid "ID"
@@ -1272,51 +1357,55 @@ msgstr "ID"
 
 msgctxt "field:account.income_statement.context,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.income_statement.context,start_period:"
 msgid "Start Period"
-msgstr "Od"
+msgstr "Période de début"
+
+msgctxt "field:account.income_statement.context,start_period_cmp:"
+msgid "Start Period"
+msgstr "Période de départ"
 
 msgctxt "field:account.journal,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.journal,balance:"
 msgid "Balance"
-msgstr "Saldo"
+msgstr "Balance"
 
 msgctxt "field:account.journal,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.journal,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.journal,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.journal,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "field:account.journal,credit_account:"
 msgid "Default Credit Account"
-msgstr "Privzeti kreditni konto"
+msgstr "Compte de crédit par défaut"
 
 msgctxt "field:account.journal,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.journal,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.journal,debit_account:"
 msgid "Default Debit Account"
-msgstr "Privzeti debetni konto"
+msgstr "Compte de débit par défaut"
 
 msgctxt "field:account.journal,id:"
 msgid "ID"
@@ -1324,63 +1413,55 @@ msgstr "ID"
 
 msgctxt "field:account.journal,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.journal,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.journal,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.journal,type:"
 msgid "Type"
-msgstr "Tip"
-
-msgctxt "field:account.journal,update_posted:"
-msgid "Allow updating posted moves"
-msgstr "Dovoli posodobitev knjižb"
-
-msgctxt "field:account.journal,view:"
-msgid "View"
-msgstr "Pogled"
+msgstr "Type"
 
 msgctxt "field:account.journal,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.journal,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
-msgctxt "field:account.journal.open_cash.start,end_date:"
+msgctxt "field:account.journal.open_cash.context,end_date:"
 msgid "End Date"
-msgstr "Končni datum"
+msgstr "Date de fin"
 
-msgctxt "field:account.journal.open_cash.start,id:"
+msgctxt "field:account.journal.open_cash.context,id:"
 msgid "ID"
 msgstr "ID"
 
-msgctxt "field:account.journal.open_cash.start,start_date:"
+msgctxt "field:account.journal.open_cash.context,start_date:"
 msgid "Start Date"
-msgstr "Začetni datum"
+msgstr "Date de début"
 
 msgctxt "field:account.journal.period,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.journal.period,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.journal.period,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.journal.period,icon:"
 msgid "Icon"
-msgstr "Ikona"
+msgstr "Icône"
 
 msgctxt "field:account.journal.period,id:"
 msgid "ID"
@@ -1388,43 +1469,39 @@ msgstr "ID"
 
 msgctxt "field:account.journal.period,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
-
-msgctxt "field:account.journal.period,name:"
-msgid "Name"
-msgstr "Naziv"
+msgstr "Journal"
 
 msgctxt "field:account.journal.period,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.journal.period,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.journal.period,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.journal.period,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.journal.period,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.journal.type,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.journal.type,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.journal.type,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.journal.type,id:"
 msgid "ID"
@@ -1432,119 +1509,39 @@ msgstr "ID"
 
 msgctxt "field:account.journal.type,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.journal.type,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.journal.type,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.journal.type,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
-
-msgctxt "field:account.journal.view,columns:"
-msgid "Columns"
-msgstr "Stolpci"
-
-msgctxt "field:account.journal.view,create_date:"
-msgid "Create Date"
-msgstr "Izdelano"
-
-msgctxt "field:account.journal.view,create_uid:"
-msgid "Create User"
-msgstr "Izdelal"
-
-msgctxt "field:account.journal.view,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.journal.view,name:"
-msgid "Name"
-msgstr "Naziv"
-
-msgctxt "field:account.journal.view,rec_name:"
-msgid "Name"
-msgstr "Ime"
-
-msgctxt "field:account.journal.view,write_date:"
-msgid "Write Date"
-msgstr "Zapisano"
-
-msgctxt "field:account.journal.view,write_uid:"
-msgid "Write User"
-msgstr "Zapisal"
-
-msgctxt "field:account.journal.view.column,create_date:"
-msgid "Create Date"
-msgstr "Izdelano"
-
-msgctxt "field:account.journal.view.column,create_uid:"
-msgid "Create User"
-msgstr "Izdelal"
-
-msgctxt "field:account.journal.view.column,field:"
-msgid "Field"
-msgstr "Polje"
-
-msgctxt "field:account.journal.view.column,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.journal.view.column,name:"
-msgid "Name"
-msgstr "Naziv"
-
-msgctxt "field:account.journal.view.column,readonly:"
-msgid "Readonly"
-msgstr "Samo za branje"
-
-msgctxt "field:account.journal.view.column,rec_name:"
-msgid "Name"
-msgstr "Ime"
-
-msgctxt "field:account.journal.view.column,required:"
-msgid "Required"
-msgstr "Obvezno"
-
-msgctxt "field:account.journal.view.column,sequence:"
-msgid "Sequence"
-msgstr "Zap.št."
-
-msgctxt "field:account.journal.view.column,view:"
-msgid "View"
-msgstr "Pogled"
-
-msgctxt "field:account.journal.view.column,write_date:"
-msgid "Write Date"
-msgstr "Zapisano"
-
-msgctxt "field:account.journal.view.column,write_uid:"
-msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.move,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move,date:"
 msgid "Effective Date"
-msgstr "Dejanski datum"
+msgstr "Date effective"
 
 msgctxt "field:account.move,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move,id:"
 msgid "ID"
@@ -1552,51 +1549,51 @@ msgstr "ID"
 
 msgctxt "field:account.move,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.move,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.move,number:"
 msgid "Number"
-msgstr "Številka"
+msgstr "Numéro"
 
 msgctxt "field:account.move,origin:"
 msgid "Origin"
-msgstr "Poreklo"
+msgstr "Origine"
 
 msgctxt "field:account.move,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.move,post_date:"
 msgid "Post Date"
-msgstr "Datum knjiženja"
+msgstr "Date de postage"
 
 msgctxt "field:account.move,post_number:"
 msgid "Post Number"
-msgstr "Številka knjižbe"
+msgstr "Numéro de postage"
 
 msgctxt "field:account.move,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.move,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move.cancel.default,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move.cancel.default,id:"
 msgid "ID"
@@ -1604,51 +1601,51 @@ msgstr "ID"
 
 msgctxt "field:account.move.line,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.move.line,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.move.line,amount_currency:"
 msgid "Amount Currency"
-msgstr "Valuta zneska"
+msgstr "Montant en devise"
 
 msgctxt "field:account.move.line,amount_currency_digits:"
 msgid "Amount Currency Digits"
-msgstr "Decimalke zneska"
+msgstr "Décimales de la devise du montant"
 
 msgctxt "field:account.move.line,amount_second_currency:"
 msgid "Amount Second Currency"
-msgstr "Znesek v drugi valuti"
+msgstr "Montant en devise secondaire"
 
 msgctxt "field:account.move.line,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move.line,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move.line,credit:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "field:account.move.line,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.move.line,date:"
 msgid "Effective Date"
-msgstr "Dejanski datum"
+msgstr "Date effective"
 
 msgctxt "field:account.move.line,debit:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "field:account.move.line,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move.line,id:"
 msgid "ID"
@@ -1656,91 +1653,95 @@ msgstr "ID"
 
 msgctxt "field:account.move.line,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.move.line,maturity_date:"
 msgid "Maturity Date"
-msgstr "Datum dospelosti"
+msgstr "Date d'échéance"
 
 msgctxt "field:account.move.line,move:"
 msgid "Move"
-msgstr "Knjižba"
+msgstr "Mouvement"
 
 msgctxt "field:account.move.line,move_description:"
 msgid "Move Description"
-msgstr "Opis knjižbe"
+msgstr "Description du mouvement"
 
 msgctxt "field:account.move.line,move_state:"
 msgid "Move State"
-msgstr "Stanje knjižbe"
+msgstr "État du mouvement"
 
 msgctxt "field:account.move.line,origin:"
 msgid "Origin"
-msgstr "Poreklo"
+msgstr "Origine"
 
 msgctxt "field:account.move.line,party:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "field:account.move.line,party_required:"
 msgid "Party Required"
-msgstr "Partner obvezen"
+msgstr "Tiers requis"
 
 msgctxt "field:account.move.line,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.move.line,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move.line,reconciliation:"
 msgid "Reconciliation"
-msgstr "Uskladitev"
+msgstr "Réconciliation"
 
 msgctxt "field:account.move.line,second_currency:"
 msgid "Second Currency"
-msgstr "Druga valuta"
+msgstr "Devise secondaire"
 
 msgctxt "field:account.move.line,second_currency_digits:"
 msgid "Second Currency Digits"
-msgstr "Decimalke druge valute"
+msgstr "Décimales de la seconde devise"
+
+msgctxt "field:account.move.line,second_currency_required:"
+msgid "Second Currency Required"
+msgstr "Devise secondaire requise"
 
 msgctxt "field:account.move.line,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.move.line,tax_lines:"
 msgid "Tax Lines"
-msgstr "Davčne postavke"
+msgstr "Lignes de taxe"
 
 msgctxt "field:account.move.line,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move.line,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move.line.template,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.move.line.template,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.move.line.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move.line.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move.line.template,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move.line.template,id:"
 msgid "ID"
@@ -1748,35 +1749,35 @@ msgstr "ID"
 
 msgctxt "field:account.move.line.template,move:"
 msgid "Move"
-msgstr "Knjižba"
+msgstr "Mouvement"
 
 msgctxt "field:account.move.line.template,operation:"
 msgid "Operation"
-msgstr "Operacija"
+msgstr "Opération"
 
 msgctxt "field:account.move.line.template,party:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "field:account.move.line.template,party_required:"
 msgid "Party Required"
-msgstr "Partner obvezen"
+msgstr "Tiers requis"
 
 msgctxt "field:account.move.line.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move.line.template,taxes:"
 msgid "Taxes"
-msgstr "Davki"
+msgstr "Taxes"
 
 msgctxt "field:account.move.line.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move.line.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move.open_journal.ask,id:"
 msgid "ID"
@@ -1784,19 +1785,19 @@ msgstr "ID"
 
 msgctxt "field:account.move.open_journal.ask,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.move.open_journal.ask,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.move.print_general_journal.start,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.move.print_general_journal.start,from_date:"
 msgid "From Date"
-msgstr "Od"
+msgstr "Date de début"
 
 msgctxt "field:account.move.print_general_journal.start,id:"
 msgid "ID"
@@ -1804,27 +1805,27 @@ msgstr "ID"
 
 msgctxt "field:account.move.print_general_journal.start,posted:"
 msgid "Posted Move"
-msgstr "Samo knjiženo"
+msgstr "Mouvement posté"
 
 msgctxt "field:account.move.print_general_journal.start,to_date:"
 msgid "To Date"
-msgstr "Do"
+msgstr "Date de fin"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,id:"
 msgid "ID"
@@ -1832,19 +1833,19 @@ msgstr "ID"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.move.reconciliation,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move.reconciliation,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move.reconciliation,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.move.reconciliation,id:"
 msgid "ID"
@@ -1852,47 +1853,47 @@ msgstr "ID"
 
 msgctxt "field:account.move.reconciliation,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.move.reconciliation,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.move.reconciliation,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move.reconciliation,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move.reconciliation,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move.template,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.move.template,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.move.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move.template,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.move.template,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.move.template,id:"
 msgid "ID"
@@ -1900,31 +1901,31 @@ msgstr "ID"
 
 msgctxt "field:account.move.template,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.move.template,keywords:"
 msgid "Keywords"
-msgstr "Ključne besede"
+msgstr "Mots-clés"
 
 msgctxt "field:account.move.template,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.move.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.move.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.move.template.create.keywords,id:"
 msgid "ID"
@@ -1936,23 +1937,23 @@ msgstr "ID"
 
 msgctxt "field:account.move.template.create.template,period:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "field:account.move.template.create.template,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.move.template.keyword,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.move.template.keyword,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.move.template.keyword,digits:"
 msgid "Digits"
-msgstr "Decimalke"
+msgstr "Chiffres"
 
 msgctxt "field:account.move.template.keyword,id:"
 msgid "ID"
@@ -1960,43 +1961,43 @@ msgstr "ID"
 
 msgctxt "field:account.move.template.keyword,move:"
 msgid "Move"
-msgstr "Knjižba"
+msgstr "Mouvement"
 
 msgctxt "field:account.move.template.keyword,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.move.template.keyword,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.move.template.keyword,required:"
 msgid "Required"
-msgstr "Obvezno"
+msgstr "Requis"
 
 msgctxt "field:account.move.template.keyword,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.move.template.keyword,string:"
 msgid "String"
-msgstr "Niz"
+msgstr "Chaîne de caractères"
 
 msgctxt "field:account.move.template.keyword,type_:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.move.template.keyword,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.move.template.keyword,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.open_chart.start,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.open_chart.start,id:"
 msgid "ID"
@@ -2004,31 +2005,27 @@ msgstr "ID"
 
 msgctxt "field:account.open_chart.start,posted:"
 msgid "Posted Moves"
-msgstr "Samo knjiženo"
-
-msgctxt "field:account.period,code:"
-msgid "Code"
-msgstr "Šifra"
+msgstr "Mouvements postés"
 
 msgctxt "field:account.period,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.period,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.period,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.period,end_date:"
 msgid "Ending Date"
-msgstr "Do"
+msgstr "Date de Fin"
 
 msgctxt "field:account.period,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.period,id:"
 msgid "ID"
@@ -2036,55 +2033,55 @@ msgstr "ID"
 
 msgctxt "field:account.period,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.period,post_move_sequence:"
 msgid "Post Move Sequence"
-msgstr "Štetje knjižb"
+msgstr "Séquence de mouvement posté"
 
 msgctxt "field:account.period,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.period,start_date:"
 msgid "Starting Date"
-msgstr "Od"
+msgstr "Date de début"
 
 msgctxt "field:account.period,state:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "field:account.period,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.period,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.period,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.reconcile.show,account:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.reconcile.show,accounts:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "field:account.reconcile.show,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.reconcile.show,date:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "field:account.reconcile.show,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.reconcile.show,id:"
 msgid "ID"
@@ -2092,83 +2089,83 @@ msgstr "ID"
 
 msgctxt "field:account.reconcile.show,journal:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "field:account.reconcile.show,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.reconcile.show,parties:"
 msgid "Parties"
-msgstr "Partnerji"
+msgstr "Tiers"
 
 msgctxt "field:account.reconcile.show,party:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "field:account.reconcile.show,write_off:"
 msgid "Write-Off"
-msgstr "Odpis"
+msgstr "Pertes et profits"
 
 msgctxt "field:account.tax,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.tax,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.tax,childs:"
 msgid "Children"
-msgstr "Poddavki"
+msgstr "Enfants"
 
 msgctxt "field:account.tax,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.tax,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax,credit_note_account:"
 msgid "Credit Note Account"
-msgstr "Konto dobropisa"
+msgstr "Compte note de crédit"
 
 msgctxt "field:account.tax,credit_note_base_code:"
 msgid "Credit Note Base Code"
-msgstr "Šifra osnove dobropisa"
+msgstr "Code base note de crédit"
 
 msgctxt "field:account.tax,credit_note_base_sign:"
 msgid "Credit Note Base Sign"
-msgstr "Predznak osnove dobropisa"
+msgstr "Signe base note de crédit"
 
 msgctxt "field:account.tax,credit_note_tax_code:"
 msgid "Credit Note Tax Code"
-msgstr "Šifra davka dobropisa"
+msgstr "Code taxe note de crédit"
 
 msgctxt "field:account.tax,credit_note_tax_sign:"
 msgid "Credit Note Tax Sign"
-msgstr "Predznak davka dobropisa"
+msgstr "Signe taxe note de crédit"
 
 msgctxt "field:account.tax,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.tax,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.tax,end_date:"
 msgid "Ending Date"
-msgstr "Do"
+msgstr "Date de fin"
 
 msgctxt "field:account.tax,group:"
 msgid "Group"
-msgstr "Skupina"
+msgstr "Groupe"
 
 msgctxt "field:account.tax,id:"
 msgid "ID"
@@ -2176,99 +2173,99 @@ msgstr "ID"
 
 msgctxt "field:account.tax,invoice_account:"
 msgid "Invoice Account"
-msgstr "Konto računa"
+msgstr "Compte de facture"
 
 msgctxt "field:account.tax,invoice_base_code:"
 msgid "Invoice Base Code"
-msgstr "Šifra osnove računa"
+msgstr "Code de base de facture"
 
 msgctxt "field:account.tax,invoice_base_sign:"
 msgid "Invoice Base Sign"
-msgstr "Predznak osnove računa"
+msgstr "Signe de base de facture"
 
 msgctxt "field:account.tax,invoice_tax_code:"
 msgid "Invoice Tax Code"
-msgstr "Šifra davka računa"
+msgstr "Code de taxe de facture"
 
 msgctxt "field:account.tax,invoice_tax_sign:"
 msgid "Invoice Tax Sign"
-msgstr "Predznak davka računa"
+msgstr "Signe de taxe de facture"
 
 msgctxt "field:account.tax,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax,parent:"
 msgid "Parent"
-msgstr "Matični davek"
+msgstr "Parent"
 
 msgctxt "field:account.tax,rate:"
 msgid "Rate"
-msgstr "Stopnja"
+msgstr "Taux"
 
 msgctxt "field:account.tax,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.tax,start_date:"
 msgid "Starting Date"
-msgstr "Od"
+msgstr "Date de début"
 
 msgctxt "field:account.tax,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.tax,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.tax,update_unit_price:"
 msgid "Update Unit Price"
-msgstr "Popravek cene"
+msgstr "Mettre à jour le prix unitaire"
 
 msgctxt "field:account.tax,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.code,active:"
 msgid "Active"
-msgstr "Aktivno"
+msgstr "Actif"
 
 msgctxt "field:account.tax.code,childs:"
 msgid "Children"
-msgstr "Podšifre"
+msgstr "Enfants"
 
 msgctxt "field:account.tax.code,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.tax.code,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.tax.code,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.code,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.code,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.tax.code,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.tax.code,id:"
 msgid "ID"
@@ -2276,35 +2273,35 @@ msgstr "ID"
 
 msgctxt "field:account.tax.code,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.code,parent:"
 msgid "Parent"
-msgstr "Matična šifra"
+msgstr "Parent"
 
 msgctxt "field:account.tax.code,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.code,sum:"
 msgid "Sum"
-msgstr "Vsota"
+msgstr "Somme"
 
 msgctxt "field:account.tax.code,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.tax.code,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.code,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.code.open_chart.start,fiscalyear:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "field:account.tax.code.open_chart.start,id:"
 msgid "ID"
@@ -2312,35 +2309,35 @@ msgstr "ID"
 
 msgctxt "field:account.tax.code.open_chart.start,method:"
 msgid "Method"
-msgstr "Metoda"
+msgstr "Méthode"
 
 msgctxt "field:account.tax.code.open_chart.start,periods:"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "field:account.tax.code.template,account:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "field:account.tax.code.template,childs:"
 msgid "Children"
-msgstr "Podšifre"
+msgstr "Enfants"
 
 msgctxt "field:account.tax.code.template,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.tax.code.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.code.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.code.template,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.tax.code.template,id:"
 msgid "ID"
@@ -2348,35 +2345,35 @@ msgstr "ID"
 
 msgctxt "field:account.tax.code.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.code.template,parent:"
 msgid "Parent"
-msgstr "Matična šifra"
+msgstr "Parent"
 
 msgctxt "field:account.tax.code.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.code.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.code.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.group,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.tax.group,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.group,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.group,id:"
 msgid "ID"
@@ -2384,47 +2381,47 @@ msgstr "ID"
 
 msgctxt "field:account.tax.group,kind:"
 msgid "Kind"
-msgstr "Vrsta"
+msgstr "Genre"
 
 msgctxt "field:account.tax.group,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.group,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.group,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.group,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.line,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.tax.line,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.tax.line,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.tax.line,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.line,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.line,currency_digits:"
 msgid "Currency Digits"
-msgstr "Decimalke"
+msgstr "Décimales de la devise"
 
 msgctxt "field:account.tax.line,id:"
 msgid "ID"
@@ -2432,39 +2429,39 @@ msgstr "ID"
 
 msgctxt "field:account.tax.line,move_line:"
 msgid "Move Line"
-msgstr "Postavka knjižbe"
+msgstr "Ligne de mouvement"
 
 msgctxt "field:account.tax.line,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.line,tax:"
 msgid "Tax"
-msgstr "Davek"
+msgstr "Taxe"
 
 msgctxt "field:account.tax.line,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.line,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.line.template,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.tax.line.template,code:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "field:account.tax.line.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.line.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.line.template,id:"
 msgid "ID"
@@ -2472,35 +2469,35 @@ msgstr "ID"
 
 msgctxt "field:account.tax.line.template,line:"
 msgid "Line"
-msgstr "Postavka"
+msgstr "Ligne"
 
 msgctxt "field:account.tax.line.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.line.template,tax:"
 msgid "Tax"
-msgstr "Davek"
+msgstr "Taxe"
 
 msgctxt "field:account.tax.line.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.line.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.rule,company:"
 msgid "Company"
-msgstr "Družba"
+msgstr "Société"
 
 msgctxt "field:account.tax.rule,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.rule,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.rule,id:"
 msgid "ID"
@@ -2508,43 +2505,43 @@ msgstr "ID"
 
 msgctxt "field:account.tax.rule,kind:"
 msgid "Kind"
-msgstr "Vrsta"
+msgstr "Genre"
 
 msgctxt "field:account.tax.rule,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.tax.rule,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.tax.rule,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.rule,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.rule.line,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.rule.line,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.rule.line,group:"
 msgid "Tax Group"
-msgstr "Davčna skupina"
+msgstr "Groupe de taxe"
 
 msgctxt "field:account.tax.rule.line,id:"
 msgid "ID"
@@ -2552,47 +2549,47 @@ msgstr "ID"
 
 msgctxt "field:account.tax.rule.line,origin_tax:"
 msgid "Original Tax"
-msgstr "Izvorni davek"
+msgstr "Taxe d'origine"
 
 msgctxt "field:account.tax.rule.line,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule.line,rule:"
 msgid "Rule"
-msgstr "Pravilo"
+msgstr "Règle"
 
 msgctxt "field:account.tax.rule.line,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.tax.rule.line,tax:"
 msgid "Substitution Tax"
-msgstr "Nadomestni davek"
+msgstr "Taxe de substitution"
 
 msgctxt "field:account.tax.rule.line,template:"
 msgid "Template"
-msgstr "Predloga"
+msgstr "Modèle"
 
 msgctxt "field:account.tax.rule.line,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.rule.line,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.rule.line.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.rule.line.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.rule.line.template,group:"
 msgid "Tax Group"
-msgstr "Davčna skupina"
+msgstr "Groupe de taxe"
 
 msgctxt "field:account.tax.rule.line.template,id:"
 msgid "ID"
@@ -2600,43 +2597,43 @@ msgstr "ID"
 
 msgctxt "field:account.tax.rule.line.template,origin_tax:"
 msgid "Original Tax"
-msgstr "Izvorni davek"
+msgstr "Taxe d'origine"
 
 msgctxt "field:account.tax.rule.line.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule.line.template,rule:"
 msgid "Rule"
-msgstr "Pravilo"
+msgstr "Règle"
 
 msgctxt "field:account.tax.rule.line.template,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.tax.rule.line.template,tax:"
 msgid "Substitution Tax"
-msgstr "Nadomestni davek"
+msgstr "Taxe de substitution"
 
 msgctxt "field:account.tax.rule.line.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.rule.line.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.rule.template,account:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "field:account.tax.rule.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.rule.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.rule.template,id:"
 msgid "ID"
@@ -2644,79 +2641,79 @@ msgstr "ID"
 
 msgctxt "field:account.tax.rule.template,kind:"
 msgid "Kind"
-msgstr "Vrsta"
+msgstr "Genre"
 
 msgctxt "field:account.tax.rule.template,lines:"
 msgid "Lines"
-msgstr "Postavke"
+msgstr "Lignes"
 
 msgctxt "field:account.tax.rule.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.rule.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.rule.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
 
 msgctxt "field:account.tax.template,account:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "field:account.tax.template,amount:"
 msgid "Amount"
-msgstr "Znesek"
+msgstr "Montant"
 
 msgctxt "field:account.tax.template,childs:"
 msgid "Children"
-msgstr "Poddavki"
+msgstr "Enfants"
 
 msgctxt "field:account.tax.template,create_date:"
 msgid "Create Date"
-msgstr "Izdelano"
+msgstr "Date de création"
 
 msgctxt "field:account.tax.template,create_uid:"
 msgid "Create User"
-msgstr "Izdelal"
+msgstr "Créé par"
 
 msgctxt "field:account.tax.template,credit_note_account:"
 msgid "Credit Note Account"
-msgstr "Konto dobropisa"
+msgstr "Compte note de crédit"
 
 msgctxt "field:account.tax.template,credit_note_base_code:"
 msgid "Credit Note Base Code"
-msgstr "Šifra osnove dobropisa"
+msgstr "Code base note de crédit"
 
 msgctxt "field:account.tax.template,credit_note_base_sign:"
 msgid "Credit Note Base Sign"
-msgstr "Predznak osnove dobropisa"
+msgstr "Signe base note de crédit"
 
 msgctxt "field:account.tax.template,credit_note_tax_code:"
 msgid "Credit Note Tax Code"
-msgstr "Šifra davka dobropisa"
+msgstr "Code taxe note de crédit"
 
 msgctxt "field:account.tax.template,credit_note_tax_sign:"
 msgid "Credit Note Tax Sign"
-msgstr "Predznak davka dobropisa"
+msgstr "Signe taxe note de crédit"
 
 msgctxt "field:account.tax.template,description:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "field:account.tax.template,end_date:"
 msgid "Ending Date"
-msgstr "Do"
+msgstr "Date de fin"
 
 msgctxt "field:account.tax.template,group:"
 msgid "Group"
-msgstr "Skupina"
+msgstr "Groupe"
 
 msgctxt "field:account.tax.template,id:"
 msgid "ID"
@@ -2724,67 +2721,135 @@ msgstr "ID"
 
 msgctxt "field:account.tax.template,invoice_account:"
 msgid "Invoice Account"
-msgstr "Konto računa"
+msgstr "Compte de facture"
 
 msgctxt "field:account.tax.template,invoice_base_code:"
 msgid "Invoice Base Code"
-msgstr "Šifra osnove računa"
+msgstr "Code de base de facture"
 
 msgctxt "field:account.tax.template,invoice_base_sign:"
 msgid "Invoice Base Sign"
-msgstr "Predznak osnove računa"
+msgstr "Signe de base de facture"
 
 msgctxt "field:account.tax.template,invoice_tax_code:"
 msgid "Invoice Tax Code"
-msgstr "Šifra davka računa"
+msgstr "Code de taxe de facture"
 
 msgctxt "field:account.tax.template,invoice_tax_sign:"
 msgid "Invoice Tax Sign"
-msgstr "Predznak davka računa"
+msgstr "Signe de taxe de facture"
 
 msgctxt "field:account.tax.template,name:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "field:account.tax.template,parent:"
 msgid "Parent"
-msgstr "Matični davek"
+msgstr "Parent"
 
 msgctxt "field:account.tax.template,rate:"
 msgid "Rate"
-msgstr "Stopnja"
+msgstr "Taux"
 
 msgctxt "field:account.tax.template,rec_name:"
 msgid "Name"
-msgstr "Ime"
+msgstr "Nom"
 
 msgctxt "field:account.tax.template,sequence:"
 msgid "Sequence"
-msgstr "Zap.št."
+msgstr "Séquence"
 
 msgctxt "field:account.tax.template,start_date:"
 msgid "Starting Date"
-msgstr "Od"
+msgstr "Date de début"
 
 msgctxt "field:account.tax.template,type:"
 msgid "Type"
-msgstr "Tip"
+msgstr "Type"
 
 msgctxt "field:account.tax.template,update_unit_price:"
 msgid "Update Unit Price"
-msgstr "Popravek cene"
+msgstr "Mettre à jour le prix unitaire"
 
 msgctxt "field:account.tax.template,write_date:"
 msgid "Write Date"
-msgstr "Zapisano"
+msgstr "Date de mise à jour"
 
 msgctxt "field:account.tax.template,write_uid:"
 msgid "Write User"
-msgstr "Zapisal"
+msgstr "Mis à jour par"
+
+msgctxt "field:account.tax.test,currency:"
+msgid "Currency"
+msgstr "Devise"
+
+msgctxt "field:account.tax.test,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:account.tax.test,quantity:"
+msgid "Quantity"
+msgstr "Quantité"
+
+msgctxt "field:account.tax.test,result:"
+msgid "Result"
+msgstr "Résultat"
+
+msgctxt "field:account.tax.test,tax_date:"
+msgid "Date"
+msgstr "Date"
+
+msgctxt "field:account.tax.test,taxes:"
+msgid "Taxes"
+msgstr "Taxes"
+
+msgctxt "field:account.tax.test,unit_price:"
+msgid "Unit Price"
+msgstr "Prix unitaire"
+
+msgctxt "field:account.tax.test.result,account:"
+msgid "Account"
+msgstr "Compte"
+
+msgctxt "field:account.tax.test.result,amount:"
+msgid "Amount"
+msgstr "Montant"
+
+msgctxt "field:account.tax.test.result,base:"
+msgid "Base"
+msgstr "Base"
+
+msgctxt "field:account.tax.test.result,base_code:"
+msgid "Base Code"
+msgstr "Code base"
+
+msgctxt "field:account.tax.test.result,base_sign:"
+msgid "Base Sign"
+msgstr "Signe base"
+
+msgctxt "field:account.tax.test.result,description:"
+msgid "Description"
+msgstr "Description"
+
+msgctxt "field:account.tax.test.result,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:account.tax.test.result,tax:"
+msgid "Tax"
+msgstr "Taxe"
+
+msgctxt "field:account.tax.test.result,tax_code:"
+msgid "Tax Code"
+msgstr "Code de taxe"
+
+msgctxt "field:account.tax.test.result,tax_sign:"
+msgid "Tax Sign"
+msgstr "Signe taxe"
 
 msgctxt "field:account.update_chart.start,account:"
 msgid "Root Account"
-msgstr "Korenski konto"
+msgstr "Compte racine"
 
 msgctxt "field:account.update_chart.start,id:"
 msgid "ID"
@@ -2796,980 +2861,982 @@ msgstr "ID"
 
 msgctxt "field:party.party,account_payable:"
 msgid "Account Payable"
-msgstr "Konto obveznosti"
+msgstr "Compte fournisseur"
 
 msgctxt "field:party.party,account_receivable:"
 msgid "Account Receivable"
-msgstr "Konto terjatev"
+msgstr "Compte client"
 
 msgctxt "field:party.party,customer_tax_rule:"
 msgid "Customer Tax Rule"
-msgstr "Davčno pravilo kupca"
+msgstr "Règle de taxe client"
 
 msgctxt "field:party.party,payable:"
 msgid "Payable"
-msgstr "Obveznosti"
+msgstr "À payer"
 
 msgctxt "field:party.party,payable_today:"
 msgid "Payable Today"
-msgstr "Trenutne obveznosti"
+msgstr "À payer aujourd'hui"
 
 msgctxt "field:party.party,receivable:"
 msgid "Receivable"
-msgstr "Terjatve"
+msgstr "À recevoir"
 
 msgctxt "field:party.party,receivable_today:"
 msgid "Receivable Today"
-msgstr "Trenutne terjatve"
+msgstr "À recevoir aujourd'hui"
 
 msgctxt "field:party.party,supplier_tax_rule:"
 msgid "Supplier Tax Rule"
-msgstr "Davčno pravilo dobavitelja"
+msgstr "Règle de taxe fournisseur"
 
 msgctxt "help:account.account,general_ledger_balance:"
 msgid "Display only the balance in the general ledger report"
-msgstr "Prikaži samo bilanco na izpisu glavne knjige"
+msgstr "Afficher seulement la balance dans le grand livre"
 
 msgctxt "help:account.account,reconcile:"
 msgid ""
 "Allow move lines of this account \n"
 "to be reconciled."
-msgstr "Dopušča usklajevanje knjiženih postavk tega konta."
+msgstr ""
+"Autoriser la réconciliation \n"
+"des ligne de mouvement de ce compte."
 
 msgctxt "help:account.account,second_currency:"
 msgid ""
 "Force all moves for this account \n"
 "to have this secondary currency."
-msgstr "Vsem vknjižbam za ta konto prisili uporabo te druge valute."
+msgstr ""
+"Force tout les mouvements pour ce compte\n"
+"à avoir cette devise secondaire."
 
 msgctxt "help:account.account,taxes:"
 msgid ""
 "Default tax for manual encoding of move lines \n"
 "for journal types: \"expense\" and \"revenue\""
 msgstr ""
-"Privzeti davek pri ročno vnešenih postavkah \n"
-"za dnevnike tipa \"odhodek\" in \"prihodek\""
+"Taxe par défaut pour les lignes de mouvement manuelles\n"
+"pour le type de journal: « charge » et « produit »"
 
 msgctxt "help:account.account.template,general_ledger_balance:"
 msgid "Display only the balance in the general ledger report"
-msgstr "Prikaži samo bilanco na izpisu glavne knjige"
-
-msgctxt "help:account.account.type,sequence:"
-msgid "Use to order the account type"
-msgstr "Za razvrščanje tipov kontov"
+msgstr "Afficher seulement la balance dans le grand livre"
 
 msgctxt "help:account.aged_balance.context,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.balance_sheet.context,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.general_ledger.account.context,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.general_ledger.line.context,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.income_statement.context,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.move,post_number:"
 msgid "Also known as Folio Number"
-msgstr "Znana tudi kot 'Folio' številka"
+msgstr "Aussi connu comme numéro de folio"
 
 msgctxt "help:account.move.line,amount_second_currency:"
 msgid "The amount expressed in a second currency"
-msgstr "Znesek v drugotni valuti"
+msgstr "Le montant exprimé dans la devise secondaire"
 
 msgctxt "help:account.move.line,maturity_date:"
 msgid ""
 "This field is used for payable and receivable lines. \n"
 "You can put the limit date for the payment."
 msgstr ""
-"To polje se uporablja za postavke obveznosti in terjatev.\n"
-"Vstavite lahko datum zapadlosti plačila."
+"Ce champ est utilisé pour les lignes à payer et à recevoir. \n"
+"Vous pouvez mettre la date limite pour le paiement."
 
 msgctxt "help:account.move.line,second_currency:"
 msgid "The second currency"
-msgstr "Druga valuta"
+msgstr "La devise secondaire"
 
 msgctxt "help:account.move.line.template,description:"
 msgid "Keywords values substitutions are identified by braces ('{' and '}')"
 msgstr ""
-"Zamenjave ključnih besed so označene z vijugastimi oklepaji ('{' in '}')"
+"Les substitutions des valeurs des mots-clés sont identifiées par des "
+"accolades (« { » et « } »)"
 
 msgctxt "help:account.move.print_general_journal.start,posted:"
 msgid "Show only posted move"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.move.reconciliation,date:"
 msgid "Highest date of the reconciled lines"
-msgstr "Najstarejši datum v usklajenih postavkah"
+msgstr "La plus grande date des lignes réconciliées"
 
 msgctxt "help:account.move.template,date:"
 msgid "Leave empty for today"
-msgstr "Za današnji dan pusti prazno"
+msgstr "Laissez vide pour aujourd'hui"
 
 msgctxt "help:account.move.template,description:"
 msgid "Keyword values substitutions are identified by braces ('{' and '}')"
 msgstr ""
-"Zamenjave ključnih besed so označene z vijugastimi oklepaji ('{' in '}')"
+"Les substitutions des valeurs des mots-clés sont identifiées par des "
+"accolades (« { » et « } »)"
 
 msgctxt "help:account.open_chart.start,fiscalyear:"
 msgid "Leave empty for all open fiscal year"
-msgstr "Pusti prazno za vsa odpra poslovna leta"
+msgstr "Laisser vide pour toute les années fiscales ouvertes"
 
 msgctxt "help:account.open_chart.start,posted:"
 msgid "Show posted moves only"
-msgstr "Prikaži samo knjižene postavke"
+msgstr "Montrer seulement les mouvements postés"
 
 msgctxt "help:account.tax,amount:"
 msgid "In company's currency"
-msgstr "V valuti družbe"
+msgstr "Dans la devise de la société"
 
 msgctxt "help:account.tax,credit_note_base_sign:"
 msgid "Usualy 1 or -1"
-msgstr "Ponavadi 1 ali -1"
+msgstr "Habituellement 1 ou -1"
 
 msgctxt "help:account.tax,credit_note_tax_sign:"
 msgid "Usualy 1 or -1"
-msgstr "Ponavadi 1 ali -1"
+msgstr "Habituellement 1 ou -1"
 
 msgctxt "help:account.tax,description:"
 msgid "The name that will be used in reports"
-msgstr "Opis se uporablja v poročilih"
+msgstr "Le nom qui sera utilisé dans les rapports"
 
 msgctxt "help:account.tax,invoice_base_sign:"
 msgid "Usualy 1 or -1"
-msgstr "Ponavadi 1 ali -1"
+msgstr "Habituellement 1 ou -1"
 
 msgctxt "help:account.tax,invoice_tax_sign:"
 msgid "Usualy 1 or -1"
-msgstr "Ponavadi 1 ali -1"
-
-msgctxt "help:account.tax,sequence:"
-msgid "Use to order the taxes"
-msgstr "Za razvrščanje davkov"
+msgstr "Habituellement 1 ou -1"
 
 msgctxt "help:account.tax,update_unit_price:"
 msgid ""
 "If checked then the unit price for further tax computation will be modified "
 "by this tax"
-msgstr "Če je vključeno, se bo cena osveževala pri bodočih izračunih davkov"
+msgstr ""
+"Si coché alors le prix unitaire est modifié par cette taxe pour la suite du "
+"calcule de taxe"
 
 msgctxt "help:account.tax.code.open_chart.start,fiscalyear:"
 msgid "Leave empty for all open fiscal year"
-msgstr "Prazno za vsa odprta poslovna leta"
+msgstr "Laisser vide pour toute les années fiscales ouvertes"
 
 msgctxt "help:account.tax.code.open_chart.start,periods:"
 msgid "Leave empty for all periods of all open fiscal year"
-msgstr "Prazno za vsa obdobja vse odprtih poslovnih let"
+msgstr "Laisser vide pour toute les périodes et années fiscales ouvertes"
 
 msgctxt "help:account.tax.rule.line,origin_tax:"
 msgid ""
 "If the original tax is filled, the rule will be applied only for this tax."
-msgstr "Če je izvorni davek vnešen, velja predpis samo za ta davek."
+msgstr ""
+"Si la taxe d'origine est spécifiée, la règle ne sera appliquée que sur "
+"celle-ci."
 
 msgctxt "help:account.tax.rule.line.template,origin_tax:"
 msgid ""
 "If the original tax template is filled, the rule will be applied only for "
 "this tax template."
 msgstr ""
-"Če je izvorna predloga davka vnešena, velja predpis samo za to predlogo "
-"davka"
+"Si le modèle de taxe d'origine est spécifié, la règle ne sera appliquée que "
+"sur celui-ci."
 
 msgctxt "help:party.party,customer_tax_rule:"
 msgid "Apply this rule on taxes when party is customer."
-msgstr "Če je partner kupec, uporabi ta davčni predpis."
+msgstr "Appliquer cette règle sur les taxes si le tiers est un client."
 
 msgctxt "help:party.party,supplier_tax_rule:"
 msgid "Apply this rule on taxes when party is supplier."
-msgstr "Če je partner dobavitelj, uporabi ta davčni predpis."
+msgstr "Appliquer cette règle sur les taxes si le tiers est un fournisseur."
 
 msgctxt "model:account.account,name:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "model:account.account-account.tax,name:"
 msgid "Account - Tax"
-msgstr "Konto - Davek"
+msgstr "Compte - taxe"
 
 msgctxt "model:account.account.deferral,name:"
 msgid "Account Deferral"
-msgstr "Odlog"
+msgstr "Compte Report"
 
 msgctxt "model:account.account.template,name:"
 msgid "Account Template"
-msgstr "Predloga konta"
+msgstr "Compte modèle"
 
 msgctxt "model:account.account.template-account.tax.template,name:"
 msgid "Account Template - Tax Template"
-msgstr "Predloga konta - Predloga davka"
+msgstr "Modèle de compte - Modèle de la taxe"
 
 msgctxt "model:account.account.type,name:"
 msgid "Account Type"
-msgstr "Tip konta"
+msgstr "Type de compte"
 
 msgctxt "model:account.account.type.template,name:"
 msgid "Account Type Template"
-msgstr "Predloga tipa konta"
+msgstr "Modèle de type de compte"
 
 msgctxt "model:account.aged_balance,name:"
 msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
+msgstr "Balance âgée"
 
 msgctxt "model:account.aged_balance.context,name:"
 msgid "Aged Balance Context"
-msgstr "Kontekst bilance zapadlih postavk"
+msgstr "Contexte de la balance âgée"
 
 msgctxt "model:account.balance_sheet.context,name:"
 msgid "Balance Sheet Context"
-msgstr "Kontekst bilance stanja"
+msgstr "Contexte du bilan"
 
 msgctxt "model:account.configuration,name:"
 msgid "Account Configuration"
-msgstr "Kontna konfiguracija"
+msgstr "Configuration comptable"
 
 msgctxt "model:account.configuration.tax_rounding,name:"
 msgid "Account Configuration Tax Rounding"
-msgstr "Konfiguracija zaokroževanja davka"
+msgstr "Configuration comptable de l'arrondi de taxe"
 
 msgctxt "model:account.create_chart.account,name:"
 msgid "Create Chart"
-msgstr "Izdelava načrta"
+msgstr "Créer un plan"
 
 msgctxt "model:account.create_chart.properties,name:"
 msgid "Create Chart"
-msgstr "Izdelava načrta"
+msgstr "Créer un plan"
 
 msgctxt "model:account.create_chart.start,name:"
 msgid "Create Chart"
-msgstr "Izdelava načrta"
+msgstr "Créer un plan"
 
 msgctxt "model:account.fiscalyear,name:"
 msgid "Fiscal Year"
-msgstr "Poslovno leto"
+msgstr "Année fiscale"
 
 msgctxt "model:account.fiscalyear-account.move.line,name:"
 msgid "Fiscal Year - Move Line"
-msgstr "Poslovno leto - Knjižbe"
+msgstr "Année fiscale - Ligne de mouvement"
 
 msgctxt "model:account.fiscalyear.balance_non_deferral.start,name:"
 msgid "Balance Non-Deferral"
-msgstr "Razknjižba neodložljivih kontov"
+msgstr "Équilibrer les non-reports"
 
 msgctxt "model:account.fiscalyear.close.start,name:"
 msgid "Close Fiscal Year"
-msgstr "Zaključi poslovno leto"
+msgstr "Clôturer une année fiscale"
 
 msgctxt "model:account.general_ledger.account,name:"
 msgid "General Ledger Account"
-msgstr "Konto glavne knjige"
+msgstr "Compte du grand livre"
 
 msgctxt "model:account.general_ledger.account.context,name:"
 msgid "General Ledger Account Context"
-msgstr "Kontekst konta glavne knjige"
+msgstr "Contexte des comptes du grand livre"
 
 msgctxt "model:account.general_ledger.line,name:"
 msgid "General Ledger Line"
-msgstr "Postavka glavne knjige"
+msgstr "Ligne du grand livre"
 
 msgctxt "model:account.general_ledger.line.context,name:"
 msgid "General Ledger Line Context"
-msgstr "Kontekst postavke glavne knjige"
+msgstr "Contexte des lignes du grand livre"
 
 msgctxt "model:account.income_statement.context,name:"
 msgid "Income Statement Context"
-msgstr "Kontekst izkaza poslovnega izzida"
+msgstr "Contexte du compte de résultat"
 
 msgctxt "model:account.journal,name:"
 msgid "Journal"
-msgstr "Dnevnik"
+msgstr "Journal"
 
 msgctxt "model:account.journal,name:journal_cash"
 msgid "Cash"
-msgstr "Denar"
+msgstr "Cash"
 
 msgctxt "model:account.journal,name:journal_expense"
 msgid "Expense"
-msgstr "Odhodki"
+msgstr "Charge"
 
 msgctxt "model:account.journal,name:journal_revenue"
 msgid "Revenue"
-msgstr "Prihodki"
+msgstr "Produit"
 
 msgctxt "model:account.journal,name:journal_stock"
 msgid "Stock"
-msgstr "Zaloga"
+msgstr "Stock"
 
-msgctxt "model:account.journal.open_cash.start,name:"
-msgid "Open Journal Cash"
-msgstr "Odpri dnevnik gotovine"
+msgctxt "model:account.journal.open_cash.context,name:"
+msgid "Journal Cash Context"
+msgstr "Contexte du journal de cash"
 
 msgctxt "model:account.journal.period,name:"
 msgid "Journal - Period"
-msgstr "Dnevnik po odbobjih"
+msgstr "Journal - période"
 
 msgctxt "model:account.journal.type,name:"
 msgid "Journal Type"
-msgstr "Tip dnevnika"
+msgstr "Type de journal"
 
 msgctxt "model:account.journal.type,name:journal_type_cash"
 msgid "Cash"
-msgstr "Denar"
+msgstr "Cash"
 
 msgctxt "model:account.journal.type,name:journal_type_expense"
 msgid "Expense"
-msgstr "Odhodki"
+msgstr "Charge"
 
 msgctxt "model:account.journal.type,name:journal_type_general"
 msgid "General"
-msgstr "Splošno"
+msgstr "Général"
 
 msgctxt "model:account.journal.type,name:journal_type_revenue"
 msgid "Revenue"
-msgstr "Prihodki"
+msgstr "Produit"
 
 msgctxt "model:account.journal.type,name:journal_type_situation"
 msgid "Situation"
-msgstr "Situacija"
+msgstr "Situation"
 
 msgctxt "model:account.journal.type,name:journal_type_write_off"
 msgid "Write-Off"
-msgstr "Odpis"
-
-msgctxt "model:account.journal.view,name:"
-msgid "Journal View"
-msgstr "Vpogled v dnevnik"
-
-msgctxt "model:account.journal.view.column,name:"
-msgid "Journal View Column"
-msgstr "Stolpec vpogleda"
+msgstr "Pertes et profits"
 
 msgctxt "model:account.move,name:"
 msgid "Account Move"
-msgstr "Knjižba"
+msgstr "Mouvement comptable"
 
 msgctxt "model:account.move.cancel.default,name:"
 msgid "Cancel Moves"
-msgstr "Preklic knjižb"
+msgstr "Annuler les mouvements"
 
 msgctxt "model:account.move.line,name:"
 msgid "Account Move Line"
-msgstr "Postavka knjižbe"
+msgstr "Ligne de mouvement comptable"
 
 msgctxt "model:account.move.line.template,name:"
 msgid "Account Move Line Template"
-msgstr "Predloga postavke knjižbe"
+msgstr "Modèle de ligne de mouvement comptable"
 
 msgctxt "model:account.move.open_journal.ask,name:"
 msgid "Open Journal Ask"
-msgstr "Odpri dnevnik"
+msgstr "Ouvrir le journal - Demande"
 
 msgctxt "model:account.move.print_general_journal.start,name:"
 msgid "Print General Journal"
-msgstr "Izpis glavnega dnevnika"
+msgstr "Imprimer le journal général"
 
 msgctxt "model:account.move.reconcile_lines.writeoff,name:"
 msgid "Reconcile Lines Write-Off"
-msgstr "Odpis usklajenih postavk"
+msgstr "Réconcilier les lignes de pertes et profits"
 
 msgctxt "model:account.move.reconciliation,name:"
 msgid "Account Move Reconciliation Lines"
-msgstr "Usklajene postavke knjižbe"
+msgstr "Lignes de reconciliation de mouvement comptable"
 
 msgctxt "model:account.move.template,name:"
 msgid "Account Move Template"
-msgstr "Predloga knjižbe"
+msgstr "Modèle de mouvement comptable"
 
 msgctxt "model:account.move.template.create.keywords,name:"
 msgid "Create Move from Template"
-msgstr "Izdelava knjižbe iz predloge"
+msgstr "Créer un mouvement depuis un modèle"
 
 msgctxt "model:account.move.template.create.template,name:"
 msgid "Create Move from Template"
-msgstr "Izdelava knjižbe iz predloge"
+msgstr "Créer un mouvement depuis un modèle"
 
 msgctxt "model:account.move.template.keyword,name:"
 msgid "Account Move Template Keyword"
-msgstr "Ključna beseda predloge knjižbe"
+msgstr "Mot-clé de modèle de mouvement comptable"
 
 msgctxt "model:account.open_chart.start,name:"
 msgid "Open Chart of Accounts"
-msgstr "Odpri kontni načrt"
+msgstr "Ouvrir le plan comptable"
 
 msgctxt "model:account.period,name:"
 msgid "Period"
-msgstr "Obdobje"
+msgstr "Période"
 
 msgctxt "model:account.reconcile.show,name:"
 msgid "Reconcile"
-msgstr "Uskladitev"
+msgstr "Réconcilier"
 
 msgctxt "model:account.tax,name:"
 msgid "Account Tax"
-msgstr "Davek"
+msgstr "Compte de taxe"
 
 msgctxt "model:account.tax.code,name:"
 msgid "Tax Code"
-msgstr "Davčna šifra"
+msgstr "Code de taxe"
 
 msgctxt "model:account.tax.code.open_chart.start,name:"
 msgid "Open Chart of Tax Codes"
-msgstr "Odpri načrt davčnih šifer"
+msgstr "Ouvrir le plan de codes de taxe"
 
 msgctxt "model:account.tax.code.template,name:"
 msgid "Tax Code Template"
-msgstr "Predloga davčne šifre"
+msgstr "Modèle de code de taxe"
 
 msgctxt "model:account.tax.group,name:"
 msgid "Tax Group"
-msgstr "Davčna skupina"
+msgstr "Groupe de taxe"
 
 msgctxt "model:account.tax.line,name:"
 msgid "Tax Line"
-msgstr "Davčna postavka"
+msgstr "Ligne de taxe"
 
 msgctxt "model:account.tax.line.template,name:"
 msgid "Account Tax Line Template"
-msgstr "Predloga davčne postavke"
+msgstr "Modèle de ligne de taxe comptable"
 
 msgctxt "model:account.tax.rule,name:"
 msgid "Tax Rule"
-msgstr "Davčno pravilo"
+msgstr "Règle de taxe"
 
 msgctxt "model:account.tax.rule.line,name:"
 msgid "Tax Rule Line"
-msgstr "Postavka davčnega pravila"
+msgstr "Ligne de règle de taxe"
 
 msgctxt "model:account.tax.rule.line.template,name:"
 msgid "Tax Rule Line Template"
-msgstr "Predloga postavke davčnega pravila"
+msgstr "Modèle de ligne de règle de taxe"
 
 msgctxt "model:account.tax.rule.template,name:"
 msgid "Tax Rule Template"
-msgstr "Predloga davčnega pravila"
+msgstr "Modèle de règle de taxe"
 
 msgctxt "model:account.tax.template,name:"
 msgid "Account Tax Template"
-msgstr "Predloga davka"
+msgstr "Modèle de compte de taxe"
+
+msgctxt "model:account.tax.test,name:"
+msgid "Test Tax"
+msgstr "Test de taxe"
+
+msgctxt "model:account.tax.test.result,name:"
+msgid "Test Tax"
+msgstr "Test de taxe"
 
 msgctxt "model:account.update_chart.start,name:"
 msgid "Update Chart"
-msgstr "Posodobitev načrta"
+msgstr "Mise à jour d'un plan"
 
 msgctxt "model:account.update_chart.succeed,name:"
 msgid "Update Chart"
-msgstr "Posodobitev načrta"
+msgstr "Mise à jour d'un plan"
 
 msgctxt "model:ir.action,name:act_account_balance_sheet_tree"
 msgid "Balance Sheet"
-msgstr "Bilanca stanja"
+msgstr "Bilan"
 
 msgctxt "model:ir.action,name:act_account_income_statement_tree"
 msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
+msgstr "Compte de résultats"
 
 msgctxt "model:ir.action,name:act_account_list"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.action,name:act_account_list2"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.action,name:act_account_template_tree"
 msgid "Account Templates"
-msgstr "Predloge kontov"
+msgstr "Modèles de compte"
 
 msgctxt "model:ir.action,name:act_account_tree"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.action,name:act_account_tree2"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.action,name:act_account_type_list"
 msgid "Account Types"
-msgstr "Tip kontov"
+msgstr "Types de compte"
 
 msgctxt "model:ir.action,name:act_account_type_template_tree"
 msgid "Account Type Templates"
-msgstr "Predloge tipov kontov"
+msgstr "Modèles de type de compte"
 
 msgctxt "model:ir.action,name:act_account_type_tree"
 msgid "Account Types"
-msgstr "Tipi kontov"
+msgstr "Types de compte"
 
 msgctxt "model:ir.action,name:act_aged_balance_list"
 msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
+msgstr "Balance âgée"
 
 msgctxt "model:ir.action,name:act_balance_non_deferral"
 msgid "Balance Non-Deferral"
-msgstr "Razknjižba neodložljivih kontov"
+msgstr "Équilibrer les non-reports"
 
 msgctxt "model:ir.action,name:act_cancel_moves"
 msgid "Cancel Moves"
-msgstr "Preklic knjižb"
+msgstr "Annuler les mouvements"
 
 msgctxt "model:ir.action,name:act_close_fiscalyear"
 msgid "Close Fiscal Year"
-msgstr "Zaključi poslovno leto"
+msgstr "Clôturer une année fiscale"
 
 msgctxt "model:ir.action,name:act_code_tax_open_chart"
 msgid "Open Chart of Tax Codes"
-msgstr "Odpri načrt šifer davkov"
+msgstr "Ouvrir le plan de taxes"
 
 msgctxt "model:ir.action,name:act_configuration_form"
 msgid "Account Configuration"
-msgstr "Kontna konfiguracija"
+msgstr "Configuration comptable"
 
 msgctxt "model:ir.action,name:act_fiscalyear_form"
 msgid "Fiscal Years"
-msgstr "Poslovna leta"
+msgstr "Années fiscales"
 
 msgctxt "model:ir.action,name:act_general_ledger_account_form"
 msgid "General Ledger - Accounts"
-msgstr "Konti glavne knjige"
+msgstr "Grand livre - Comptes"
 
 msgctxt "model:ir.action,name:act_general_ledger_line_form"
 msgid "General Ledger - Lines"
-msgstr "Postavke glavne knjige"
+msgstr "Grand livre - Lignes"
 
 msgctxt "model:ir.action,name:act_journal_form"
 msgid "Journals"
-msgstr "Dnevniki"
+msgstr "Journaux"
 
 msgctxt "model:ir.action,name:act_journal_open_cash"
 msgid "Journals Cash"
-msgstr "Dnevniki gotovine"
+msgstr "Journaux de cash"
 
 msgctxt "model:ir.action,name:act_journal_period_close"
 msgid "Close Journals - Periods"
-msgstr "Zaključi dnevnike po obdobjih"
+msgstr "Clôturer les journaux - périodes"
 
 msgctxt "model:ir.action,name:act_journal_period_form"
 msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
+msgstr "Journaux - périodes"
 
 msgctxt "model:ir.action,name:act_journal_period_reopen"
 msgid "Re-Open Journals - Periods"
-msgstr "Znova odpri dnevnike po obdobjih"
+msgstr "Réouvrir les journaux - périodes"
 
 msgctxt "model:ir.action,name:act_journal_period_tree"
 msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
+msgstr "Journaux - périodes"
 
 msgctxt "model:ir.action,name:act_journal_period_tree2"
 msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
+msgstr "Journaux - périodes"
 
 msgctxt "model:ir.action,name:act_journal_type_form"
 msgid "Journal Types"
-msgstr "Tipi dnevnikov"
-
-msgctxt "model:ir.action,name:act_journal_view_form"
-msgid "Journal Views"
-msgstr "Dnevniški vpogledi"
+msgstr "Types de journaux"
 
 msgctxt "model:ir.action,name:act_move_form"
 msgid "Account Moves"
-msgstr "Knjižbe"
+msgstr "Mouvements comptables"
 
 msgctxt "model:ir.action,name:act_move_line_form"
 msgid "Account Move Lines"
-msgstr "Postavke knjižb"
+msgstr "Lignes de mouvement comptable"
 
 msgctxt "model:ir.action,name:act_move_line_payable_receivable"
 msgid "Payable/Receivable Lines"
-msgstr "Postavke obveznosti/terjatev"
+msgstr "Lignes à payer/recevoir"
 
 msgctxt "model:ir.action,name:act_move_reconciliation_lines"
 msgid "Reconciliation Lines"
-msgstr "Postavke uskladitve"
+msgstr "Lignes de réconciliation"
 
 msgctxt "model:ir.action,name:act_move_template_create"
 msgid "Create Move from Template"
-msgstr "Izdelava knjižbe iz predloge"
+msgstr "Créer un mouvement depuis un modèle"
 
 msgctxt "model:ir.action,name:act_move_template_form"
 msgid "Account Move Template"
-msgstr "Predloga knjižbe"
+msgstr "Modèle de mouvement comptable"
 
 msgctxt "model:ir.action,name:act_open_account"
 msgid "Open Move Account"
-msgstr "Odpri konto postavke"
+msgstr "Ouvrir le compte"
 
 msgctxt "model:ir.action,name:act_open_chart"
 msgid "Open Chart of Accounts"
-msgstr "Odpri kontni načrt"
+msgstr "Ouvrir le plan comptable"
 
 msgctxt "model:ir.action,name:act_open_journal"
 msgid "Open Journal"
-msgstr "Odpri dnevnik"
+msgstr "Ouvrir journal"
 
 msgctxt "model:ir.action,name:act_open_tax_code"
 msgid "Open Tax Code"
-msgstr "Odpri davčno šifro"
+msgstr "Ouvrir le code de taxe"
 
 msgctxt "model:ir.action,name:act_open_type"
 msgid "Open Type"
-msgstr "Odpri tip"
+msgstr "Ouvrir les types"
 
 msgctxt "model:ir.action,name:act_period_close"
 msgid "Close Periods"
-msgstr "Zaključi obdobja"
+msgstr "Clôturer les périodes"
 
 msgctxt "model:ir.action,name:act_period_form"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "model:ir.action,name:act_period_form2"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "model:ir.action,name:act_period_reopen"
 msgid "Re-Open Periods"
-msgstr "Znova odpri obdobja"
+msgstr "Réouvrir les périodes"
 
 msgctxt "model:ir.action,name:act_reconcile"
 msgid "Reconcile Accounts"
-msgstr "Usklajevanje kontov"
+msgstr "Reconcilier les comptes"
 
 msgctxt "model:ir.action,name:act_reconcile_lines"
 msgid "Reconcile Lines"
-msgstr "Uskladi postavke"
+msgstr "Réconcilier les lignes"
 
 msgctxt "model:ir.action,name:act_tax_code_list"
 msgid "Tax Codes"
-msgstr "Davčne šifre"
+msgstr "Codes de taxe"
 
 msgctxt "model:ir.action,name:act_tax_code_template_tree"
 msgid "Tax Codes Templates"
-msgstr "Predloge davčnih šifer"
+msgstr "Modèles de codes de taxe"
 
 msgctxt "model:ir.action,name:act_tax_code_tree"
 msgid "Tax Codes"
-msgstr "Davčne šifre"
+msgstr "Codes de taxe"
 
 msgctxt "model:ir.action,name:act_tax_code_tree2"
 msgid "Tax Codes"
-msgstr "Davčne šifre"
+msgstr "Codes de taxe"
 
 msgctxt "model:ir.action,name:act_tax_group_form"
 msgid "Tax Groups"
-msgstr "Davčne skupine"
+msgstr "Groupes de taxes"
 
 msgctxt "model:ir.action,name:act_tax_line_form"
 msgid "Tax Lines"
-msgstr "Davčne postavke"
+msgstr "Lignes de taxe"
 
 msgctxt "model:ir.action,name:act_tax_list"
 msgid "Taxes"
-msgstr "Davki"
+msgstr "Taxes"
 
 msgctxt "model:ir.action,name:act_tax_rule_form"
 msgid "Tax Rules"
-msgstr "Davčna pravila"
+msgstr "Règles de taxe"
 
 msgctxt "model:ir.action,name:act_tax_rule_template_form"
 msgid "Tax Rule Templates"
-msgstr "Predloge davčnih pravil"
+msgstr "Modèles de règle de taxe"
 
 msgctxt "model:ir.action,name:act_tax_template_list"
 msgid "Taxes Templates"
-msgstr "Predloge davkov"
+msgstr "Modèles de taxes"
 
 msgctxt "model:ir.action,name:act_unreconcile_lines"
 msgid "Unreconcile Lines"
-msgstr "Odpravi uskladitev postavk"
+msgstr "Dé-réconcilier les lignes"
 
 msgctxt "model:ir.action,name:report_aged_balance"
 msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
+msgstr "Balance âgée"
 
 msgctxt "model:ir.action,name:report_general_journal"
 msgid "General Journal"
-msgstr "Glavni dnevnik"
+msgstr "Journal général"
 
 msgctxt "model:ir.action,name:report_general_ledger"
 msgid "General Ledger"
-msgstr "Glavna knjiga"
+msgstr "Grand livre"
 
 msgctxt "model:ir.action,name:report_trial_balance"
 msgid "Trial Balance"
-msgstr "Bruto bilanca"
+msgstr "Balance"
 
 msgctxt "model:ir.action,name:wizard_create_chart"
 msgid "Create Chart of Accounts from Template"
-msgstr "Izdelava kontnega načrta iz predloge"
-
-msgctxt "model:ir.action,name:wizard_journal_open_cash"
-msgid "Open Journal Cash"
-msgstr "Odpri dnevnik gotovine"
+msgstr "Créer un plan comptable depuis un modèle"
 
 msgctxt "model:ir.action,name:wizard_print_general_journal"
 msgid "Print General Journal"
-msgstr "Izpis glavnega dnevnika"
+msgstr "Imprimer le journal général"
+
+msgctxt "model:ir.action,name:wizard_tax_test"
+msgid "Test Tax"
+msgstr "Tester la taxe"
 
 msgctxt "model:ir.action,name:wizard_update_chart"
 msgid "Update Chart of Accounts from Template"
-msgstr "Posodobitev kontnega načrta iz predloge"
+msgstr "Mise à jour d'un plan comptable depuis un modèle"
 
 msgctxt ""
 "model:ir.action.act_window.domain,name:act_move_line_payable_receivable_domain_all"
 msgid "All"
-msgstr "Vse"
+msgstr "Toutes"
 
 msgctxt ""
 "model:ir.action.act_window.domain,name:act_move_line_payable_receivable_domain_payable"
 msgid "Payable"
-msgstr "Obveznosti"
+msgstr "À payer"
 
 msgctxt ""
 "model:ir.action.act_window.domain,name:act_move_line_payable_receivable_domain_receivable"
 msgid "Receivable"
-msgstr "Terjatve"
+msgstr "À recevoir"
 
 msgctxt "model:ir.sequence,name:sequence_account_journal"
 msgid "Default Account Journal"
-msgstr "Privzeti kontni dnevnik"
+msgstr "Journal de compte par défaut"
 
 msgctxt "model:ir.sequence,name:sequence_account_move_reconciliation"
 msgid "Default Account Move Reconciliation"
-msgstr "Privzeta uskladitev knjižbe"
+msgstr "Réconciliation des mouvements comptables par défaut"
 
 msgctxt "model:ir.sequence.type,name:sequence_type_account_journal"
 msgid "Account Journal"
-msgstr "Dnevnik"
+msgstr "Journal de compte"
 
 msgctxt "model:ir.sequence.type,name:sequence_type_account_move"
 msgid "Account Move"
-msgstr "Knjižba"
+msgstr "Mouvement comptable"
 
 msgctxt ""
 "model:ir.sequence.type,name:sequence_type_account_move_reconciliation"
 msgid "Account Move Reconciliation"
-msgstr "Uskladitev knjižbe"
+msgstr "Réconciliation de mouvements comptables"
 
 msgctxt "model:ir.ui.menu,name:menu_account"
 msgid "Financial"
-msgstr "Finance"
+msgstr "Financier"
 
 msgctxt "model:ir.ui.menu,name:menu_account_configuration"
 msgid "Configuration"
-msgstr "Nastavitve"
+msgstr "Configuration"
 
 msgctxt "model:ir.ui.menu,name:menu_account_list"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.ui.menu,name:menu_account_template_tree"
 msgid "Account Templates"
-msgstr "Predloge kontov"
+msgstr "Modèles de compte"
 
 msgctxt "model:ir.ui.menu,name:menu_account_tree"
 msgid "Accounts"
-msgstr "Konti"
+msgstr "Comptes"
 
 msgctxt "model:ir.ui.menu,name:menu_account_type_list"
 msgid "Account Types"
-msgstr "Tipi kontov"
+msgstr "Types de compte"
 
 msgctxt "model:ir.ui.menu,name:menu_account_type_template_tree"
 msgid "Account Type Templates"
-msgstr "Predloge tipov kontov"
+msgstr "Modèles de type de compte"
 
 msgctxt "model:ir.ui.menu,name:menu_account_type_tree"
 msgid "Account Types"
-msgstr "Tipi kontov"
+msgstr "Types de compte"
 
 msgctxt "model:ir.ui.menu,name:menu_aged_balance"
 msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
+msgstr "Balance âgée"
 
 msgctxt "model:ir.ui.menu,name:menu_balance_non_deferral"
 msgid "Balance Non-Deferral"
-msgstr "Razknjižba neodložljivih kontov"
+msgstr "Équilibrer les non-reports"
 
 msgctxt "model:ir.ui.menu,name:menu_charts"
 msgid "Charts"
-msgstr "Kontni načrt"
+msgstr "Plans"
 
 msgctxt "model:ir.ui.menu,name:menu_close_fiscalyear"
 msgid "Close Fiscal Year"
-msgstr "Zaključi poslovno leto"
+msgstr "Clôturer une année fiscale"
 
 msgctxt "model:ir.ui.menu,name:menu_code_tax_open_chart"
 msgid "Open Chart of Tax Codes"
-msgstr "Odpri načrt šifer davkov"
+msgstr "Ouvrir le plan de taxes"
 
 msgctxt "model:ir.ui.menu,name:menu_create_chart"
 msgid "Create Chart of Accounts from Template"
-msgstr "Izdelava kontnega načrta"
+msgstr "Créer un plan comptable depuis un modèle"
 
 msgctxt "model:ir.ui.menu,name:menu_entries"
 msgid "Entries"
-msgstr "Knjižbe"
+msgstr "Entrées"
 
 msgctxt "model:ir.ui.menu,name:menu_fiscalyear_configuration"
 msgid "Fiscal Years"
-msgstr "Poslovna leta"
+msgstr "Années fiscales"
 
 msgctxt "model:ir.ui.menu,name:menu_fiscalyear_form"
 msgid "Fiscal Years"
-msgstr "Poslovna leta"
+msgstr "Années fiscales"
 
 msgctxt "model:ir.ui.menu,name:menu_general_account_configuration"
 msgid "General Account"
-msgstr "Splošno"
+msgstr "Comptes généraux"
 
 msgctxt "model:ir.ui.menu,name:menu_general_ledger"
 msgid "General Ledger"
-msgstr "Glavna knjiga"
+msgstr "Grand livre"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_configuration"
 msgid "Journals"
-msgstr "Dnevniki"
+msgstr "Journaux"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_form"
 msgid "Journals"
-msgstr "Dnevniki"
+msgstr "Journaux"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_open_cash"
 msgid "Journals Cash"
-msgstr "Dnevniki gotovine"
+msgstr "Journaux de cash"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_period_form"
 msgid "Close Journals - Periods"
-msgstr "Zaključi dnevnike po obdobjih"
+msgstr "Clôturer les journaux - périodes"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_period_tree"
 msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
+msgstr "Journaux - périodes"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_period_tree2"
 msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
+msgstr "Journaux - périodes"
 
 msgctxt "model:ir.ui.menu,name:menu_journal_type_form"
 msgid "Journal Types"
-msgstr "Tipi dnevnikov"
-
-msgctxt "model:ir.ui.menu,name:menu_journal_view_form"
-msgid "Journal Views"
-msgstr "Dnevniški vpogledi"
+msgstr "Types de journaux"
 
 msgctxt "model:ir.ui.menu,name:menu_move_form"
 msgid "Account Moves"
-msgstr "Knjižbe"
+msgstr "Mouvements comptables"
 
 msgctxt "model:ir.ui.menu,name:menu_move_template_create"
 msgid "Create Move from Template"
-msgstr "Izdelava knjižbe iz predloge"
+msgstr "Créer un mouvement depuis un modèle"
 
 msgctxt "model:ir.ui.menu,name:menu_move_template_form"
 msgid "Account Move Template"
-msgstr "Predloga knjižbe"
+msgstr "Modèle de mouvement comptable"
 
 msgctxt "model:ir.ui.menu,name:menu_open_balance_sheet"
 msgid "Balance Sheet"
-msgstr "Bilanca stanja"
+msgstr "Bilan"
 
 msgctxt "model:ir.ui.menu,name:menu_open_chart"
 msgid "Open Chart of Accounts"
-msgstr "Odpri kontni načrt"
+msgstr "Ouvrir le plan comptable"
 
 msgctxt "model:ir.ui.menu,name:menu_open_income_statement"
 msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
+msgstr "Compte de résultat"
 
 msgctxt "model:ir.ui.menu,name:menu_open_journal"
 msgid "Open Journal"
-msgstr "Odpri dnevnik"
+msgstr "Ouvrir les journaux"
 
 msgctxt "model:ir.ui.menu,name:menu_period_form"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "model:ir.ui.menu,name:menu_period_form2"
 msgid "Close Periods"
-msgstr "Zaključi obdobja"
+msgstr "Clôturer Périodes"
 
 msgctxt "model:ir.ui.menu,name:menu_print_general_journal"
 msgid "Print General Journal"
-msgstr "Izpis glavnega dnevnika"
+msgstr "Imprimer le journal général"
 
 msgctxt "model:ir.ui.menu,name:menu_processing"
 msgid "Processing"
-msgstr "Obdelava"
+msgstr "Traitement"
 
 msgctxt "model:ir.ui.menu,name:menu_reconcile"
 msgid "Reconcile Accounts"
-msgstr "Usklajevanje kontov"
+msgstr "Reconcilier les comptes"
 
 msgctxt "model:ir.ui.menu,name:menu_reporting"
 msgid "Reporting"
-msgstr "Poročila"
+msgstr "Rapports"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_code_list"
 msgid "Tax Codes"
-msgstr "Davčne šifre"
+msgstr "Codes de taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_code_template_tree"
 msgid "Tax Codes Templates"
-msgstr "Predloge davčnih šifer"
+msgstr "Modèles de codes de taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_code_tree"
 msgid "Tax Codes"
-msgstr "Davčne šifre"
+msgstr "Codes de taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_group_form"
 msgid "Tax Groups"
-msgstr "Davčne skupine"
+msgstr "Groupes de taxes"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_list"
 msgid "Taxes"
-msgstr "Davki"
+msgstr "Taxes"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_rule_form"
 msgid "Tax Rules"
-msgstr "Davčna pravila"
+msgstr "Règles de taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_rule_template_form"
 msgid "Tax Rule Templates"
-msgstr "Predloge davčnih pravil"
+msgstr "Modèles de règle de taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_tax_template_list"
 msgid "Taxes Templates"
-msgstr "Predloge davkov"
+msgstr "Modèles de taxes"
+
+msgctxt "model:ir.ui.menu,name:menu_tax_test"
+msgid "Test Tax"
+msgstr "Tester une taxe"
 
 msgctxt "model:ir.ui.menu,name:menu_taxes"
 msgid "Taxes"
-msgstr "Davki"
+msgstr "Taxes"
+
+msgctxt "model:ir.ui.menu,name:menu_templates"
+msgid "Templates"
+msgstr "Modèles"
 
 msgctxt "model:ir.ui.menu,name:menu_update_chart"
 msgid "Update Chart of Accounts from Template"
-msgstr "Posodobitev kontnega načrta iz predloge"
+msgstr "Mise à jour d'un plan comptable depuis un modèle"
 
 msgctxt "model:ir.ui.menu,name:menuitem_account_configuration"
 msgid "Account Configuration"
-msgstr "Konfiguracija"
+msgstr "Configuration comptable"
 
 msgctxt "model:res.group,name:group_account"
 msgid "Account"
-msgstr "Računovodstvo"
+msgstr "Compte"
 
 msgctxt "model:res.group,name:group_account_admin"
 msgid "Account Administration"
-msgstr "Računovodstvo - vodenje"
+msgstr "Administration de la comptablilité"
 
 msgctxt "report:account.aged_balance:"
 msgid "+"
@@ -3781,39 +3848,39 @@ msgstr "/"
 
 msgctxt "report:account.aged_balance:"
 msgid "Aged Balance for"
-msgstr "Bilanca zapadlih postavk za"
+msgstr "Balance âgée pour"
 
 msgctxt "report:account.aged_balance:"
 msgid "Balance"
-msgstr "Bilanca"
+msgstr "Balance"
 
 msgctxt "report:account.aged_balance:"
 msgid "Company:"
-msgstr "Družba:"
+msgstr "Société :"
 
 msgctxt "report:account.aged_balance:"
 msgid "Date:"
-msgstr "Datum:"
+msgstr "Date :"
 
 msgctxt "report:account.aged_balance:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "report:account.aged_balance:"
 msgid "Print Date:"
-msgstr "Izpisano:"
+msgstr "Date d'impression :"
 
 msgctxt "report:account.aged_balance:"
 msgid "Total"
-msgstr "Skupaj"
+msgstr "Total"
 
 msgctxt "report:account.aged_balance:"
 msgid "User:"
-msgstr "Izpisal:"
+msgstr "Utilisateur :"
 
 msgctxt "report:account.aged_balance:"
 msgid "at"
-msgstr "ob"
+msgstr "à"
 
 msgctxt "report:account.general_ledger:"
 msgid "/"
@@ -3821,87 +3888,87 @@ msgstr "/"
 
 msgctxt "report:account.general_ledger:"
 msgid ":"
-msgstr ":"
+msgstr " : "
 
 msgctxt "report:account.general_ledger:"
 msgid "Balance"
-msgstr "Bilanca"
+msgstr "Balance"
 
 msgctxt "report:account.general_ledger:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "report:account.general_ledger:"
 msgid "Company:"
-msgstr "Družba:"
+msgstr "Société :"
 
 msgctxt "report:account.general_ledger:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "report:account.general_ledger:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "report:account.general_ledger:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "report:account.general_ledger:"
 msgid "Descr."
-msgstr "Opis"
+msgstr "Descr."
 
 msgctxt "report:account.general_ledger:"
 msgid "Fiscal Year:"
-msgstr "Poslovno leto:"
+msgstr "Année fiscale :"
 
 msgctxt "report:account.general_ledger:"
 msgid "From Period"
-msgstr "Od"
+msgstr "Période de début"
 
 msgctxt "report:account.general_ledger:"
 msgid "General Ledger"
-msgstr "Glavna knjiga"
+msgstr "Grand livre"
 
 msgctxt "report:account.general_ledger:"
 msgid "Move"
-msgstr "Knjižba"
+msgstr "Mouvement"
 
 msgctxt "report:account.general_ledger:"
 msgid "Name"
-msgstr "Naziv"
+msgstr "Nom"
 
 msgctxt "report:account.general_ledger:"
 msgid "Origin"
-msgstr "Poreklo"
+msgstr "Origine"
 
 msgctxt "report:account.general_ledger:"
 msgid "Period:"
-msgstr "Obdobje:"
+msgstr "Période :"
 
 msgctxt "report:account.general_ledger:"
 msgid "Print Date:"
-msgstr "Izpisano:"
+msgstr "Date d'impression :"
 
 msgctxt "report:account.general_ledger:"
 msgid "State"
-msgstr "Stanje"
+msgstr "État"
 
 msgctxt "report:account.general_ledger:"
 msgid "To"
-msgstr "Do"
+msgstr "à"
 
 msgctxt "report:account.general_ledger:"
 msgid "Total"
-msgstr "Skupaj"
+msgstr "Total"
 
 msgctxt "report:account.general_ledger:"
 msgid "User:"
-msgstr "Izpisal:"
+msgstr "Utilisateur :"
 
 msgctxt "report:account.general_ledger:"
 msgid "at"
-msgstr "ob"
+msgstr "à"
 
 msgctxt "report:account.move.general_journal:"
 msgid "/"
@@ -3909,67 +3976,67 @@ msgstr "/"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Company:"
-msgstr "Družba:"
+msgstr "Société :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Date:"
-msgstr "Datum:"
+msgstr "Date :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Description"
-msgstr "Opis"
+msgstr "Description"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Draft"
-msgstr "Osnutek"
+msgstr "Brouillon"
 
 msgctxt "report:account.move.general_journal:"
 msgid "From Date:"
-msgstr "Od:"
+msgstr "De la date :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "General Journal"
-msgstr "Glavni dnevnik"
+msgstr "Journal général"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Journal Entry:"
-msgstr "Vknjižba"
+msgstr "Entrée journal :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Origin:"
-msgstr "Poreklo:"
+msgstr "Origine :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Posted"
-msgstr "Knjiženo"
+msgstr "Posté"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Print Date:"
-msgstr "Izpisano:"
+msgstr "Date d'impression :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "To Date:"
-msgstr "Do:"
+msgstr "À la Date :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "User:"
-msgstr "Izpisal:"
+msgstr "Utilisateur :"
 
 msgctxt "report:account.move.general_journal:"
 msgid "at"
-msgstr "ob"
+msgstr "à"
 
 msgctxt "report:account.trial_balance:"
 msgid "/"
@@ -3977,781 +4044,455 @@ msgstr "/"
 
 msgctxt "report:account.trial_balance:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "report:account.trial_balance:"
 msgid "Company:"
-msgstr "Družba:"
+msgstr "Société :"
 
 msgctxt "report:account.trial_balance:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "report:account.trial_balance:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "report:account.trial_balance:"
 msgid "End Balance"
-msgstr "Končni saldo"
+msgstr "Balance finale"
 
 msgctxt "report:account.trial_balance:"
 msgid "Fiscal Year:"
-msgstr "Poslovno leto:"
+msgstr "Année fiscale :"
 
 msgctxt "report:account.trial_balance:"
 msgid "From Period:"
-msgstr "Od:"
+msgstr "Période de début :"
 
 msgctxt "report:account.trial_balance:"
 msgid "Print Date:"
-msgstr "Izpisano:"
+msgstr "Date d'impression :"
 
 msgctxt "report:account.trial_balance:"
 msgid "Start Balance"
-msgstr "Začetni saldo"
+msgstr "Balance de départ"
 
 msgctxt "report:account.trial_balance:"
 msgid "To Period:"
-msgstr "Do:"
+msgstr "Période de fin :"
 
 msgctxt "report:account.trial_balance:"
 msgid "Total"
-msgstr "Skupaj"
+msgstr "Total"
 
 msgctxt "report:account.trial_balance:"
 msgid "Trial Balance"
-msgstr "Bruto bilanca"
+msgstr "Balance"
 
 msgctxt "report:account.trial_balance:"
 msgid "User:"
-msgstr "Izpisal:"
+msgstr "Utilisateur :"
 
 msgctxt "report:account.trial_balance:"
 msgid "at"
-msgstr "ob"
+msgstr "à"
 
 msgctxt "selection:account.account,kind:"
 msgid "Expense"
-msgstr "Odhodek"
+msgstr "Charge"
 
 msgctxt "selection:account.account,kind:"
 msgid "Other"
-msgstr "Drugo"
+msgstr "Autre"
 
 msgctxt "selection:account.account,kind:"
 msgid "Payable"
-msgstr "Obveznosti"
+msgstr "Fournisseur"
 
 msgctxt "selection:account.account,kind:"
 msgid "Receivable"
-msgstr "Terjatve"
+msgstr "Compte client"
 
 msgctxt "selection:account.account,kind:"
 msgid "Revenue"
-msgstr "Prihodek"
+msgstr "Produit"
 
 msgctxt "selection:account.account,kind:"
 msgid "Stock"
-msgstr "Zaloga"
+msgstr "Stock"
 
 msgctxt "selection:account.account,kind:"
 msgid "View"
-msgstr "Pogled"
+msgstr "Vue"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Expense"
-msgstr "Odhodek"
+msgstr "Charge"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Other"
-msgstr "Drugo"
+msgstr "Autre"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Payable"
-msgstr "Obveznosti"
+msgstr "Fournisseur"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Receivable"
-msgstr "Terjatve"
+msgstr "Compte client"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Revenue"
-msgstr "Prihodek"
+msgstr "Produit"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "Stock"
-msgstr "Zaloga"
+msgstr "Stock"
 
 msgctxt "selection:account.account.template,kind:"
 msgid "View"
-msgstr "Pogled"
+msgstr "Vue"
 
 msgctxt "selection:account.account.type,display_balance:"
 msgid "Credit - Debit"
-msgstr "Kredit - Debet"
+msgstr "Crédit - Débit"
 
 msgctxt "selection:account.account.type,display_balance:"
 msgid "Debit - Credit"
-msgstr "Debet - Kredit"
+msgstr "Débit - Crédit"
 
 msgctxt "selection:account.account.type.template,display_balance:"
 msgid "Credit - Debit"
-msgstr "Kredit - Debet"
+msgstr "Crédit - Débit"
 
 msgctxt "selection:account.account.type.template,display_balance:"
 msgid "Debit - Credit"
-msgstr "Debet - Kredit"
+msgstr "Débit - Crédit"
 
 msgctxt "selection:account.aged_balance.context,type:"
 msgid "Customers"
-msgstr "Kupci"
+msgstr "Clients"
 
 msgctxt "selection:account.aged_balance.context,type:"
 msgid "Customers and Suppliers"
-msgstr "Kupci in dobavitelji"
+msgstr "Clients et fournisseurs"
 
 msgctxt "selection:account.aged_balance.context,type:"
 msgid "Suppliers"
-msgstr "Dobavitelji"
+msgstr "Fournisseurs"
 
 msgctxt "selection:account.aged_balance.context,unit:"
 msgid "Days"
-msgstr "Dnevi"
+msgstr "Jours"
 
 msgctxt "selection:account.aged_balance.context,unit:"
 msgid "Months"
-msgstr "Meseci"
+msgstr "Mois"
 
 msgctxt "selection:account.configuration,tax_rounding:"
 msgid "Per Document"
-msgstr "Po dokumentu"
+msgstr "Par document"
 
 msgctxt "selection:account.configuration,tax_rounding:"
 msgid "Per Line"
-msgstr "Po postavki"
+msgstr "Par ligne"
 
 msgctxt "selection:account.configuration.tax_rounding,method:"
 msgid "Per Document"
-msgstr "Po dokumentu"
+msgstr "Par document"
 
 msgctxt "selection:account.configuration.tax_rounding,method:"
 msgid "Per Line"
-msgstr "Po postavki"
+msgstr "Par ligne"
 
 msgctxt "selection:account.fiscalyear,state:"
 msgid "Close"
-msgstr "Zaprto"
+msgstr "Clôturé"
 
 msgctxt "selection:account.fiscalyear,state:"
 msgid "Open"
-msgstr "Odprto"
+msgstr "Ouverte"
 
 msgctxt "selection:account.general_ledger.line,state:"
 msgid "Draft"
-msgstr "V pripravi"
+msgstr "Brouillon"
 
 msgctxt "selection:account.general_ledger.line,state:"
 msgid "Posted"
-msgstr "Knjiženo"
+msgstr "Posté"
 
 msgctxt "selection:account.journal.period,state:"
 msgid "Close"
-msgstr "Zaprto"
+msgstr "Clôturée"
 
 msgctxt "selection:account.journal.period,state:"
 msgid "Open"
-msgstr "Odprto"
+msgstr "Ouverte"
 
 msgctxt "selection:account.move,state:"
 msgid "Draft"
-msgstr "V pripravi"
+msgstr "Brouillon"
 
 msgctxt "selection:account.move,state:"
 msgid "Posted"
-msgstr "Knjiženo"
+msgstr "Posté"
 
 msgctxt "selection:account.move.line,move_state:"
 msgid "Draft"
-msgstr "V pripravi"
+msgstr "Brouillon"
 
 msgctxt "selection:account.move.line,move_state:"
 msgid "Posted"
-msgstr "Knjiženo"
+msgstr "Posté"
 
 msgctxt "selection:account.move.line,state:"
 msgid "Draft"
-msgstr "V pripravi"
+msgstr "Brouillon"
 
 msgctxt "selection:account.move.line,state:"
 msgid "Valid"
-msgstr "Odobreno"
+msgstr "Valide"
 
 msgctxt "selection:account.move.line.template,operation:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "selection:account.move.line.template,operation:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "selection:account.move.template.keyword,type_:"
 msgid "Char"
-msgstr "Znakovni"
+msgstr "Caractères"
 
 msgctxt "selection:account.move.template.keyword,type_:"
 msgid "Date"
-msgstr "Datum"
+msgstr "Date"
 
 msgctxt "selection:account.move.template.keyword,type_:"
 msgid "Numeric"
-msgstr "Numerični"
+msgstr "Numérique"
 
 msgctxt "selection:account.move.template.keyword,type_:"
 msgid "Party"
-msgstr "Partner"
+msgstr "Tiers"
 
 msgctxt "selection:account.period,state:"
 msgid "Close"
-msgstr "Zaprto"
+msgstr "Clôturée"
 
 msgctxt "selection:account.period,state:"
 msgid "Open"
-msgstr "Odprto"
+msgstr "Ouverte"
 
 msgctxt "selection:account.period,type:"
 msgid "Adjustment"
-msgstr "Izravnava"
+msgstr "Ajustement"
 
 msgctxt "selection:account.period,type:"
 msgid "Standard"
-msgstr "Standardno"
+msgstr "Standard"
 
 msgctxt "selection:account.tax,type:"
 msgid "Fixed"
-msgstr "Fiksen"
+msgstr "Fixé"
 
 msgctxt "selection:account.tax,type:"
 msgid "None"
-msgstr "Brez"
+msgstr "Aucun"
 
 msgctxt "selection:account.tax,type:"
 msgid "Percentage"
-msgstr "Odstoten"
+msgstr "Pourcentage"
 
 msgctxt "selection:account.tax.code.open_chart.start,method:"
 msgid "By Fiscal Year"
-msgstr "Po poslovnih letih"
+msgstr "Par année fiscale"
 
 msgctxt "selection:account.tax.code.open_chart.start,method:"
 msgid "By Periods"
-msgstr "Po obdobjih"
+msgstr "Par période"
 
 msgctxt "selection:account.tax.group,kind:"
 msgid "Both"
-msgstr "Vse"
+msgstr "Les deux"
 
 msgctxt "selection:account.tax.group,kind:"
 msgid "Purchase"
-msgstr "Nabava"
+msgstr "Achats"
 
 msgctxt "selection:account.tax.group,kind:"
 msgid "Sale"
-msgstr "Prodaja"
+msgstr "Vente"
 
 msgctxt "selection:account.tax.rule,kind:"
 msgid "Both"
-msgstr "Vse"
+msgstr "Les deux"
 
 msgctxt "selection:account.tax.rule,kind:"
 msgid "Purchase"
-msgstr "Nabava"
+msgstr "Achats"
 
 msgctxt "selection:account.tax.rule,kind:"
 msgid "Sale"
-msgstr "Prodaja"
+msgstr "Vente"
 
 msgctxt "selection:account.tax.rule.template,kind:"
 msgid "Both"
-msgstr "Vse"
+msgstr "Les deux"
 
 msgctxt "selection:account.tax.rule.template,kind:"
 msgid "Purchase"
-msgstr "Nabava"
+msgstr "Achats"
 
 msgctxt "selection:account.tax.rule.template,kind:"
 msgid "Sale"
-msgstr "Prodaja"
+msgstr "Vente"
 
 msgctxt "selection:account.tax.template,type:"
 msgid "Fixed"
-msgstr "Fiksen"
+msgstr "Fixé"
 
 msgctxt "selection:account.tax.template,type:"
 msgid "None"
-msgstr "Brez"
+msgstr "Aucun"
 
 msgctxt "selection:account.tax.template,type:"
 msgid "Percentage"
-msgstr "Odstoten"
-
-msgctxt "view:account.account.deferral:"
-msgid "Account Deferral"
-msgstr "Odlog"
-
-msgctxt "view:account.account.deferral:"
-msgid "Account Deferrals"
-msgstr "Odlogi"
-
-msgctxt "view:account.account.template:"
-msgid "Account Template"
-msgstr "Predloga konta"
-
-msgctxt "view:account.account.template:"
-msgid "Account Templates"
-msgstr "Predloge kontov"
-
-msgctxt "view:account.account.type.template:"
-msgid "Account Type Template"
-msgstr "Predloga tipa konta"
-
-msgctxt "view:account.account.type.template:"
-msgid "Account Types Templates"
-msgstr "Predloge tipov kontov"
+msgstr "Pourcentage"
 
 msgctxt "view:account.account.type:"
-msgid "Account Type"
-msgstr "Tip konta"
-
-msgctxt "view:account.account.type:"
-msgid "Account Types"
-msgstr "Tipi kontov"
-
-msgctxt "view:account.account.type:"
-msgid "Balance Sheet"
-msgstr "Bilanca"
-
-msgctxt "view:account.account.type:"
-msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
-
-msgctxt "view:account.account:"
-msgid "Account"
-msgstr "Konto"
-
-msgctxt "view:account.account:"
-msgid "Accounts"
-msgstr "Konti"
+msgid "Comparison"
+msgstr "Comparaison"
 
 msgctxt "view:account.account:"
 msgid "Children"
-msgstr "Podšifre"
-
-msgctxt "view:account.account:"
-msgid "Deferrals"
-msgstr "Odlogi"
+msgstr "Enfants"
 
 msgctxt "view:account.account:"
 msgid "General Information"
-msgstr "Splošno"
-
-msgctxt "view:account.account:"
-msgid "Notes"
-msgstr "Opombe"
-
-msgctxt "view:account.aged_balance.context:"
-msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
+msgstr "Information générale"
 
 msgctxt "view:account.aged_balance.context:"
 msgid "Terms"
-msgstr "Roki"
-
-msgctxt "view:account.aged_balance:"
-msgid "Aged Balance"
-msgstr "Bilanca zapadlih postavk"
-
-msgctxt "view:account.balance_sheet.context:"
-msgid "Balance Sheet"
-msgstr "Bilanca stanja"
-
-msgctxt "view:account.configuration.tax_rounding:"
-msgid "Account Configuration Tax Rounding"
-msgstr "Konfiguracija zaokroževanja davka"
-
-msgctxt "view:account.configuration.tax_rounding:"
-msgid "Account Configuration Tax Roundings"
-msgstr "Konfiguracija zaokroževanja davkov"
-
-msgctxt "view:account.configuration:"
-msgid "Account Configuration"
-msgstr "Kontna konfiguracija"
+msgstr "Termes"
 
 msgctxt "view:account.configuration:"
 msgid "Invoice"
-msgstr "Račun"
+msgstr "Facture"
 
 msgctxt "view:account.configuration:"
 msgid "Party"
-msgstr "Partner"
-
-msgctxt "view:account.create_chart.account:"
-msgid "Create Chart of Accounts"
-msgstr "Izdelava kontnega načrta"
-
-msgctxt "view:account.create_chart.properties:"
-msgid "Create Default Properties"
-msgstr "Izdelava privzetih lastnosti"
-
-msgctxt "view:account.create_chart.start:"
-msgid "Create Chart of Accounts"
-msgstr "Izdelava kontnega načrta"
+msgstr "Tiers"
 
 msgctxt "view:account.create_chart.start:"
 msgid ""
 "You can now create a chart of account for your company by selecting a chart "
 "of account template."
-msgstr "Sedaj lahko izdelate kontni načrt za vašo družbo s pomočjo predloge."
-
-msgctxt "view:account.fiscalyear.balance_non_deferral.start:"
-msgid "Balance Non-Deferral"
-msgstr "Razknjižba neodložljivih kontov"
-
-msgctxt "view:account.fiscalyear.close.start:"
-msgid "Close Fiscal Year"
-msgstr "Zaključi poslovno leto"
+msgstr ""
+"Vous pouvez maintenant créer un plan comptable pour votre société sur base "
+"d'un modèle."
 
 msgctxt "view:account.fiscalyear:"
 msgid "Are you sure to close fiscal year?"
-msgstr "Ali res želite zaključiti poslovno leto?"
+msgstr "Êtes-vous sûr de clôturer l'année fiscale ?"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Close Fiscal Year"
-msgstr "Zaključi poslovno leto"
+msgstr "Clôturer une année fiscale"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Create 3 Months Periods"
-msgstr "Izdelava tromesečnih obdobij"
+msgstr "Créer des périodes de 3 mois"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Create Monthly Periods"
-msgstr "Izdelava mesečnih obdobij"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Fiscal Year"
-msgstr "Poslovno leto"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Fiscal Years"
-msgstr "Poslovna leta"
+msgstr "Créer des périodes mensuelles"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Periods"
-msgstr "Obdobja"
+msgstr "Périodes"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Re-Open Fiscal Year"
-msgstr "Znova odpri poslovno leto"
+msgstr "Ré-ouvrir l'année fiscale"
 
 msgctxt "view:account.fiscalyear:"
 msgid "Sequences"
-msgstr "Štetja"
-
-msgctxt "view:account.general_ledger.account.context:"
-msgid "General Ledger"
-msgstr "Glavna knjiga"
+msgstr "Séquences"
 
 msgctxt "view:account.general_ledger.account:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "view:account.general_ledger.account:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "view:account.general_ledger.account:"
 msgid "End Balance"
-msgstr "Končni saldo"
-
-msgctxt "view:account.general_ledger.account:"
-msgid "General Ledger - Accounts"
-msgstr "Konti glavne knjige"
+msgstr "Balance finale"
 
 msgctxt "view:account.general_ledger.account:"
 msgid "Start Balance"
-msgstr "Začetni saldo"
+msgstr "Balance de départ"
 
 msgctxt "view:account.general_ledger.line:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "view:account.general_ledger.line:"
 msgid "Debit"
-msgstr "Debet"
-
-msgctxt "view:account.general_ledger.line:"
-msgid "General Legder - Lines"
-msgstr "Postavke glavne knjige"
-
-msgctxt "view:account.income_statement.context:"
-msgid "Income Statement"
-msgstr "Izkaz poslovnega izida"
-
-msgctxt "view:account.journal.open_cash.start:"
-msgid "Open Journal Cash"
-msgstr "Odpri dnevnik gotovine"
-
-msgctxt "view:account.journal.period:"
-msgid "Journal - Period"
-msgstr "Dnevnik po obdobju"
-
-msgctxt "view:account.journal.period:"
-msgid "Journals - Periods"
-msgstr "Dnevniki po obdobjih"
-
-msgctxt "view:account.journal.type:"
-msgid "Journal Type"
-msgstr "Tip dnevnika"
-
-msgctxt "view:account.journal.type:"
-msgid "Journal Types"
-msgstr "Tipi dnevnikov"
-
-msgctxt "view:account.journal.view.column:"
-msgid "View Column"
-msgstr "Viden stolpec"
-
-msgctxt "view:account.journal.view.column:"
-msgid "View Columns"
-msgstr "Vidni stoplci"
-
-msgctxt "view:account.journal.view:"
-msgid "Journal View"
-msgstr "Dnevniški vpogled"
-
-msgctxt "view:account.journal.view:"
-msgid "Journal Views"
-msgstr "Dnevniški vpogledi"
+msgstr "Débit"
 
 msgctxt "view:account.journal:"
 msgid "General Information"
-msgstr "Splošno"
-
-msgctxt "view:account.journal:"
-msgid "Journal"
-msgstr "Dnevnik"
-
-msgctxt "view:account.journal:"
-msgid "Journals"
-msgstr "Dnevniki"
-
-msgctxt "view:account.move.cancel.default:"
-msgid "Cancel Moves"
-msgstr "Preklic knjižb"
-
-msgctxt "view:account.move.line.template:"
-msgid "Account Move Line Template"
-msgstr "Predloga postavke knjižbe"
-
-msgctxt "view:account.move.line.template:"
-msgid "Account Move Line Templates"
-msgstr "Predloge postavk knjižbe"
+msgstr "Information générale"
 
 msgctxt "view:account.move.line.template:"
 msgid "Other Info"
-msgstr "Drugo"
-
-msgctxt "view:account.move.line:"
-msgid "Account Move Line"
-msgstr "Postavka knjižbe"
-
-msgctxt "view:account.move.line:"
-msgid "Account Move Lines"
-msgstr "Postavke knjižb"
+msgstr "Autre information"
 
 msgctxt "view:account.move.line:"
 msgid "Credit"
-msgstr "Kredit"
+msgstr "Crédit"
 
 msgctxt "view:account.move.line:"
 msgid "Debit"
-msgstr "Debet"
+msgstr "Débit"
 
 msgctxt "view:account.move.line:"
 msgid "Other Info"
-msgstr "Drugo"
-
-msgctxt "view:account.move.open_journal.ask:"
-msgid "Open Journal"
-msgstr "Odpri dnevnik"
-
-msgctxt "view:account.move.print_general_journal.start:"
-msgid "Print General Journal"
-msgstr "Izpis glavnega dnevnika"
-
-msgctxt "view:account.move.reconcile_lines.writeoff:"
-msgid "Write-Off"
-msgstr "Odpis"
-
-msgctxt "view:account.move.reconciliation:"
-msgid "Reconciliation"
-msgstr "Uskladitev"
-
-msgctxt "view:account.move.reconciliation:"
-msgid "Reconciliations"
-msgstr "Uskladitve"
-
-msgctxt "view:account.move.template.create.template:"
-msgid "Create Move from Template"
-msgstr "Izdelava knjižbe iz predloge"
-
-msgctxt "view:account.move.template.keyword:"
-msgid "Account Move Template Keyword"
-msgstr "Ključna beseda predloge postavke knjižbe"
-
-msgctxt "view:account.move.template.keyword:"
-msgid "Account Move Template Keywords"
-msgstr "Ključne besede predloge postavke knjižbe"
-
-msgctxt "view:account.move.template:"
-msgid "Account Move Template"
-msgstr "Predloga postavke knjižbe"
-
-msgctxt "view:account.move.template:"
-msgid "Account Move Templates"
-msgstr "Predloge postavk knjižb"
+msgstr "Autre information"
 
 msgctxt "view:account.move.template:"
 msgid "Template"
-msgstr "Predloga"
-
-msgctxt "view:account.move:"
-msgid "Account Move"
-msgstr "Knjižba"
-
-msgctxt "view:account.move:"
-msgid "Account Moves"
-msgstr "Knjižbe"
-
-msgctxt "view:account.move:"
-msgid "Draft"
-msgstr "Priprava"
+msgstr "Modèle"
 
 msgctxt "view:account.move:"
 msgid "Post"
-msgstr "Vknjižba"
-
-msgctxt "view:account.open_chart.start:"
-msgid "Open Chart of Accounts"
-msgstr "Odpri kontni načrt"
-
-msgctxt "view:account.period:"
-msgid "Period"
-msgstr "Obdobje"
-
-msgctxt "view:account.period:"
-msgid "Periods"
-msgstr "Obdobja"
+msgstr "Poster"
 
 msgctxt "view:account.reconcile.show:"
 msgid "Amount"
-msgstr "Znesek"
-
-msgctxt "view:account.reconcile.show:"
-msgid "Reconcile"
-msgstr "Uskladitev"
-
-msgctxt "view:account.tax.code.open_chart.start:"
-msgid "Open Chart of Tax Codes"
-msgstr "Odpri načrt davčnih šifer"
+msgstr "Montant"
 
 msgctxt "view:account.tax.code.template:"
 msgid "Children"
-msgstr "Podšifre"
+msgstr "Enfants"
 
 msgctxt "view:account.tax.code.template:"
 msgid "Description"
-msgstr "Opis"
-
-msgctxt "view:account.tax.code.template:"
-msgid "Tax Code Template"
-msgstr "Predloga davčne šifre"
-
-msgctxt "view:account.tax.code.template:"
-msgid "Tax Codes Templates"
-msgstr "Predloge davčnih šifer"
+msgstr "Description"
 
 msgctxt "view:account.tax.code:"
 msgid "Children"
-msgstr "Podšifre"
+msgstr "Enfants"
 
 msgctxt "view:account.tax.code:"
 msgid "Description"
-msgstr "Opis"
-
-msgctxt "view:account.tax.code:"
-msgid "Tax Code"
-msgstr "Davčna šifra"
-
-msgctxt "view:account.tax.code:"
-msgid "Tax Codes"
-msgstr "Davčne šifre"
-
-msgctxt "view:account.tax.group:"
-msgid "Tax Group"
-msgstr "Davčna skupina"
-
-msgctxt "view:account.tax.group:"
-msgid "Tax Groups"
-msgstr "Davčne skupine"
-
-msgctxt "view:account.tax.line.template:"
-msgid "Account Tax Line Template"
-msgstr "Predloga davčne postavke"
-
-msgctxt "view:account.tax.line.template:"
-msgid "Account Tax Line Templates"
-msgstr "Predloge davčnih postavk"
-
-msgctxt "view:account.tax.line:"
-msgid "Account Tax Line"
-msgstr "Davčna postavka"
-
-msgctxt "view:account.tax.line:"
-msgid "Account Tax Lines"
-msgstr "Davčne postavke"
-
-msgctxt "view:account.tax.rule.line.template:"
-msgid "Tax Rule Line Template"
-msgstr "Predloga postavke davčnega pravila"
-
-msgctxt "view:account.tax.rule.line.template:"
-msgid "Tax Rule Line Templates"
-msgstr "Predloge postavk davčnega pravil"
-
-msgctxt "view:account.tax.rule.line:"
-msgid "Tax Rule Line"
-msgstr "Postavka davčnega pravila"
-
-msgctxt "view:account.tax.rule.line:"
-msgid "Tax Rule Lines"
-msgstr "Postavke davčnega pravila"
-
-msgctxt "view:account.tax.rule.template:"
-msgid "Tax Rule Template"
-msgstr "Predloga davčnega pravila"
-
-msgctxt "view:account.tax.rule.template:"
-msgid "Tax Rules"
-msgstr "Davčna pravila"
-
-msgctxt "view:account.tax.rule:"
-msgid "Tax Rule"
-msgstr "Davčno pravilo"
-
-msgctxt "view:account.tax.rule:"
-msgid "Tax Rules"
-msgstr "Davčna pravila"
+msgstr "Description"
 
 msgctxt "view:account.tax.template:"
 msgid "%"
@@ -4759,27 +4500,19 @@ msgstr "%"
 
 msgctxt "view:account.tax.template:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "view:account.tax.template:"
 msgid "Credit Note"
-msgstr "Dobropis"
+msgstr "Note de Crédit"
 
 msgctxt "view:account.tax.template:"
 msgid "General Information"
-msgstr "Splošno"
+msgstr "Information générale"
 
 msgctxt "view:account.tax.template:"
 msgid "Invoice"
-msgstr "Račun"
-
-msgctxt "view:account.tax.template:"
-msgid "Tax Template"
-msgstr "Predloga davka"
-
-msgctxt "view:account.tax.template:"
-msgid "Taxes Templates"
-msgstr "Predloge davkov"
+msgstr "Facture"
 
 msgctxt "view:account.tax:"
 msgid "%"
@@ -4787,184 +4520,164 @@ msgstr "%"
 
 msgctxt "view:account.tax:"
 msgid "Code"
-msgstr "Šifra"
+msgstr "Code"
 
 msgctxt "view:account.tax:"
 msgid "Credit Note"
-msgstr "Dobropis"
+msgstr "Note de crédit"
 
 msgctxt "view:account.tax:"
 msgid "General Information"
-msgstr "Splošno"
+msgstr "Information générale"
 
 msgctxt "view:account.tax:"
 msgid "Invoice"
-msgstr "Račun"
-
-msgctxt "view:account.tax:"
-msgid "Tax"
-msgstr "Davek"
-
-msgctxt "view:account.tax:"
-msgid "Taxes"
-msgstr "Davki"
-
-msgctxt "view:account.update_chart.start:"
-msgid "Update Chart of Accounts"
-msgstr "Posodobitev kontnega načrta"
-
-msgctxt "view:account.update_chart.succeed:"
-msgid "Update Chart of Accounts"
-msgstr "Posodobitev kontnega načrta"
+msgstr "Facture"
 
 msgctxt "view:account.update_chart.succeed:"
 msgid "Update Chart of Accounts Succeed!"
-msgstr "Posodobitev kontnega načrta uspešna."
+msgstr "Mise à jour du plan comptable réussie !"
 
 msgctxt "view:party.party:"
 msgid "Account"
-msgstr "Konto"
+msgstr "Compte"
 
 msgctxt "view:party.party:"
 msgid "Accounting"
-msgstr "Računovodstvo"
+msgstr "Comptabilité"
 
 msgctxt "view:party.party:"
 msgid "Taxes"
-msgstr "Davki"
+msgstr "Taxes"
 
 msgctxt "wizard_button:account.create_chart,account,create_account:"
 msgid "Create"
-msgstr "Izdelaj"
+msgstr "Créer"
 
 msgctxt "wizard_button:account.create_chart,account,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.create_chart,properties,create_properties:"
 msgid "Create"
-msgstr "Izdelaj"
+msgstr "Créer"
 
 msgctxt "wizard_button:account.create_chart,properties,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.create_chart,start,account:"
 msgid "OK"
-msgstr "V redu"
+msgstr "OK"
 
 msgctxt "wizard_button:account.create_chart,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.fiscalyear.balance_non_deferral,start,balance:"
 msgid "OK"
-msgstr "V redu"
+msgstr "OK"
 
 msgctxt "wizard_button:account.fiscalyear.balance_non_deferral,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.fiscalyear.close,start,close:"
 msgid "Close"
-msgstr "Zaključi"
+msgstr "Clôturer"
 
 msgctxt "wizard_button:account.fiscalyear.close,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
-
-msgctxt "wizard_button:account.journal.open_cash,start,end:"
-msgid "Cancel"
-msgstr "Prekliči"
-
-msgctxt "wizard_button:account.journal.open_cash,start,open_:"
-msgid "Open"
-msgstr "Odpri"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.cancel,default,cancel:"
 msgid "OK"
-msgstr "V redu"
+msgstr "OK"
 
 msgctxt "wizard_button:account.move.cancel,default,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.open_journal,ask,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.open_journal,ask,open_:"
 msgid "Open"
-msgstr "Odpri"
+msgstr "Ouvrir"
 
 msgctxt "wizard_button:account.move.print_general_journal,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.print_general_journal,start,print_:"
 msgid "Print"
-msgstr "Natisni"
+msgstr "Imprimer"
 
 msgctxt "wizard_button:account.move.reconcile_lines,writeoff,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.reconcile_lines,writeoff,reconcile:"
 msgid "Reconcile"
-msgstr "Uskladi"
+msgstr "Réconcilier"
 
 msgctxt "wizard_button:account.move.template.create,keywords,create_:"
 msgid "Create"
-msgstr "Izdelaj"
+msgstr "Créer"
 
 msgctxt "wizard_button:account.move.template.create,keywords,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.template.create,template,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.move.template.create,template,keywords:"
 msgid "Next"
-msgstr "Naprej"
+msgstr "Suivant"
 
 msgctxt "wizard_button:account.open_chart,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.open_chart,start,open_:"
 msgid "Open"
-msgstr "Odpri"
+msgstr "Ouvrir"
 
 msgctxt "wizard_button:account.reconcile,show,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.reconcile,show,next_:"
 msgid "Skip"
-msgstr "Preskoči"
+msgstr "Sauter"
 
 msgctxt "wizard_button:account.reconcile,show,reconcile:"
 msgid "Reconcile"
-msgstr "Uskladi"
+msgstr "Réconcilier"
 
 msgctxt "wizard_button:account.tax.code.open_chart,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.tax.code.open_chart,start,open_:"
 msgid "Open"
-msgstr "Odpri"
+msgstr "Ouvrir"
+
+msgctxt "wizard_button:account.tax.test,test,end:"
+msgid "Close"
+msgstr "Fermer"
 
 msgctxt "wizard_button:account.update_chart,start,end:"
 msgid "Cancel"
-msgstr "Prekliči"
+msgstr "Annuler"
 
 msgctxt "wizard_button:account.update_chart,start,update:"
 msgid "Update"
-msgstr "Posodobitev"
+msgstr "Mise à jour"
 
 msgctxt "wizard_button:account.update_chart,succeed,end:"
 msgid "OK"
-msgstr "V redu"
+msgstr "OK"
