@@ -987,18 +987,6 @@ class AccountTestCase(ModuleTestCase):
         self.assertSequenceEqual(
             Tax.sort_taxes([tax3, tax2, tax1]), [tax1, tax2, tax3])
 
-    @with_transaction()
-    def test_sort_taxes(self):
-        "Test sort_taxes"
-        pool = Pool()
-        Tax = pool.get('account.tax')
-
-        tax1 = Tax(sequence=None, id=-3)
-        tax2 = Tax(sequence=None, id=-2)
-        tax3 = Tax(sequence=1, id=-1)
-        self.assertSequenceEqual(
-            Tax.sort_taxes([tax3, tax2, tax1]), [tax1, tax2, tax3])
-
 
 def suite():
     suite = trytond.tests.test_tryton.suite()
