@@ -5,11 +5,10 @@ from collections import namedtuple
 from decimal import Decimal
 from itertools import groupby
 
-from sql import Null
 from sql.aggregate import Sum
-from sql.conditionals import Case
 
-from trytond.model import ModelView, ModelSQL, MatchMixin, fields
+from trytond.model import ModelView, ModelSQL, MatchMixin, fields, \
+    sequence_ordered
 from trytond.wizard import Wizard, StateView, StateAction, Button
 from trytond import backend
 from trytond.pyson import Eval, If, Bool, PYSONEncoder
@@ -21,7 +20,8 @@ __all__ = ['TaxGroup', 'TaxCodeTemplate', 'TaxCode',
     'TaxTemplate', 'Tax', 'TaxLine', 'TaxRuleTemplate', 'TaxRule',
     'TaxRuleLineTemplate', 'TaxRuleLine',
     'OpenTaxCode',
-    'AccountTemplateTaxTemplate', 'AccountTemplate2', 'AccountTax', 'Account2']
+    'AccountTemplateTaxTemplate', 'AccountTemplate2', 'AccountTax', 'Account2',
+    'TestTax', 'TestTaxView', 'TestTaxViewResult']
 
 KINDS = [
     ('sale', 'Sale'),
@@ -330,13 +330,12 @@ class OpenChartTaxCode(Wizard):
         return 'end'
 
 
-class TaxTemplate(ModelSQL, ModelView):
+class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
     'Account Tax Template'
     __name__ = 'account.tax.template'
     name = fields.Char('Name', required=True)
     description = fields.Char('Description', required=True)
     group = fields.Many2One('account.tax.group', 'Group')
-    sequence = fields.Integer('Sequence')
     start_date = fields.Date('Starting Date')
     end_date = fields.Date('Ending Date')
     amount = fields.Numeric('Amount', digits=(16, 8),
@@ -386,7 +385,6 @@ class TaxTemplate(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(TaxTemplate, cls).__setup__()
-        cls._order.insert(0, ('sequence', 'ASC'))
         cls._order.insert(0, ('account', 'ASC'))
         cls._error_messages.update({
                 'update_unit_price_with_parent': ('"Update Unit Price" can '
@@ -425,11 +423,6 @@ class TaxTemplate(ModelSQL, ModelView):
             self.raise_user_error('update_unit_price_with_parent', {
                     'template': self.rec_name,
                     })
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     @staticmethod
     def default_type():
@@ -557,7 +550,7 @@ class TaxTemplate(ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
 
 
-class Tax(ModelSQL, ModelView):
+class Tax(sequence_ordered(), ModelSQL, ModelView):
     '''
     Account Tax
 
@@ -575,7 +568,6 @@ class Tax(ModelSQL, ModelView):
                 'invisible': Bool(Eval('parent')),
             }, depends=['parent'])
     active = fields.Boolean('Active')
-    sequence = fields.Integer('Sequence', help='Use to order the taxes')
     start_date = fields.Date('Starting Date')
     end_date = fields.Date('Ending Date')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
@@ -696,7 +688,6 @@ class Tax(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(Tax, cls).__setup__()
-        cls._order.insert(0, ('sequence', 'ASC'))
         cls._error_messages.update({
                 'update_unit_price_with_parent': ('"Update Unit Price" can '
                     'not be set on tax "%(template)s" which has a parent.'),
@@ -734,11 +725,6 @@ class Tax(ModelSQL, ModelView):
             self.raise_user_error('update_unit_price_with_parent', {
                     'tax': self.rec_name,
                     })
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     @staticmethod
     def default_active():
@@ -1289,7 +1275,7 @@ class TaxRule(ModelSQL, ModelView):
             cls.write(*values)
 
 
-class TaxRuleLineTemplate(ModelSQL, ModelView):
+class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
     'Tax Rule Line Template'
     __name__ = 'account.tax.rule.line.template'
     rule = fields.Many2One('account.tax.rule.template', 'Rule', required=True,
@@ -1332,13 +1318,11 @@ class TaxRuleLineTemplate(ModelSQL, ModelView):
             ],
         depends=['group'],
         ondelete='RESTRICT')
-    sequence = fields.Integer('Sequence')
 
     @classmethod
     def __setup__(cls):
         super(TaxRuleLineTemplate, cls).__setup__()
-        cls._order.insert(0, ('rule', 'ASC'))
-        cls._order.insert(0, ('sequence', 'ASC'))
+        cls._order.insert(1, ('rule', 'ASC'))
 
     @classmethod
     def __register__(cls, module_name):
@@ -1349,11 +1333,6 @@ class TaxRuleLineTemplate(ModelSQL, ModelView):
 
         # Migration from 2.4: drop required on sequence
         table.not_null_action('sequence', action='remove')
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     def _get_tax_rule_line_value(self, rule_line=None):
         '''
@@ -1412,7 +1391,7 @@ class TaxRuleLineTemplate(ModelSQL, ModelView):
             template2rule_line[template.id] = rule_line.id
 
 
-class TaxRuleLine(ModelSQL, ModelView, MatchMixin):
+class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
     'Tax Rule Line'
     __name__ = 'account.tax.rule.line'
     _rec_name = 'tax'
@@ -1456,14 +1435,12 @@ class TaxRuleLine(ModelSQL, ModelView, MatchMixin):
             ],
         depends=['group'],
         ondelete='RESTRICT')
-    sequence = fields.Integer('Sequence')
     template = fields.Many2One('account.tax.rule.line.template', 'Template')
 
     @classmethod
     def __setup__(cls):
         super(TaxRuleLine, cls).__setup__()
-        cls._order.insert(0, ('rule', 'ASC'))
-        cls._order.insert(0, ('sequence', 'ASC'))
+        cls._order.insert(1, ('rule', 'ASC'))
 
     @classmethod
     def __register__(cls, module_name):
@@ -1474,11 +1451,6 @@ class TaxRuleLine(ModelSQL, ModelView, MatchMixin):
 
         # Migration from 2.4: drop required on sequence
         table.not_null_action('sequence', action='remove')
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     @classmethod
     def copy(cls, lines, default=None):
@@ -1636,3 +1608,83 @@ class Account2:
             help=('Default tax for manual encoding of move lines \n'
                 'for journal types: "expense" and "revenue"'),
             depends=['company'])
+
+
+class TestTax(Wizard):
+    "Test Tax"
+    __name__ = 'account.tax.test'
+    start_state = 'test'
+    test = StateView(
+        'account.tax.test', 'account.tax_test_view_form',
+        [Button('Close', 'end', 'tryton-close', default=True)])
+
+    def default_test(self, fields):
+        context = Transaction().context
+        default = {}
+        if context['active_model'] == 'account.tax':
+            default['taxes'] = context['active_ids']
+        return default
+
+
+class TestTaxView(ModelView, TaxableMixin):
+    "Test Tax"
+    __name__ = 'account.tax.test'
+    tax_date = fields.Date("Date")
+    taxes = fields.One2Many('account.tax', None, "Taxes",
+        domain=[
+            ('parent', '=', None),
+            ])
+    unit_price = fields.Numeric("Unit Price")
+    quantity = fields.Numeric("Quantity")
+    currency = fields.Many2One('currency.currency', 'Currency')
+    result = fields.One2Many(
+        'account.tax.test.result', None, "Result", readonly=True)
+
+    @classmethod
+    def default_tax_date(cls):
+        pool = Pool()
+        Date = pool.get('ir.date')
+        return Date.today()
+
+    @classmethod
+    def default_quantity(cls):
+        return 1
+
+    @classmethod
+    def default_currency(cls):
+        pool = Pool()
+        Company = pool.get('company.company')
+        company_id = Transaction().context.get('company')
+        if company_id:
+            company = Company(company_id)
+            return company.currency.id
+
+    @property
+    def taxable_lines(self):
+        return [(self.taxes, self.unit_price, self.quantity)]
+
+    @fields.depends(
+        'tax_date', 'taxes', 'unit_price', 'quantity', 'currency', 'result')
+    def on_change_with_result(self):
+        pool = Pool()
+        Result = pool.get('account.tax.test.result')
+        result = []
+        if all([self.tax_date, self.unit_price, self.quantity, self.currency]):
+            for taxline in self._get_taxes():
+                result.append(Result(**taxline))
+        self.result = result
+        return self._changed_values.get('result', [])
+
+
+class TestTaxViewResult(ModelView):
+    "Test Tax"
+    __name__ = 'account.tax.test.result'
+    tax = fields.Many2One('account.tax', "Tax")
+    description = fields.Char("Description")
+    account = fields.Many2One('account.account', "Account")
+    base = fields.Numeric("Base")
+    base_code = fields.Many2One('account.tax.code', "Base Code")
+    base_sign = fields.Numeric("Base Sign", digits=(2, 0))
+    amount = fields.Numeric("Amount")
+    tax_code = fields.Many2One('account.tax.code', "Tax Code")
+    tax_sign = fields.Numeric("Tax Sign", digits=(2, 0))

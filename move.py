@@ -15,7 +15,7 @@ from trytond.wizard import Wizard, StateTransition, StateView, StateAction, \
     StateReport, Button
 from trytond.report import Report
 from trytond import backend
-from trytond.pyson import Eval, Bool, PYSONEncoder
+from trytond.pyson import Eval, Bool, If, PYSONEncoder
 from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 from trytond.rpc import RPC
@@ -82,7 +82,7 @@ class Move(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(Move, cls).__setup__()
-        cls._check_modify_exclude = ['state']
+        cls._check_modify_exclude = []
         cls._order.insert(0, ('date', 'DESC'))
         cls._order.insert(1, ('number', 'DESC'))
         cls._error_messages.update({
@@ -90,14 +90,10 @@ class Move(ModelSQL, ModelView):
                     'empty.'),
                 'post_unbalanced_move': ('You can not post move "%s" because '
                     'it is an unbalanced.'),
-                'draft_posted_move_journal': ('You can not set posted move '
-                    '"%(move)s" to draft in journal "%(journal)s".'),
                 'modify_posted_move': ('You can not modify move "%s" because '
                     'it is already posted.'),
                 'date_outside_period': ('You can not create move "%(move)s" '
                     'because its date is outside its period.'),
-                'draft_closed_period': ('You can not set to draft move '
-                    '"%(move)s" because period "%(period)s" is closed.'),
                 'period_cancel': (
                     'The period of move "%s" is closed.\n'
                     'Use the current period?'),
@@ -105,9 +101,6 @@ class Move(ModelSQL, ModelView):
         cls._buttons.update({
                 'post': {
                     'invisible': Eval('state') == 'posted',
-                    },
-                'draft': {
-                    'invisible': Eval('state') == 'draft',
                     },
                 })
 
@@ -419,14 +412,11 @@ class Move(ModelSQL, ModelView):
             if not company.currency.is_zero(amount):
                 cls.raise_user_error('post_unbalanced_move', (move.rec_name,))
         for move in moves:
-            values = {
-                'state': 'posted',
-                }
+            move.state = 'posted'
             if not move.post_number:
-                values['post_date'] = Date.today()
-                values['post_number'] = Sequence.get_id(
+                move.post_date = Date.today()
+                move.post_number = Sequence.get_id(
                     move.period.post_move_sequence_used.id)
-            cls.write([move], values)
 
             keyfunc = lambda l: (l.party, l.account)
             to_reconcile = [l for l in move.lines
@@ -435,24 +425,7 @@ class Move(ModelSQL, ModelView):
             to_reconcile = sorted(to_reconcile, key=keyfunc)
             for _, zero_lines in groupby(to_reconcile, keyfunc):
                 Line.reconcile(list(zero_lines))
-
-    @classmethod
-    @ModelView.button
-    def draft(cls, moves):
-        for move in moves:
-            if not move.journal.update_posted:
-                cls.raise_user_error('draft_posted_move_journal', {
-                        'move': move.rec_name,
-                        'journal': move.journal.rec_name,
-                        })
-            if move.period.state == 'close':
-                cls.raise_user_error('draft_closed_period', {
-                        'move': move.rec_name,
-                        'period': move.period.rec_name,
-                        })
-        cls.write(moves, {
-            'state': 'draft',
-            })
+        cls.save(moves)
 
 
 class Reconciliation(ModelSQL, ModelView):
@@ -571,7 +544,7 @@ class Reconciliation(ModelSQL, ModelView):
                 language = Transaction().language
                 languages = Lang.search([('code', '=', language)])
                 if not languages:
-                    languages = Lang.search([('code', '=', 'en_US')])
+                    languages = Lang.search([('code', '=', 'en')])
                 language = languages[0]
                 debit = Lang.currency(
                     language, debit, account.company.currency)
@@ -586,36 +559,49 @@ class Reconciliation(ModelSQL, ModelView):
 class Line(ModelSQL, ModelView):
     'Account Move Line'
     __name__ = 'account.move.line'
+
+    _states = {
+        'readonly': Eval('move_state') == 'posted',
+        }
+    _depends = ['move_state']
+
     debit = fields.Numeric('Debit', digits=(16, Eval('currency_digits', 2)),
-        required=True,
-        depends=['currency_digits', 'credit', 'tax_lines', 'journal'])
+        required=True, states=_states,
+        depends=['currency_digits', 'credit', 'tax_lines', 'journal'] +
+        _depends)
     credit = fields.Numeric('Credit', digits=(16, Eval('currency_digits', 2)),
-        required=True,
-        depends=['currency_digits', 'debit', 'tax_lines', 'journal'])
+        required=True, states=_states,
+        depends=['currency_digits', 'debit', 'tax_lines', 'journal'] +
+        _depends)
     account = fields.Many2One('account.account', 'Account', required=True,
             domain=[('kind', '!=', 'view')],
-            select=True)
+            select=True, states=_states, depends=_depends)
     move = fields.Many2One('account.move', 'Move', select=True, required=True,
         ondelete='CASCADE',
         states={
             'required': False,
-            'readonly': Eval('state') == 'valid',
+            'readonly': (((Eval('state') == 'valid') | _states['readonly'])
+                & Bool(Eval('move'))),
             },
-        depends=['state'])
-    journal = fields.Function(fields.Many2One('account.journal', 'Journal'),
+        depends=['state'] + _depends)
+    journal = fields.Function(fields.Many2One('account.journal', 'Journal',
+            states=_states, depends=_depends),
             'get_move_field', setter='set_move_field',
             searcher='search_move_field')
-    period = fields.Function(fields.Many2One('account.period', 'Period'),
+    period = fields.Function(fields.Many2One('account.period', 'Period',
+            states=_states, depends=_depends),
             'get_move_field', setter='set_move_field',
             searcher='search_move_field')
-    date = fields.Function(fields.Date('Effective Date', required=True),
+    date = fields.Function(fields.Date('Effective Date', required=True,
+            states=_states, depends=_depends),
             'get_move_field', setter='set_move_field',
             searcher='search_move_field')
     origin = fields.Function(fields.Reference('Origin',
             selection='get_origin'),
         'get_move_field', searcher='search_move_field')
-    description = fields.Char('Description')
-    move_description = fields.Function(fields.Char('Move Description'),
+    description = fields.Char('Description', states=_states, depends=_depends)
+    move_description = fields.Function(fields.Char('Move Description',
+            states=_states, depends=_depends),
         'get_move_field', setter='set_move_field',
         searcher='search_move_field')
     amount_second_currency = fields.Numeric('Amount Second Currency',
@@ -623,23 +609,37 @@ class Line(ModelSQL, ModelView):
         help='The amount expressed in a second currency',
         states={
             'required': Bool(Eval('second_currency')),
+            'readonly': _states['readonly'],
             },
-        depends=['second_currency_digits', 'second_currency'])
+        depends=['second_currency_digits', 'second_currency'] + _depends)
     second_currency = fields.Many2One('currency.currency', 'Second Currency',
             help='The second currency',
+        domain=[
+            If(~Eval('second_currency_required'),
+                (),
+                ('id', '=', Eval('second_currency_required', -1))),
+            ],
         states={
-            'required': Bool(Eval('amount_second_currency')),
+            'required': (Bool(Eval('amount_second_currency'))
+                | Bool(Eval('second_currency_required'))),
+            'readonly': _states['readonly']
             },
-        depends=['amount_second_currency'])
+        depends=['amount_second_currency', 'second_currency_required']
+        + _depends)
+    second_currency_required = fields.Function(
+        fields.Many2One('currency.currency', "Second Currency Required"),
+        'on_change_with_second_currency_required')
     party = fields.Many2One('party.party', 'Party', select=True,
         states={
             'required': Eval('party_required', False),
             'invisible': ~Eval('party_required', False),
+            'readonly': _states['readonly'],
             },
-        depends=['party_required'], ondelete='RESTRICT')
+        depends=['party_required'] + _depends, ondelete='RESTRICT')
     party_required = fields.Function(fields.Boolean('Party Required'),
         'on_change_with_party_required')
     maturity_date = fields.Date('Maturity Date',
+        states=_states, depends=_depends,
         help='This field is used for payable and receivable lines. \n'
         'You can put the limit date for the payment.')
     state = fields.Selection([
@@ -652,11 +652,12 @@ class Line(ModelSQL, ModelView):
     move_state = fields.Function(fields.Selection([
         ('draft', 'Draft'),
         ('posted', 'Posted'),
-        ], 'Move State'), 'get_move_field', searcher='search_move_field')
+        ], 'Move State'), 'on_change_with_move_state',
+        searcher='search_move_field')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
-            'get_currency_digits')
+            'on_change_with_currency_digits')
     second_currency_digits = fields.Function(fields.Integer(
-        'Second Currency Digits'), 'get_currency_digits')
+        'Second Currency Digits'), 'on_change_with_second_currency_digits')
     amount = fields.Function(fields.Numeric('Amount',
             digits=(16, Eval('amount_currency_digits', 2)),
             depends=['amount_currency_digits']),
@@ -665,6 +666,8 @@ class Line(ModelSQL, ModelView):
             'Amount Currency'), 'get_amount_currency')
     amount_currency_digits = fields.Function(fields.Integer(
             'Amount Currency Digits'), 'get_amount_currency')
+
+    del _states, _depends
 
     @classmethod
     def __setup__(cls):
@@ -941,20 +944,19 @@ class Line(ModelSQL, ModelView):
                         ]
         return values
 
-    @classmethod
-    def get_currency_digits(cls, lines, names):
-        digits = {}
-        for line in lines:
-            for name in names:
-                digits.setdefault(name, {})
-                digits[name].setdefault(line.id, 2)
-                if name == 'currency_digits':
-                    digits[name][line.id] = line.account.currency_digits
-                elif name == 'second_currency_digits':
-                    second_currency = line.account.second_currency
-                    if second_currency:
-                        digits[name][line.id] = second_currency.digits
-        return digits
+    @fields.depends('account')
+    def on_change_with_currency_digits(self, name=None):
+        if self.account:
+            return self.account.currency_digits
+        else:
+            return 2
+
+    @fields.depends('second_currency')
+    def on_change_with_second_currency_digits(self, name=None):
+        if self.second_currency:
+            return self.second_currency.digits
+        else:
+            return 2
 
     @classmethod
     def get_origin(cls):
@@ -1008,10 +1010,16 @@ class Line(ModelSQL, ModelView):
         if self.account:
             self.currency_digits = self.account.currency_digits
             if self.account.second_currency:
-                self.second_currency_digits = \
-                    self.account.second_currency.digits
+                self.second_currency = self.account.second_currency
+                self.second_currency_digits = (
+                    self.on_change_with_second_currency_digits())
             if not self.account.party_required:
                 self.party = None
+
+    @fields.depends('account')
+    def on_change_with_second_currency_required(self, name=None):
+        if self.account and self.account.second_currency:
+            return self.account.second_currency.id
 
     @fields.depends('account')
     def on_change_with_party_required(self, name=None):
@@ -1176,6 +1184,11 @@ class Line(ModelSQL, ModelView):
         if name.startswith('move_'):
             name = name[5:]
         return [('move.' + name,) + tuple(clause[1:])]
+
+    @fields.depends('move','_parent_move.state')
+    def on_change_with_move_state(self, name=None):
+        if self.move:
+            return self.move.state
 
     def _order_move_field(name):
         def order_field(tables):
@@ -1355,7 +1368,6 @@ class Line(ModelSQL, ModelView):
                         journal_period.rec_name,))
         else:
             JournalPeriod.create([{
-                        'name': journal.name + ' - ' + period.name,
                         'journal': journal.id,
                         'period': period.id,
                         }])
@@ -1420,8 +1432,8 @@ class Line(ModelSQL, ModelView):
     @classmethod
     def create(cls, vlist):
         pool = Pool()
-        Journal = pool.get('account.journal')
         Move = pool.get('account.move')
+        move = None
         vlist = [x.copy() for x in vlist]
         for vals in vlist:
             if not vals.get('move'):
@@ -1429,14 +1441,14 @@ class Line(ModelSQL, ModelView):
                         or Transaction().context.get('journal'))
                 if not journal_id:
                     cls.raise_user_error('no_journal')
-                journal = Journal(journal_id)
-                if not vals.get('move'):
-                    vals['move'] = Move.create([{
-                                'period': (vals.get('period')
-                                    or Transaction().context.get('period')),
-                                'journal': journal_id,
-                                'date': vals.get('date'),
-                                }])[0].id
+                if move is None:
+                    move = Move()
+                    move.period = vals.get('period',
+                        Transaction().context.get('period'))
+                    move.journal = journal_id
+                    move.date = vals.get('date')
+                    move.save()
+                vals['move'] = move.id
             else:
                 # prevent computation of default date
                 vals.setdefault('date', None)
@@ -1457,21 +1469,6 @@ class Line(ModelSQL, ModelView):
         if 'reconciliation' not in default:
             default['reconciliation'] = None
         return super(Line, cls).copy(lines, default=default)
-
-    @classmethod
-    def view_header_get(cls, value, view_type='form'):
-        JournalPeriod = Pool().get('account.journal.period')
-        if (not Transaction().context.get('journal')
-                or not Transaction().context.get('period')):
-            return value
-        journal_periods = JournalPeriod.search([
-                ('journal', '=', Transaction().context['journal']),
-                ('period', '=', Transaction().context['period']),
-                ], limit=1)
-        if not journal_periods:
-            return value
-        journal_period, = journal_periods
-        return value + ': ' + journal_period.rec_name
 
     @classmethod
     def view_toolbar_get(cls):
@@ -1500,45 +1497,6 @@ class Line(ModelSQL, ModelView):
                         'id': template.id,
                         })
         return toolbar
-
-    @classmethod
-    def fields_view_get(cls, view_id=None, view_type='form'):
-        Journal = Pool().get('account.journal')
-        result = super(Line, cls).fields_view_get(view_id=view_id,
-            view_type=view_type)
-        if view_type == 'tree' and 'journal' in Transaction().context:
-            title = cls.view_header_get('', view_type=view_type)
-            journal = Journal(Transaction().context['journal'])
-
-            if not journal.view:
-                return result
-
-            xml = '<?xml version="1.0"?>\n' \
-                '<tree string="%s" editable="top" on_write="on_write">\n' \
-                % title
-            fields = set()
-            for column in journal.view.columns:
-                fields.add(column.field.name)
-                attrs = []
-                if column.field.name == 'debit':
-                    attrs.append('sum="Debit"')
-                elif column.field.name == 'credit':
-                    attrs.append('sum="Credit"')
-                if column.readonly:
-                    attrs.append('readonly="1"')
-                if column.required:
-                    attrs.append('required="1"')
-                else:
-                    attrs.append('required="0"')
-                xml += ('<field name="%s" %s/>\n'
-                    % (column.field.name, ' '.join(attrs)))
-                for depend in getattr(cls, column.field.name).depends:
-                    fields.add(depend)
-            fields.add('state')
-            xml += '</tree>'
-            result['arch'] = xml
-            result['fields'] = cls.fields_get(fields_names=list(fields))
-        return result
 
     @classmethod
     def reconcile(cls, lines, journal=None, date=None, account=None,
@@ -1681,7 +1639,6 @@ class OpenJournal(Wizard):
                 ], limit=1)
         if not journal_periods:
             journal_period, = JournalPeriod.create([{
-                        'name': journal.name + ' - ' + period.name,
                         'journal': journal.id,
                         'period': period.id,
                         }])

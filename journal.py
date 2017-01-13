@@ -3,20 +3,18 @@
 from decimal import Decimal
 
 from sql import Null
-from sql.conditionals import Case
 from sql.aggregate import Sum
 
 from trytond.model import ModelView, ModelSQL, fields, Unique
-from trytond.wizard import Wizard, StateTransition, StateView, StateAction
-from trytond.wizard import Button
+from trytond.wizard import Wizard, StateTransition
 from trytond import backend
-from trytond.pyson import Eval, Bool, PYSONEncoder
+from trytond.pyson import Eval, Bool
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import reduce_ids, grouped_slice
 
-__all__ = ['JournalType', 'JournalView', 'JournalViewColumn', 'Journal',
-    'OpenJournalCash', 'OpenJournalCashStart',
+__all__ = ['JournalType', 'Journal',
+    'JournalCashContext',
     'JournalPeriod', 'CloseJournalPeriod', 'ReOpenJournalPeriod']
 
 STATES = {
@@ -46,58 +44,6 @@ class JournalType(ModelSQL, ModelView):
         cls._order.insert(0, ('code', 'ASC'))
 
 
-class JournalView(ModelSQL, ModelView):
-    'Journal View'
-    __name__ = 'account.journal.view'
-    name = fields.Char('Name', size=None, required=True)
-    columns = fields.One2Many('account.journal.view.column', 'view', 'Columns')
-
-    @classmethod
-    def __setup__(cls):
-        super(JournalView, cls).__setup__()
-        cls._order.insert(0, ('name', 'ASC'))
-
-
-class JournalViewColumn(ModelSQL, ModelView):
-    'Journal View Column'
-    __name__ = 'account.journal.view.column'
-    name = fields.Char('Name', size=None, required=True)
-    field = fields.Many2One('ir.model.field', 'Field', required=True,
-            domain=[('model.model', '=', 'account.move.line')])
-    view = fields.Many2One('account.journal.view', 'View', select=True)
-    sequence = fields.Integer('Sequence', select=True)
-    required = fields.Boolean('Required')
-    readonly = fields.Boolean('Readonly')
-
-    @classmethod
-    def __setup__(cls):
-        super(JournalViewColumn, cls).__setup__()
-        cls._order.insert(0, ('sequence', 'ASC'))
-
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        super(JournalViewColumn, cls).__register__(module_name)
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
-
-    @staticmethod
-    def default_required():
-        return False
-
-    @staticmethod
-    def default_readonly():
-        return False
-
-
 class Journal(ModelSQL, ModelView):
     'Journal'
     __name__ = 'account.journal'
@@ -105,8 +51,6 @@ class Journal(ModelSQL, ModelView):
     code = fields.Char('Code', size=None)
     active = fields.Boolean('Active', select=True)
     type = fields.Selection('get_types', 'Type', required=True)
-    view = fields.Many2One('account.journal.view', 'View')
-    update_posted = fields.Boolean('Allow updating posted moves')
     sequence = fields.Property(fields.Many2One('ir.sequence', 'Sequence',
             domain=[('code', '=', 'account.journal')],
             context={'code': 'account.journal'},
@@ -171,10 +115,6 @@ class Journal(ModelSQL, ModelView):
     @staticmethod
     def default_active():
         return True
-
-    @staticmethod
-    def default_update_posted():
-        return False
 
     @staticmethod
     def default_sequence():
@@ -262,37 +202,9 @@ class Journal(ModelSQL, ModelView):
         return result
 
 
-class OpenJournalCash(Wizard):
-    'Open Journal Cash'
-    __name__ = 'account.journal.open_cash'
-    start = StateView('account.journal.open_cash.start',
-        'account.journal_open_cash_start_view_form', [
-            Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Open', 'open_', 'tryton-ok', default=True),
-            ])
-    open_ = StateAction('account.act_journal_open_cash')
-
-    def do_open_(self, action):
-        pool = Pool()
-        Lang = pool.get('ir.lang')
-
-        lang, = Lang.search([
-                ('code', '=', Transaction().language),
-                ])
-
-        action['pyson_context'] = PYSONEncoder().encode({
-                'start_date': self.start.start_date,
-                'end_date': self.start.end_date,
-                })
-        action['name'] += ' %s - %s' % (
-            Lang.strftime(self.start.start_date, lang.code, lang.date),
-            Lang.strftime(self.start.end_date, lang.code, lang.date))
-        return action, {}
-
-
-class OpenJournalCashStart(ModelView):
-    'Open Journal Cash'
-    __name__ = 'account.journal.open_cash.start'
+class JournalCashContext(ModelView):
+    'Journal Cash Context'
+    __name__ = 'account.journal.open_cash.context'
     start_date = fields.Date('Start Date', required=True)
     end_date = fields.Date('End Date', required=True)
 
@@ -305,7 +217,6 @@ class OpenJournalCashStart(ModelView):
 class JournalPeriod(ModelSQL, ModelView):
     'Journal - Period'
     __name__ = 'account.journal.period'
-    name = fields.Char('Name', size=None, required=True)
     journal = fields.Many2One('account.journal', 'Journal', required=True,
             ondelete='CASCADE', states=STATES, depends=DEPENDS)
     period = fields.Many2One('account.period', 'Period', required=True,
@@ -326,7 +237,7 @@ class JournalPeriod(ModelSQL, ModelView):
             ('journal_period_uniq', Unique(t, t.journal, t.period),
                 'You can only open one journal per period.'),
             ]
-        cls._order.insert(0, ('name', 'ASC'))
+
         cls._error_messages.update({
                 'modify_del_journal_period': ('You can not modify/delete '
                         'journal - period "%s" because it has moves.'),
@@ -337,6 +248,16 @@ class JournalPeriod(ModelSQL, ModelView):
                     '"%(period)s" is closed.'),
                 })
 
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+
+        super(JournalPeriod, cls).__register__(module_name)
+
+        table = TableHandler(cls, module_name)
+        # Migration from 4.2: remove name column
+        table.drop_column('name')
+
     @staticmethod
     def default_active():
         return True
@@ -344,6 +265,20 @@ class JournalPeriod(ModelSQL, ModelView):
     @staticmethod
     def default_state():
         return 'open'
+
+    def get_rec_name(self, name):
+        return '%s - %s' % (self.journal.rec_name, self.period.rec_name)
+
+    @classmethod
+    def search_rec_name(cls, name, clause):
+        if clause[1].startswith('!') or clause[1].startswith('not '):
+            bool_op = 'AND'
+        else:
+            bool_op = 'OR'
+        return [bool_op,
+                [('journal.rec_name',) + tuple(clause[1:])],
+                [('period.rec_name',) + tuple(clause[1:])],
+                ]
 
     def get_icon(self, name):
         return _ICONS.get(self.state, '')

@@ -4,11 +4,12 @@ from decimal import Decimal
 import datetime
 from functools import wraps
 
+from dateutil.relativedelta import relativedelta
 from sql import Column, Null, Window, Literal
 from sql.aggregate import Sum, Max
 from sql.conditionals import Coalesce, Case
 
-from trytond.model import ModelView, ModelSQL, fields, Unique
+from trytond.model import ModelView, ModelSQL, fields, Unique, sequence_ordered
 from trytond.wizard import Wizard, StateView, StateAction, StateTransition, \
     Button
 from trytond.report import Report
@@ -37,7 +38,7 @@ def inactive_records(func):
     return wrapper
 
 
-class TypeTemplate(ModelSQL, ModelView):
+class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
     'Account Type Template'
     __name__ = 'account.account.type.template'
     name = fields.Char('Name', required=True)
@@ -45,18 +46,12 @@ class TypeTemplate(ModelSQL, ModelView):
             ondelete="RESTRICT")
     childs = fields.One2Many('account.account.type.template', 'parent',
         'Children')
-    sequence = fields.Integer('Sequence')
     balance_sheet = fields.Boolean('Balance Sheet')
     income_statement = fields.Boolean('Income Statement')
     display_balance = fields.Selection([
         ('debit-credit', 'Debit - Credit'),
         ('credit-debit', 'Credit - Debit'),
         ], 'Display Balance', required=True)
-
-    @classmethod
-    def __setup__(cls):
-        super(TypeTemplate, cls).__setup__()
-        cls._order.insert(0, ('sequence', 'ASC'))
 
     @classmethod
     def __register__(cls, module_name):
@@ -72,11 +67,6 @@ class TypeTemplate(ModelSQL, ModelView):
     def validate(cls, records):
         super(TypeTemplate, cls).validate(records)
         cls.check_recursion(records, rec_name='name')
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     @staticmethod
     def default_balance_sheet():
@@ -153,7 +143,7 @@ class TypeTemplate(ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
 
 
-class Type(ModelSQL, ModelView):
+class Type(sequence_ordered(), ModelSQL, ModelView):
     'Account Type'
     __name__ = 'account.account.type'
     name = fields.Char('Name', size=None, required=True)
@@ -165,13 +155,14 @@ class Type(ModelSQL, ModelView):
         domain=[
             ('company', '=', Eval('company')),
         ], depends=['company'])
-    sequence = fields.Integer('Sequence',
-        help='Use to order the account type')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
             'get_currency_digits')
     amount = fields.Function(fields.Numeric('Amount',
         digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
         'get_amount')
+    amount_cmp = fields.Function(fields.Numeric('Amount',
+        digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
+        'get_amount_cmp')
     balance_sheet = fields.Boolean('Balance Sheet')
     income_statement = fields.Boolean('Income Statement')
     display_balance = fields.Selection([
@@ -181,11 +172,6 @@ class Type(ModelSQL, ModelView):
     company = fields.Many2One('company.company', 'Company', required=True,
             ondelete="RESTRICT")
     template = fields.Many2One('account.account.type.template', 'Template')
-
-    @classmethod
-    def __setup__(cls):
-        super(Type, cls).__setup__()
-        cls._order.insert(0, ('sequence', 'ASC'))
 
     @classmethod
     def __register__(cls, module_name):
@@ -201,11 +187,6 @@ class Type(ModelSQL, ModelView):
     def validate(cls, types):
         super(Type, cls).validate(types)
         cls.check_recursion(types, rec_name='name')
-
-    @staticmethod
-    def order_sequence(tables):
-        table, _ = tables[None]
-        return [Case((table.sequence == Null, 0), else_=1), table.sequence]
 
     @staticmethod
     def default_balance_sheet():
@@ -262,6 +243,26 @@ class Type(ModelSQL, ModelView):
             if type_.display_balance == 'credit-debit':
                 res[type_.id] = - res[type_.id]
         return res
+
+    @classmethod
+    def get_amount_cmp(cls, types, name):
+        transaction = Transaction()
+        current = transaction.context
+        if not current.get('comparison'):
+            return dict.fromkeys([t.id for t in types], None)
+        new = {}
+        for key, value in current.iteritems():
+            if key.endswith('_cmp'):
+                new[key[:-4]] = value
+        with transaction.set_context(new):
+            return cls.get_amount(types, name)
+
+    @classmethod
+    def view_attributes(cls):
+        return [
+            ('/tree/field[@name="amount_cmp"]', 'tree_invisible',
+                ~Eval('comparison', False)),
+            ]
 
     def get_rec_name(self, name):
         if self.parent:
@@ -537,7 +538,18 @@ class Account(ModelSQL, ModelView):
             'get_currency_digits')
     second_currency = fields.Many2One('currency.currency',
         'Secondary Currency', help='Force all moves for this account \n'
-        'to have this secondary currency.', ondelete="RESTRICT")
+        'to have this secondary currency.', ondelete="RESTRICT",
+        domain=[
+            ('id', '!=', Eval('currency', -1)),
+            ],
+        states={
+            'invisible': (Eval('kind').in_(
+                    ['payable', 'revenue', 'receivable', 'expense'])
+                | ~Eval('deferral', False)),
+            },
+        depends=['currency', 'kind', 'deferral'])
+    second_currency_digits = fields.Function(fields.Integer(
+            "Second Currency Digits"), 'get_second_currency_digits')
     type = fields.Many2One('account.account.type', 'Type', ondelete="RESTRICT",
         states={
             'invisible': Eval('kind') == 'view',
@@ -561,6 +573,14 @@ class Account(ModelSQL, ModelView):
         'get_credit_debit')
     debit = fields.Function(fields.Numeric('Debit',
         digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
+        'get_credit_debit')
+    amount_second_currency = fields.Function(fields.Numeric(
+            "Amount Second Currency",
+            digits=(16, Eval('second_currency_digits', 2)),
+            states={
+                'invisible': ~Eval('second_currency'),
+                },
+            depends=['second_currency_digits', 'second_currency']),
         'get_credit_debit')
     reconcile = fields.Boolean('Reconcile',
         help='Allow move lines of this account \nto be reconciled.',
@@ -603,6 +623,17 @@ class Account(ModelSQL, ModelView):
         cls._error_messages.update({
                 'delete_account_containing_move_lines': ('You can not delete '
                     'account "%s" because it has move lines.'),
+                'invalid_second_currency_type': (
+                    'The kind of Account "%(account)s" '
+                    'does not allow to set a second currency.\n'
+                    'Only "Other" type allows.'),
+                'invalid_second_currency_deferral': (
+                    'The Account "%(account)s" can not have a second currency '
+                    'because it is not deferral.'),
+                'invalid_second_currency_lines': (
+                    'The currency "%(currency)s" of '
+                    'Account "%(account)s" is not compatible '
+                    'with existing lines.'),
                 })
         cls._sql_error_messages.update({
                 'parent_fkey': ('You can not delete accounts that have '
@@ -615,6 +646,7 @@ class Account(ModelSQL, ModelView):
     def validate(cls, accounts):
         super(Account, cls).validate(accounts)
         cls.check_recursion(accounts)
+        cls.check_second_currency(accounts)
 
     @staticmethod
     def default_left():
@@ -658,6 +690,12 @@ class Account(ModelSQL, ModelView):
     def get_currency_digits(self, name):
         return self.company.currency.digits
 
+    def get_second_currency_digits(self, name):
+        if self.second_currency:
+            return self.second_currency.digits
+        else:
+            return 2
+
     @classmethod
     def get_balance(cls, accounts, name):
         pool = Pool()
@@ -698,7 +736,7 @@ class Account(ModelSQL, ModelView):
         fiscalyears = FiscalYear.browse(fiscalyear_ids)
         func = lambda accounts, names: \
             {names[0]: cls.get_balance(accounts, names[0])}
-        return cls._cumulate(fiscalyears, accounts, {name: balances},
+        return cls._cumulate(fiscalyears, accounts, [name], {name: balances},
             func)[name]
 
     @classmethod
@@ -716,8 +754,8 @@ class Account(ModelSQL, ModelView):
         result = {}
         ids = [a.id for a in accounts]
         for name in names:
-            if name not in ('credit', 'debit'):
-                raise Exception('Bad argument')
+            if name not in {'credit', 'debit', 'amount_second_currency'}:
+                raise ValueError('Unknown name: %s' % name)
             result[name] = dict((i, 0) for i in ids)
 
         table = cls.__table__()
@@ -743,18 +781,28 @@ class Account(ModelSQL, ModelView):
                         result[name][account_id] = row[i]
         for account in accounts:
             for name in names:
-                result[name][account.id] = account.company.currency.round(
-                    result[name][account.id])
+                if name == 'amount_second_currency':
+                    currency = account.second_currency
+                else:
+                    currency = account.company.currency
+                if currency:
+                    result[name][account.id] = currency.round(
+                        result[name][account.id])
 
-        if not Transaction().context.get('cumulate'):
-            return result
-        else:
+        cumulate_names = []
+        if Transaction().context.get('cumulate'):
+            cumulate_names = names
+        elif 'amount_second_currency' in names:
+            cumulate_names = ['amount_second_currency']
+        if cumulate_names:
             fiscalyears = FiscalYear.browse(fiscalyear_ids)
-            return cls._cumulate(fiscalyears, accounts, result,
+            return cls._cumulate(fiscalyears, accounts, cumulate_names, result,
                 cls.get_credit_debit)
+        else:
+            return result
 
     @classmethod
-    def _cumulate(cls, fiscalyears, accounts, values, func):
+    def _cumulate(cls, fiscalyears, accounts, names, values, func):
         """
         Cumulate previous fiscalyear values into values
         func is the method to compute values
@@ -762,7 +810,6 @@ class Account(ModelSQL, ModelView):
         pool = Pool()
         FiscalYear = pool.get('account.fiscalyear')
         Deferral = pool.get('account.account.deferral')
-        names = values.keys()
 
         youngest_fiscalyear = None
         for fiscalyear in fiscalyears:
@@ -816,6 +863,20 @@ class Account(ModelSQL, ModelView):
         else:
             return self.name
 
+    __on_change_parent_fields = ['name', 'code', 'company', 'type',
+        'reconcile', 'kind', 'deferral', 'party_required',
+        'general_ledger_balance', 'taxes']
+
+    @fields.depends('parent', *__on_change_parent_fields)
+    def on_change_parent(self):
+        if not self.parent:
+            return
+        for field in self.__on_change_parent_fields:
+            if (not getattr(self, field)
+                    or field in {'reconcile', 'kind', 'deferral',
+                        'party_required', 'general_ledger_balance'}):
+                setattr(self, field, getattr(self.parent, field))
+
     @classmethod
     def search_rec_name(cls, name, clause):
         if clause[1].startswith('!') or clause[1].startswith('not '):
@@ -826,6 +887,31 @@ class Account(ModelSQL, ModelView):
             ('code',) + tuple(clause[1:]),
             (cls._rec_name,) + tuple(clause[1:]),
             ]
+
+    @classmethod
+    def check_second_currency(cls, accounts):
+        pool = Pool()
+        Line = pool.get('account.move.line')
+        for account in accounts:
+            if not account.second_currency:
+                continue
+            if account.kind in {'payable', 'revenue', 'receivable', 'expense'}:
+                cls.raise_user_error('invalid_second_currency_type', {
+                        'account': account.rec_name,
+                        })
+            if not account.deferral:
+                cls.raise_user_error('invalid_second_currency_deferral', {
+                        'account': account.rec_name,
+                        })
+            lines = Line.search([
+                    ('account', '=', account.id),
+                    ('second_currency', '!=', account.second_currency.id),
+                    ], order=[], limit=1)
+            if lines:
+                cls.raise_user_error('invalid_second_currency_lines', {
+                        'currency': account.second_currency.rec_name,
+                        'account': account.rec_name,
+                        })
 
     @classmethod
     def copy(cls, accounts, default=None):
@@ -967,8 +1053,21 @@ class AccountDeferral(ModelSQL, ModelView):
     balance = fields.Function(fields.Numeric('Balance',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_balance')
+    currency = fields.Function(fields.Many2One(
+            'currency.currency', "Currency"), 'get_currency')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
             'get_currency_digits')
+    amount_second_currency = fields.Numeric(
+        "Amount Second Currency",
+        digits=(16, Eval('second_currency_digits', 2)),
+        states={
+            'invisible': ~Eval('second_currency'),
+            },
+        required=True, depends=['second_currency_digits', 'second_currency'])
+    second_currency = fields.Function(fields.Many2One(
+            'currency.currency', "Second Currency"), 'get_second_currency')
+    second_currency_digits = fields.Function(fields.Integer(
+            "Second Currency Digits"), 'get_second_currency_digits')
 
     @classmethod
     def __setup__(cls):
@@ -982,11 +1081,25 @@ class AccountDeferral(ModelSQL, ModelView):
             'write_deferral': 'You can not modify Account Deferral records',
             })
 
+    @classmethod
+    def default_amount_second_currency(cls):
+        return Decimal(0)
+
     def get_balance(self, name):
         return self.debit - self.credit
 
+    def get_currency(self, name):
+        return self.account.currency.id
+
     def get_currency_digits(self, name):
         return self.account.currency_digits
+
+    def get_second_currency(self, name):
+        if self.account.second_currency:
+            return self.account.second_currency.id
+
+    def get_second_currency_digits(self, name):
+        return self.account.second_currency_digits
 
     def get_rec_name(self, name):
         return '%s - %s' % (self.account.rec_name, self.fiscalyear.rec_name)
@@ -1396,6 +1509,12 @@ class BalanceSheetContext(ModelView):
     date = fields.Date('Date', required=True)
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help='Show only posted move')
+    comparison = fields.Boolean('Comparison')
+    date_cmp = fields.Date('Date', states={
+            'required': Eval('comparison', False),
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['comparison'])
 
     @staticmethod
     def default_date():
@@ -1409,6 +1528,24 @@ class BalanceSheetContext(ModelView):
     @staticmethod
     def default_posted():
         return False
+
+    @classmethod
+    def default_comparison(cls):
+        return False
+
+    @fields.depends('comparison', 'date', 'date_cmp')
+    def on_change_comparison(self):
+        self.date_cmp = None
+        if self.comparison and self.date:
+            self.date_cmp = self.date - relativedelta(years=1)
+
+    @classmethod
+    def view_attributes(cls):
+        return [
+            ('/form/separator[@id="comparison"]', 'states', {
+                    'invisible': ~Eval('comparison', False),
+                    }),
+            ]
 
 
 class IncomeStatementContext(ModelView):
@@ -1430,6 +1567,30 @@ class IncomeStatementContext(ModelView):
         depends=['start_period', 'fiscalyear'])
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help='Show only posted move')
+    comparison = fields.Boolean('Comparison')
+    fiscalyear_cmp = fields.Many2One('account.fiscalyear', 'Fiscal Year',
+        states={
+            'required': Eval('comparison', False),
+            'invisible': ~Eval('comparison', False),
+            })
+    start_period_cmp = fields.Many2One('account.period', 'Start Period',
+        domain=[
+            ('fiscalyear', '=', Eval('fiscalyear_cmp')),
+            ('start_date', '<=', (Eval('end_period_cmp'), 'start_date'))
+            ],
+        states={
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['end_period_cmp', 'fiscalyear_cmp'])
+    end_period_cmp = fields.Many2One('account.period', 'End Period',
+        domain=[
+            ('fiscalyear', '=', Eval('fiscalyear_cmp')),
+            ('start_date', '>=', (Eval('start_period_cmp'), 'start_date')),
+            ],
+        states={
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['start_period_cmp', 'fiscalyear_cmp'])
 
     @staticmethod
     def default_fiscalyear():
@@ -1445,10 +1606,22 @@ class IncomeStatementContext(ModelView):
     def default_posted():
         return False
 
+    @classmethod
+    def default_comparison(cls):
+        return False
+
     @fields.depends('fiscalyear')
     def on_change_fiscalyear(self):
         self.start_period = None
         self.end_period = None
+
+    @classmethod
+    def view_attributes(cls):
+        return [
+            ('/form/separator[@id="comparison"]', 'states', {
+                    'invisible': ~Eval('comparison', False),
+                    }),
+            ]
 
 
 class AgedBalanceContext(ModelView):

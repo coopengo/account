@@ -1,20 +1,14 @@
-Version 4.0.6 - 2016-12-17
+Version 4.2.0 - 2016-11-28
 * Bug fixes (see mercurial logs for details)
-
-Version 4.0.5 - 2016-11-06
-* Bug fixes (see mercurial logs for details)
-
-Version 4.0.4 - 2016-10-02
-* Bug fixes (see mercurial logs for details)
-
-Version 4.0.3 - 2016-09-03
-* Bug fixes (see mercurial logs for details)
-
-Version 4.0.2 - 2016-08-02
-* Bug fixes (see mercurial logs for details)
-
-Version 4.0.1 - 2016-05-11
-* Bug fixes (see mercurial logs for details)
+* Add test wizard for taxes
+* Remove journal view
+* Add amount second currency on Account
+* Enforce second currency on Account
+* Remove code from Fiscalyear and Period
+* Remove journal option for updating posted moves
+* Replace Journal-Period name by function field
+* Manage readonly state on Move Line
+* Add comparison amount on Balance Sheet and Income Statement
 
 Version 4.0.0 - 2016-05-02
 * Bug fixes (see mercurial logs for details)
