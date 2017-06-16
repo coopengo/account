@@ -5,27 +5,24 @@ from decimal import Decimal
 from sql import Null
 from sql.aggregate import Sum
 
-from trytond.model import ModelView, ModelSQL, fields, Unique
-from trytond.wizard import Wizard, StateTransition
+from trytond.model import ModelView, ModelSQL, Workflow, fields, Unique
 from trytond import backend
 from trytond.pyson import Eval, Bool
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import reduce_ids, grouped_slice
+from trytond.tools.multivalue import migrate_property
+from trytond.modules.company.model import (
+    CompanyMultiValueMixin, CompanyValueMixin)
 
-__all__ = ['JournalType', 'Journal',
+__all__ = ['JournalType', 'Journal', 'JournalSequence', 'JournalAccount',
     'JournalCashContext',
-    'JournalPeriod', 'CloseJournalPeriod', 'ReOpenJournalPeriod']
+    'JournalPeriod']
 
 STATES = {
     'readonly': Eval('state') == 'close',
 }
 DEPENDS = ['state']
-
-_ICONS = {
-    'open': 'tryton-open',
-    'close': 'tryton-readonly',
-}
 
 
 class JournalType(ModelSQL, ModelView):
@@ -44,21 +41,28 @@ class JournalType(ModelSQL, ModelView):
         cls._order.insert(0, ('code', 'ASC'))
 
 
-class Journal(ModelSQL, ModelView):
+class Journal(ModelSQL, ModelView, CompanyMultiValueMixin):
     'Journal'
     __name__ = 'account.journal'
     name = fields.Char('Name', size=None, required=True, translate=True)
     code = fields.Char('Code', size=None)
     active = fields.Boolean('Active', select=True)
     type = fields.Selection('get_types', 'Type', required=True)
-    sequence = fields.Property(fields.Many2One('ir.sequence', 'Sequence',
-            domain=[('code', '=', 'account.journal')],
-            context={'code': 'account.journal'},
+    sequence = fields.MultiValue(fields.Many2One(
+            'ir.sequence', "Sequence",
+            domain=[
+                ('code', '=', 'account.journal'),
+                ('company', 'in', [
+                        Eval('context', {}).get('company', -1), None]),
+                ],
             states={
                 'required': Bool(Eval('context', {}).get('company', -1)),
                 }))
-    credit_account = fields.Property(fields.Many2One('account.account',
-            'Default Credit Account', domain=[
+    sequences = fields.One2Many(
+        'account.journal.sequence', 'journal', "Sequences")
+    credit_account = fields.MultiValue(fields.Many2One(
+            'account.account', "Default Credit Account",
+            domain=[
                 ('kind', '!=', 'view'),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
@@ -66,9 +70,11 @@ class Journal(ModelSQL, ModelView):
                 'required': ((Eval('type').in_(['cash', 'write-off']))
                     & (Eval('context', {}).get('company', -1) != -1)),
                 'invisible': ~Eval('context', {}).get('company', -1),
-                }, depends=['type']))
-    debit_account = fields.Property(fields.Many2One('account.account',
-            'Default Debit Account', domain=[
+                },
+            depends=['type']))
+    debit_account = fields.MultiValue(fields.Many2One(
+            'account.account', "Default Debit Account",
+            domain=[
                 ('kind', '!=', 'view'),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
@@ -76,7 +82,10 @@ class Journal(ModelSQL, ModelView):
                 'required': ((Eval('type').in_(['cash', 'write-off']))
                     & (Eval('context', {}).get('company', -1) != -1)),
                 'invisible': ~Eval('context', {}).get('company', -1),
-                }, depends=['type']))
+                },
+            depends=['type']))
+    accounts = fields.One2Many(
+        'account.journal.account', 'journal', "Accounts")
     debit = fields.Function(fields.Numeric('Debit',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_debit_credit_balance')
@@ -96,21 +105,31 @@ class Journal(ModelSQL, ModelView):
 
     @classmethod
     def __register__(cls, module_name):
+        pool = Pool()
+        JournalSequence = pool.get('account.journal.sequence')
         TableHandler = backend.get('TableHandler')
+        sql_table = cls.__table__()
+        journal_sequence = JournalSequence.__table__()
+
         super(Journal, cls).__register__(module_name)
+
         cursor = Transaction().connection.cursor()
         table = TableHandler(cls, module_name)
 
-        # Migration from 1.0 sequence Many2One change into Property
+        # Migration from 1.0 sequence Many2One change into MultiValue
         if table.column_exist('sequence'):
-            Property = Pool().get('ir.property')
-            sql_table = cls.__table__()
-            cursor.execute(*sql_table.select(sql_table.id, sql_table.sequence))
-            for journal_id, sequence_id in cursor.fetchall():
-                Property.set('sequence', cls._name,
-                        journal_id, (sequence_id and
-                            'ir.sequence,' + str(sequence_id) or False))
+            query = journal_sequence.insert(
+                [journal_sequence.journal, journal_sequence.sequence],
+                sql_table.select(sql_table.id, sql_table.sequence))
+            cursor.execute(*query)
             table.drop_column('sequence', exception=True)
+
+    @classmethod
+    def multivalue_model(cls, field):
+        pool = Pool()
+        if field in {'credit_account', 'debit_account'}:
+            return pool.get('account.journal.account')
+        return super(Journal, cls).multivalue_model(field)
 
     @staticmethod
     def default_active():
@@ -202,6 +221,79 @@ class Journal(ModelSQL, ModelView):
         return result
 
 
+class JournalSequence(ModelSQL, CompanyValueMixin):
+    "Journal Sequence"
+    __name__ = 'account.journal.sequence'
+    journal = fields.Many2One(
+        'account.journal', "Journal", ondelete='CASCADE', select=True)
+    sequence = fields.Many2One(
+        'ir.sequence', "Sequence",
+        domain=[
+            ('code', '=', 'account.journal'),
+            ('company', 'in', [Eval('company', -1), None]),
+            ],
+        depends=['company'])
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        exist = TableHandler.table_exist(cls._table)
+
+        super(JournalSequence, cls).__register__(module_name)
+
+        if not exist:
+            cls._migrate_property([], [], [])
+
+    @classmethod
+    def _migrate_property(cls, field_names, value_names, fields):
+        field_names.append('sequence')
+        value_names.append('sequence')
+        fields.append('company')
+        migrate_property(
+            'account.journal', field_names, cls, value_names,
+            parent='journal', fields=fields)
+
+
+class JournalAccount(ModelSQL, CompanyValueMixin):
+    "Journal Account"
+    __name__ = 'account.journal.account'
+    journal = fields.Many2One(
+        'account.journal', "Journal", ondelete='CASCADE', select=True)
+    credit_account = fields.Many2One(
+        'account.account', "Default Credit Account",
+        domain=[
+            ('kind', '!=', 'view'),
+            ('company', '=', Eval('company', -1)),
+            ],
+        depends=['company'])
+    debit_account = fields.Many2One(
+        'account.account', "Default Debit Account",
+        domain=[
+            ('kind', '!=', 'view'),
+            ('company', '=', Eval('company', -1)),
+            ],
+        depends=['company'])
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        exist = TableHandler.table_exist(cls._table)
+
+        super(JournalAccount, cls).__register__(module_name)
+
+        if not exist:
+            cls._migrate_property([], [], [])
+
+    @classmethod
+    def _migrate_property(cls, field_names, value_names, fields):
+        field_names.extend(['credit_account', 'debit_account'])
+        value_names.extend(['credit_account', 'debit_account'])
+        fields.append('company')
+        migrate_property(
+            'account.journal', field_names, cls, value_names,
+            parent='journal', fields=fields)
+
+
 class JournalCashContext(ModelView):
     'Journal Cash Context'
     __name__ = 'account.journal.open_cash.context'
@@ -214,7 +306,7 @@ class JournalCashContext(ModelView):
     default_end_date = default_start_date
 
 
-class JournalPeriod(ModelSQL, ModelView):
+class JournalPeriod(Workflow, ModelSQL, ModelView):
     'Journal - Period'
     __name__ = 'account.journal.period'
     journal = fields.Many2One('account.journal', 'Journal', required=True,
@@ -246,6 +338,18 @@ class JournalPeriod(ModelSQL, ModelView):
                 'open_journal_period': ('You can not open '
                     'journal - period "%(journal_period)s" because period '
                     '"%(period)s" is closed.'),
+                })
+        cls._transitions |= set((
+                ('open', 'close'),
+                ('close', 'open'),
+                ))
+        cls._buttons.update({
+                'close': {
+                    'invisible': Eval('state') != 'open',
+                    },
+                'reopen': {
+                    'invisible': Eval('state') != 'close',
+                    },
                 })
 
     @classmethod
@@ -281,7 +385,10 @@ class JournalPeriod(ModelSQL, ModelView):
                 ]
 
     def get_icon(self, name):
-        return _ICONS.get(self.state, '')
+        return {
+            'open': 'tryton-open',
+            'close': 'tryton-close',
+            }.get(self.state)
 
     @classmethod
     def _check(cls, periods):
@@ -301,7 +408,7 @@ class JournalPeriod(ModelSQL, ModelView):
         for vals in vlist:
             if vals.get('period'):
                 period = Period(vals['period'])
-                if period.state == 'close':
+                if period.state != 'open':
                     cls.raise_user_error('create_journal_period', (
                             period.rec_name,))
         return super(JournalPeriod, cls).create(vlist)
@@ -315,7 +422,7 @@ class JournalPeriod(ModelSQL, ModelView):
                 cls._check(journal_periods)
             if values.get('state') == 'open':
                 for journal_period in journal_periods:
-                    if journal_period.period.state == 'close':
+                    if journal_period.period.state != 'open':
                         cls.raise_user_error('open_journal_period', {
                                 'journal_period': journal_period.rec_name,
                                 'period': journal_period.period.rec_name,
@@ -328,43 +435,17 @@ class JournalPeriod(ModelSQL, ModelView):
         super(JournalPeriod, cls).delete(periods)
 
     @classmethod
+    @ModelView.button
+    @Workflow.transition('close')
     def close(cls, periods):
         '''
         Close journal - period
         '''
-        cls.write(periods, {
-                'state': 'close',
-                })
+        pass
 
     @classmethod
-    def open_(cls, periods):
+    @ModelView.button
+    @Workflow.transition('open')
+    def reopen(cls, periods):
         "Open journal - period"
-        cls.write(periods, {
-                'state': 'open',
-                })
-
-
-class CloseJournalPeriod(Wizard):
-    'Close Journal - Period'
-    __name__ = 'account.journal.period.close'
-    start_state = 'close'
-    close = StateTransition()
-
-    def transition_close(self):
-        JournalPeriod = Pool().get('account.journal.period')
-        JournalPeriod.close(
-            JournalPeriod.browse(Transaction().context['active_ids']))
-        return 'end'
-
-
-class ReOpenJournalPeriod(Wizard):
-    'Re-Open Journal - Period'
-    __name__ = 'account.journal.period.reopen'
-    start_state = 'reopen'
-    reopen = StateTransition()
-
-    def transition_reopen(self):
-        JournalPeriod = Pool().get('account.journal.period')
-        JournalPeriod.open_(
-            JournalPeriod.browse(Transaction().context['active_ids']))
-        return 'end'
+        pass

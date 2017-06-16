@@ -19,8 +19,10 @@ from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond import backend
 
-__all__ = ['TypeTemplate', 'Type', 'OpenType', 'AccountTemplate', 'Account',
-    'AccountDeferral', 'OpenChartAccountStart', 'OpenChartAccount',
+__all__ = ['TypeTemplate', 'Type', 'OpenType',
+    'AccountTemplate', 'AccountTemplateTaxTemplate',
+    'Account', 'AccountDeferral', 'AccountTax',
+    'OpenChartAccountStart', 'OpenChartAccount',
     'GeneralLedgerAccount', 'GeneralLedgerAccountContext',
     'GeneralLedgerLine', 'GeneralLedgerLineContext',
     'GeneralLedger', 'TrialBalance',
@@ -362,6 +364,9 @@ class AccountTemplate(ModelSQL, ModelView):
             },
         depends=['kind'],
         help="Display only the balance in the general ledger report")
+    taxes = fields.Many2Many('account.account.template-account.tax.template',
+            'account', 'tax', 'Default Taxes',
+            domain=[('parent', '=', None)])
 
     @classmethod
     def __setup__(cls):
@@ -509,7 +514,8 @@ class AccountTemplate(ModelSQL, ModelView):
                 if template.id not in template_done:
                     if template.taxes:
                         tax_ids = [template2tax[x.id] for x in template.taxes]
-                        to_write.append([Account(template2account[template.id])])
+                        to_write.append(
+                            [Account(template2account[template.id])])
                         to_write.append({
                                 'taxes': [
                                     ('add', tax_ids)],
@@ -522,6 +528,16 @@ class AccountTemplate(ModelSQL, ModelView):
         while childs:
             update(childs)
             childs = sum((c.childs for c in childs), ())
+
+
+class AccountTemplateTaxTemplate(ModelSQL):
+    'Account Template - Tax Template'
+    __name__ = 'account.account.template-account.tax.template'
+    _table = 'account_account_template_tax_rel'
+    account = fields.Many2One('account.account.template', 'Account Template',
+            ondelete='CASCADE', select=True, required=True)
+    tax = fields.Many2One('account.tax.template', 'Tax Template',
+            ondelete='RESTRICT', select=True, required=True)
 
 
 class Account(ModelSQL, ModelView):
@@ -615,6 +631,15 @@ class Account(ModelSQL, ModelView):
             },
         depends=['kind'],
         help="Display only the balance in the general ledger report")
+    taxes = fields.Many2Many('account.account-account.tax',
+            'account', 'tax', 'Default Taxes',
+            domain=[
+                ('company', '=', Eval('company')),
+                ('parent', '=', None),
+            ],
+            help=('Default tax for manual encoding of move lines \n'
+                'for journal types: "expense" and "revenue"'),
+            depends=['company'])
     template = fields.Many2One('account.account.template', 'Template')
 
     @classmethod
@@ -734,8 +759,9 @@ class Account(ModelSQL, ModelView):
                 balances[account.id])
 
         fiscalyears = FiscalYear.browse(fiscalyear_ids)
-        func = lambda accounts, names: \
-            {names[0]: cls.get_balance(accounts, names[0])}
+
+        def func(accounts, names):
+            return {names[0]: cls.get_balance(accounts, names[0])}
         return cls._cumulate(fiscalyears, accounts, [name], {name: balances},
             func)[name]
 
@@ -1120,6 +1146,16 @@ class AccountDeferral(ModelSQL, ModelView):
         cls.raise_user_error('write_deferral')
 
 
+class AccountTax(ModelSQL):
+    'Account - Tax'
+    __name__ = 'account.account-account.tax'
+    _table = 'account_account_tax_rel'
+    account = fields.Many2One('account.account', 'Account', ondelete='CASCADE',
+            select=True, required=True)
+    tax = fields.Many2One('account.tax', 'Tax', ondelete='RESTRICT',
+            select=True, required=True)
+
+
 class OpenChartAccountStart(ModelView):
     'Open Chart of Accounts'
     __name__ = 'account.open_chart.start'
@@ -1383,7 +1419,9 @@ class GeneralLedgerLine(ModelSQL, ModelView):
         Move = pool.get('account.move')
         LedgerAccount = pool.get('account.general_ledger.account')
         Account = pool.get('account.account')
-        context = Transaction().context
+        transaction = Transaction()
+        database = transaction.database
+        context = transaction.context
         line = Line.__table__()
         move = Move.__table__()
         account = Account.__table__()
@@ -1393,8 +1431,7 @@ class GeneralLedgerLine(ModelSQL, ModelView):
                 continue
             field_line = getattr(Line, fname, None)
             if fname == 'balance':
-                # TODO replace the test by a generic one on backend
-                if backend.name() == 'postgresql':
+                if database.has_window_functions():
                     w_columns = [line.account]
                     if context.get('party_cumulate', False):
                         w_columns.append(line.party)
@@ -1967,44 +2004,15 @@ class CreateChart(Wizard):
 
     def transition_create_properties(self):
         pool = Pool()
-        Property = pool.get('ir.property')
-        ModelField = pool.get('ir.model.field')
+        Configuration = pool.get('account.configuration')
 
         with Transaction().set_context(company=self.properties.company.id):
-            account_receivable_field, = ModelField.search([
-                    ('model.model', '=', 'party.party'),
-                    ('name', '=', 'account_receivable'),
-                    ], limit=1)
-            properties = Property.search([
-                    ('field', '=', account_receivable_field.id),
-                    ('res', '=', None),
-                    ('company', '=', self.properties.company.id),
-                    ])
-            Property.delete(properties)
-            if self.properties.account_receivable:
-                Property.create([{
-                            'field': account_receivable_field.id,
-                            'value': str(
-                                self.properties.account_receivable),
-                            'company': self.properties.company.id,
-                            }])
-
-            account_payable_field, = ModelField.search([
-                    ('model.model', '=', 'party.party'),
-                    ('name', '=', 'account_payable'),
-                    ], limit=1)
-            properties = Property.search([
-                    ('field', '=', account_payable_field.id),
-                    ('res', '=', None),
-                    ('company', '=', self.properties.company.id),
-                    ])
-            Property.delete(properties)
-            if self.properties.account_payable:
-                Property.create([{
-                            'field': account_payable_field.id,
-                            'value': str(self.properties.account_payable),
-                            'company': self.properties.company.id,
-                            }])
+            account_receivable = self.properties.account_receivable
+            account_payable = self.properties.account_payable
+            config = Configuration(1)
+            config.default_account_receivable = account_receivable
+            config.default_account_payable = account_payable
+            config.save()
         return 'end'
 
 

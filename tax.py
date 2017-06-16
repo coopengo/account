@@ -20,7 +20,6 @@ __all__ = ['TaxGroup', 'TaxCodeTemplate', 'TaxCode',
     'TaxTemplate', 'Tax', 'TaxLine', 'TaxRuleTemplate', 'TaxRule',
     'TaxRuleLineTemplate', 'TaxRuleLine',
     'OpenTaxCode',
-    'AccountTemplateTaxTemplate', 'AccountTemplate2', 'AccountTax', 'Account2',
     'TestTax', 'TestTaxView', 'TestTaxViewResult']
 
 KINDS = [
@@ -1081,6 +1080,7 @@ class TaxableMixin(object):
         Configuration = pool.get('account.configuration')
 
         config = Configuration(1)
+        tax_rounding = config.tax_rounding
         taxes = {}
         with Transaction().set_context(self._get_tax_context()):
             taxable_lines = [_TaxableLine(*params)
@@ -1097,9 +1097,9 @@ class TaxableMixin(object):
                     else:
                         taxes[taxline]['base'] += taxline['base']
                         taxes[taxline]['amount'] += taxline['amount']
-                if config.tax_rounding == 'line':
+                if tax_rounding == 'line':
                     self._round_taxes(taxes)
-        if config.tax_rounding == 'document':
+        if tax_rounding == 'document':
             self._round_taxes(taxes)
         return taxes
 
@@ -1566,48 +1566,6 @@ class OpenTaxCode(Wizard):
                     'periods': [p.id for p in periods],
                     })
         return action, {}
-
-
-class AccountTemplateTaxTemplate(ModelSQL):
-    'Account Template - Tax Template'
-    __name__ = 'account.account.template-account.tax.template'
-    _table = 'account_account_template_tax_rel'
-    account = fields.Many2One('account.account.template', 'Account Template',
-            ondelete='CASCADE', select=True, required=True)
-    tax = fields.Many2One('account.tax.template', 'Tax Template',
-            ondelete='RESTRICT', select=True, required=True)
-
-
-class AccountTemplate2:
-    __metaclass__ = PoolMeta
-    __name__ = 'account.account.template'
-    taxes = fields.Many2Many('account.account.template-account.tax.template',
-            'account', 'tax', 'Default Taxes',
-            domain=[('parent', '=', None)])
-
-
-class AccountTax(ModelSQL):
-    'Account - Tax'
-    __name__ = 'account.account-account.tax'
-    _table = 'account_account_tax_rel'
-    account = fields.Many2One('account.account', 'Account', ondelete='CASCADE',
-            select=True, required=True)
-    tax = fields.Many2One('account.tax', 'Tax', ondelete='RESTRICT',
-            select=True, required=True)
-
-
-class Account2:
-    __metaclass__ = PoolMeta
-    __name__ = 'account.account'
-    taxes = fields.Many2Many('account.account-account.tax',
-            'account', 'tax', 'Default Taxes',
-            domain=[
-                ('company', '=', Eval('company')),
-                ('parent', '=', None),
-            ],
-            help=('Default tax for manual encoding of move lines \n'
-                'for journal types: "expense" and "revenue"'),
-            depends=['company'])
 
 
 class TestTax(Wizard):

@@ -26,10 +26,10 @@ class MoveTemplate(ModelSQL, ModelView):
         'Keywords')
     company = fields.Many2One('company.company', 'Company', required=True)
     journal = fields.Many2One('account.journal', 'Journal', required=True)
-    date = fields.Char('Date', help='Leave empty for today')
+    date = fields.Char('Date', help='Leave empty for today.')
     description = fields.Char('Description',
         help="Keyword values substitutions are identified "
-        "by braces ('{' and '}')")
+        "by braces ('{' and '}').")
     lines = fields.One2Many('account.move.line.template', 'move', 'Lines',
         domain=[
             ('account.company', '=', Eval('company', -1)),
@@ -158,7 +158,8 @@ class MoveLineTemplate(ModelSQL, ModelView):
             ('debit', 'Debit'),
             ('credit', 'Credit'),
             ], 'Operation', required=True)
-    amount = fields.Char('Amount', required=True)
+    amount = fields.Char('Amount', required=True,
+        help="A python expression that will be evaluated with the keywords.")
     account = fields.Many2One('account.account', 'Account', required=True,
         domain=[
             ('kind', '!=', 'view'),
@@ -169,12 +170,13 @@ class MoveLineTemplate(ModelSQL, ModelView):
             'required': Eval('party_required', False),
             'invisible': ~Eval('party_required', False),
             },
-        depends=['party_required'])
+        depends=['party_required'],
+        help="The name of the 'Party' keyword.")
     party_required = fields.Function(fields.Boolean('Party Required'),
         'on_change_with_party_required')
     description = fields.Char('Description',
         help="Keywords values substitutions are identified "
-        "by braces ('{' and '}')")
+        "by braces ('{' and '}').")
     taxes = fields.One2Many('account.tax.line.template', 'line', 'Taxes')
 
     @fields.depends('account')
@@ -212,7 +214,8 @@ class TaxLineTemplate(ModelSQL, ModelView):
     'Account Tax Line Template'
     __name__ = 'account.tax.line.template'
     line = fields.Many2One('account.move.line.template', 'Line', required=True)
-    amount = fields.Char('Amount', required=True)
+    amount = fields.Char('Amount', required=True,
+        help="A python expression that will be evaluated with the keywords.")
     code = fields.Many2One('account.tax.code', 'Code', required=True,
         domain=[
             ('company', '=', Eval('_parent_line', {}
@@ -242,13 +245,15 @@ class TaxLineTemplate(ModelSQL, ModelView):
 class KeywordStateView(StateView):
 
     def get_view(self, wizard, state_name):
-        template = wizard.template.template
         fields = {}
         view = {
             'model': 'account.move.template.create.keywords',
             'view_id': 0,
             'fields': fields,
             }
+        if not hasattr(wizard.template, 'template'):
+            return view
+        template = wizard.template.template
         field_template = ('<label name=%(name)s/>'
             '<field name=%(name)s/>')
         view['arch'] = ('<?xml version="1.0"?>'
@@ -280,7 +285,7 @@ class CreateMove(Wizard):
             Button('Create', 'create_', 'tryton-ok', default=True),
             ])
     create_ = StateTransition()
-    open_ = StateAction('account.act_move_form')
+    open_ = StateAction('account.act_move_from_template')
 
     def create_move(self):
         template = self.template.template
@@ -307,7 +312,7 @@ class CreateMove(Wizard):
 
     def transition_create_(self):
         model = Transaction().context.get('active_model')
-        if model:
+        if model == 'account.move.line':
             self.create_move()
             return 'end'
         else:
@@ -319,8 +324,9 @@ class CreateMove(Wizard):
         return action, {}
 
     def end(self):
-        # XXX only for model account.move.line
-        return 'reload'
+        model = Transaction().context.get('active_model')
+        if model == 'account.move.line':
+            return 'reload'
 
 
 class CreateMoveTemplate(ModelView):
