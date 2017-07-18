@@ -85,8 +85,8 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
                 'default_account_payable'])
         fields.append('company')
         migrate_property(
-            'account.configuration', field_names, cls, value_names,
-            parent='configuration', fields=fields)
+            'party.party', field_names, cls, value_names,
+            fields=fields)
 
 
 class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
