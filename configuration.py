@@ -79,8 +79,8 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
 
     @classmethod
     def _migrate_property(cls, field_names, value_names, fields):
-        field_names.extend(['default_account_receivable',
-                'default_account_payable'])
+        field_names.extend(['account_receivable',
+                'account_payable'])
         value_names.extend(['default_account_receivable',
                 'default_account_payable'])
         fields.append('company')
