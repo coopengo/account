@@ -49,7 +49,7 @@ class Configuration(
 
 
 class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
-    "Account Configuration Default Account"
+    'Account Configuration Default Account'
     __name__ = 'account.configuration.default_account'
 
     configuration = fields.Many2One('account.configuration', 'Configuration',
