@@ -1180,9 +1180,10 @@ class Line(ModelSQL, ModelView):
 
     @classmethod
     def search_move_field(cls, name, clause):
+        nested = clause[0].lstrip(name)
         if name.startswith('move_'):
             name = name[5:]
-        return [('move.' + name,) + tuple(clause[1:])]
+        return [('move.' + name + nested,) + tuple(clause[1:])]
 
     @fields.depends('move','_parent_move.state')
     def on_change_with_move_state(self, name=None):
@@ -1215,7 +1216,7 @@ class Line(ModelSQL, ModelView):
         if self.amount_second_currency is not None:
             return self.amount_second_currency * sign
         else:
-            return self.debit - self.credit * sign
+            return (self.debit - self.credit) * sign
 
     def get_amount_currency(self, name):
         if self.second_currency:

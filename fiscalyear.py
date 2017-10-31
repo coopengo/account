@@ -157,7 +157,6 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
     @classmethod
     def write(cls, *args):
         actions = iter(args)
-        args = []
         for fiscalyears, values in zip(actions, actions):
             if values.get('post_move_sequence'):
                 for fiscalyear in fiscalyears:
@@ -166,12 +165,6 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                             values['post_move_sequence']):
                         cls.raise_user_error('change_post_move_sequence', (
                                 fiscalyear.rec_name,))
-            values = values.copy()
-            if 'periods' in values:
-                operator = ['delete', 'remove', 'create', 'write', 'add']
-                values['periods'].sort(lambda x, y:
-                    cmp(operator.index(x[0]), operator.index(y[0])))
-            args.extend((fiscalyears, values))
         super(FiscalYear, cls).write(*args)
 
     @classmethod
