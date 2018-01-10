@@ -380,6 +380,7 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
         digits=(2, 0))
     account = fields.Many2One('account.account.template', 'Account Template',
             domain=[('parent', '=', None)], required=True)
+    legal_notice = fields.Text("Legal Notice")
 
     @classmethod
     def __setup__(cls):
@@ -455,7 +456,8 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
         for field in ('name', 'description', 'sequence', 'amount',
                 'rate', 'type', 'invoice_base_sign', 'invoice_tax_sign',
                 'credit_note_base_sign', 'credit_note_tax_sign',
-                'start_date', 'end_date', 'update_unit_price'):
+                'start_date', 'end_date', 'update_unit_price',
+                'legal_notice'):
             if not tax or getattr(tax, field) != getattr(self, field):
                 res[field] = getattr(self, field)
         for field in ('group',):
@@ -560,7 +562,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
     '''
     __name__ = 'account.tax'
     name = fields.Char('Name', required=True)
-    description = fields.Char('Description', required=True,
+    description = fields.Char('Description', required=True, translate=True,
             help="The name that will be used in reports")
     group = fields.Many2One('account.tax.group', 'Group',
             states={
@@ -569,14 +571,12 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
     active = fields.Boolean('Active')
     start_date = fields.Date('Starting Date')
     end_date = fields.Date('Ending Date')
-    currency_digits = fields.Function(fields.Integer('Currency Digits'),
-        'on_change_with_currency_digits')
-    amount = fields.Numeric('Amount', digits=(16, Eval('currency_digits', 2)),
+    amount = fields.Numeric('Amount', digits=(16, 8),
         states={
             'required': Eval('type') == 'fixed',
             'invisible': Eval('type') != 'fixed',
             }, help='In company\'s currency',
-        depends=['type', 'currency_digits'])
+        depends=['type'])
     rate = fields.Numeric('Rate', digits=(14, 10),
         states={
             'required': Eval('type') == 'percentage',
@@ -682,6 +682,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
             'required': Eval('type') != 'none',
             'readonly': Eval('type') == 'none',
             }, depends=['type'])
+    legal_notice = fields.Text("Legal Notice", translate=True)
     template = fields.Many2One('account.tax.template', 'Template')
 
     @classmethod
@@ -756,12 +757,6 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
     @staticmethod
     def default_company():
         return Transaction().context.get('company')
-
-    @fields.depends('company')
-    def on_change_with_currency_digits(self, name=None):
-        if self.company:
-            return self.company.currency.digits
-        return 2
 
     @classmethod
     def copy(cls, taxes, default=None):
@@ -1054,6 +1049,7 @@ class TaxableMixin(object):
         line = {}
         line['manual'] = False
         line['description'] = tax.description
+        line['legal_notice'] = tax.legal_notice
         line['base'] = base
         line['amount'] = amount
         line['tax'] = tax.id if tax else None
@@ -1248,7 +1244,7 @@ class TaxRule(ModelSQL, ModelView):
 
         for line in self.lines:
             if line.match(pattern):
-                return line.get_taxes()
+                return line.get_taxes(tax)
         return tax and [tax.id] or None
 
     @classmethod
@@ -1303,6 +1299,8 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
             'applied only for this tax template.'),
         depends=['group'],
         ondelete='RESTRICT')
+    keep_origin = fields.Boolean("Keep Origin",
+        help="Check to append the original tax to substituted tax.")
     tax = fields.Many2One('account.tax.template', 'Substitution Tax',
         domain=[
             ('parent', '=', None),
@@ -1345,6 +1343,8 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
             res['group'] = self.group.id if self.group else None
         if not rule_line or rule_line.sequence != self.sequence:
             res['sequence'] = self.sequence
+        if not rule_line or rule_line.keep_origin != self.keep_origin:
+            res['keep_origin'] = self.keep_origin
         if not rule_line or rule_line.template != self:
             res['template'] = self.id
         return res
@@ -1419,6 +1419,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
             'only for this tax.'),
         depends=['group'],
         ondelete='RESTRICT')
+    keep_origin = fields.Boolean("Keep Origin",
+        help="Check to append the original tax to substituted tax.")
     tax = fields.Many2One('account.tax', 'Substitution Tax',
         domain=[
             ('parent', '=', None),
@@ -1468,12 +1470,15 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 return False
         return super(TaxRuleLine, self).match(pattern)
 
-    def get_taxes(self):
+    def get_taxes(self, origin_tax):
         '''
         Return list of taxes for a line
         '''
         if self.tax:
-            return [self.tax.id]
+            taxes = [self.tax.id]
+            if self.keep_origin and origin_tax:
+                taxes.append(origin_tax.id)
+            return taxes
         return None
 
     @classmethod
