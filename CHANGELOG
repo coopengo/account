@@ -1,11 +1,14 @@
-Version 4.4.3 - 2017-11-08
+Version 4.6.0 - 2017-10-30
 * Bug fixes (see mercurial logs for details)
-
-Version 4.4.2 - 2017-10-04
-* Bug fixes (see mercurial logs for details)
-
-Version 4.4.1 - 2017-08-08
-* Bug fixes (see mercurial logs for details)
+* Allow to keep original taxes when applying a tax rule
+* Add legal notice on taxes
+* Ease creation of new fiscalyear
+* Drop required on party payable and receivable accounts
+* Make tax description translatable
+* Add searcher on General Ledger
+* Add from and to date to General Ledger and Income Statement
+* Add move filtering on date range
+* Simplify default values for move line
 
 Version 4.4.0 - 2017-05-01
 * Bug fixes (see mercurial logs for details)

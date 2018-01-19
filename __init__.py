@@ -78,9 +78,9 @@ def register():
         CreateMoveKeywords,
         Party,
         PartyAccount,
+        RenewFiscalYearStart,
         module='account', type_='model')
     Pool.register(
-        OpenType,
         BalanceNonDeferral,
         OpenChartAccount,
         CreateChart,
@@ -97,6 +97,7 @@ def register():
         OpenTaxCode,
         TestTax,
         PartyReplace,
+        RenewFiscalYear,
         module='account', type_='wizard')
     Pool.register(
         GeneralLedger,

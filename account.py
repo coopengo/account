@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
 import datetime
+import operator
 from functools import wraps
 
 from dateutil.relativedelta import relativedelta
@@ -14,12 +15,12 @@ from trytond.wizard import Wizard, StateView, StateAction, StateTransition, \
     Button
 from trytond.report import Report
 from trytond.tools import reduce_ids, grouped_slice
-from trytond.pyson import Eval, PYSONEncoder
+from trytond.pyson import Eval, If, PYSONEncoder
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond import backend
 
-__all__ = ['TypeTemplate', 'Type', 'OpenType',
+__all__ = ['TypeTemplate', 'Type',
     'AccountTemplate', 'AccountTemplateTaxTemplate',
     'Account', 'AccountDeferral', 'AccountTax',
     'OpenChartAccountStart', 'OpenChartAccount',
@@ -302,25 +303,6 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
         if values:
             self.write(*values)
-
-
-class OpenType(Wizard):
-    'Open Type'
-    __name__ = 'account.account.open_type'
-    start_state = 'open_'
-    open_ = StateAction('account.act_account_list2')
-
-    def do_open_(self, action):
-        action['pyson_domain'] = PYSONEncoder().encode([
-                ('type', '=', Transaction().context['active_id']),
-                ('kind', '!=', 'view'),
-                ])
-        action['pyson_context'] = PYSONEncoder().encode({
-                'date': Transaction().context.get('date'),
-                'posted': Transaction().context.get('posted'),
-                'cumulate': Transaction().context.get('cumulate'),
-                })
-        return action, {}
 
 
 class AccountTemplate(ModelSQL, ModelView):
@@ -1205,28 +1187,36 @@ class GeneralLedgerAccount(ModelSQL, ModelView):
     company = fields.Many2One('company.company', 'Company')
     start_debit = fields.Function(fields.Numeric('Start Debit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     debit = fields.Function(fields.Numeric('Debit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_debit_credit')
+            depends=['currency_digits']),
+        'get_debit_credit', searcher='search_debit_credit')
     end_debit = fields.Function(fields.Numeric('End Debit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     start_credit = fields.Function(fields.Numeric('Start Credit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     credit = fields.Function(fields.Numeric('Credit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_debit_credit')
+            depends=['currency_digits']),
+        'get_debit_credit', searcher='search_debit_credit')
     end_credit = fields.Function(fields.Numeric('End Credit',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     start_balance = fields.Function(fields.Numeric('Start Balance',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     end_balance = fields.Function(fields.Numeric('End Balance',
             digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits']), 'get_account')
+            depends=['currency_digits']),
+        'get_account', searcher='search_account')
     lines = fields.One2Many('account.general_ledger.line', 'account', 'Lines',
         readonly=True)
     general_ledger_balance = fields.Boolean('General Ledger Balance')
@@ -1284,12 +1274,24 @@ class GeneralLedgerAccount(ModelSQL, ModelView):
         return period_ids
 
     @classmethod
+    def get_dates(cls, name):
+        context = Transaction().context
+        if name.startswith('start_'):
+            return None, context.get('from_date')
+        elif name.startswith('end_'):
+            return None, context.get('to_date')
+        return None, None
+
+    @classmethod
     def get_account(cls, records, name):
         pool = Pool()
         Account = pool.get('account.account')
 
         period_ids = cls.get_period_ids(name)
-        with Transaction().set_context(periods=period_ids):
+        from_date, to_date = cls.get_dates(name)
+        with Transaction().set_context(
+                periods=period_ids,
+                from_date=from_date, to_date=to_date):
             accounts = Account.browse(records)
         fname = name
         for test in ['start_', 'end_']:
@@ -1297,6 +1299,36 @@ class GeneralLedgerAccount(ModelSQL, ModelView):
                 fname = name[len(test):]
                 break
         return {a.id: getattr(a, fname) for a in accounts}
+
+    @classmethod
+    def search_account(cls, name, domain):
+        pool = Pool()
+        Account = pool.get('account.account')
+
+        period_ids = cls.get_period_ids(name)
+        with Transaction().set_context(periods=period_ids):
+            accounts = Account.search([], order=[])
+
+        _, operator_, operand = domain
+        operator_ = {
+            '=': operator.eq,
+            '>=': operator.ge,
+            '>': operator.gt,
+            '<=': operator.le,
+            '<': operator.lt,
+            '!=': operator.ne,
+            'in': lambda v, l: v in l,
+            'not in': lambda v, l: v not in l,
+            }.get(operator_, lambda v, l: False)
+        fname = name
+        for test in ['start_', 'end_']:
+            if name.startswith(test):
+                fname = name[len(test):]
+                break
+
+        ids = [a.id for a in accounts
+            if operator_(getattr(a, fname), operand)]
+        return [('id', 'in', ids)]
 
     @classmethod
     def get_debit_credit(cls, records, name):
@@ -1310,6 +1342,34 @@ class GeneralLedgerAccount(ModelSQL, ModelView):
         with Transaction().set_context(periods=periods_ids):
             accounts = Account.browse(records)
         return {a.id: getattr(a, name) for a in accounts}
+
+    @classmethod
+    def search_debit_credit(cls, name, domain):
+        pool = Pool()
+        Account = pool.get('account.account')
+
+        start_period_ids = cls.get_period_ids('start_%s' % name)
+        end_period_ids = cls.get_period_ids('end_%s' % name)
+        periods_ids = list(
+            set(end_period_ids).difference(set(start_period_ids)))
+        with Transaction().set_context(periods=periods_ids):
+            accounts = Account.search([], order=[])
+
+        _, operator_, operand = domain
+        operator_ = {
+            '=': operator.eq,
+            '>=': operator.ge,
+            '>': operator.gt,
+            '<=': operator.le,
+            '<': operator.lt,
+            '!=': operator.ne,
+            'in': lambda v, l: v in l,
+            'not in': lambda v, l: v not in l,
+            }.get(operator_, lambda v, l: False)
+
+        ids = [a.id for a in accounts
+            if operator_(getattr(a, name), operand)]
+        return [('id', 'in', ids)]
 
     def get_currency_digits(self, name):
         return self.company.currency.digits
@@ -1335,6 +1395,20 @@ class GeneralLedgerAccountContext(ModelView):
             ('start_date', '>=', (Eval('start_period'), 'start_date'))
             ],
         depends=['fiscalyear', 'start_period'])
+    from_date = fields.Date("From Date",
+        domain=[
+            If(Eval('to_date') & Eval('from_date'),
+                ('from_date', '<=', Eval('to_date')),
+                ()),
+            ],
+        depends=['to_date'])
+    to_date = fields.Date("To Date",
+        domain=[
+            If(Eval('from_date') & Eval('to_date'),
+                ('to_date', '>=', Eval('from_date')),
+                ()),
+            ],
+        depends=['from_date'])
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help='Show only posted move')
 
@@ -1362,6 +1436,14 @@ class GeneralLedgerAccountContext(ModelView):
     @classmethod
     def default_posted(cls):
         return Transaction().context.get('posted', False)
+
+    @classmethod
+    def default_from_date(cls):
+        return Transaction().context.get('from_date')
+
+    @classmethod
+    def default_to_date(cls):
+        return Transaction().context.get('to_date')
 
     @fields.depends('fiscalyear', 'start_period', 'end_period')
     def on_change_fiscalyear(self):
@@ -1504,6 +1586,8 @@ class GeneralLedger(Report):
                 report_context[period] = Period(context[period])
             else:
                 report_context[period] = None
+        report_context['from_date'] = context.get('from_date')
+        report_context['to_date'] = context.get('to_date')
 
         report_context['accounts'] = records
         return report_context
@@ -1530,6 +1614,8 @@ class TrialBalance(Report):
                 report_context[period] = Period(context[period])
             else:
                 report_context[period] = None
+        report_context['from_date'] = context.get('from_date')
+        report_context['to_date'] = context.get('to_date')
 
         report_context['accounts'] = records
         report_context['sum'] = cls.sum
@@ -1589,7 +1675,11 @@ class IncomeStatementContext(ModelView):
     'Income Statement Context'
     __name__ = 'account.income_statement.context'
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
-        required=True)
+        required=True,
+        domain=[
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
     start_period = fields.Many2One('account.period', 'Start Period',
         domain=[
             ('fiscalyear', '=', Eval('fiscalyear')),
@@ -1602,6 +1692,20 @@ class IncomeStatementContext(ModelView):
             ('start_date', '>=', (Eval('start_period'), 'start_date')),
             ],
         depends=['start_period', 'fiscalyear'])
+    from_date = fields.Date("From Date",
+        domain=[
+            If(Eval('to_date') & Eval('from_date'),
+                ('from_date', '<=', Eval('to_date')),
+                ()),
+            ],
+        depends=['to_date'])
+    to_date = fields.Date("To Date",
+        domain=[
+            If(Eval('from_date') & Eval('to_date'),
+                ('to_date', '>=', Eval('from_date')),
+                ()),
+            ],
+        depends=['from_date'])
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help='Show only posted move')
     comparison = fields.Boolean('Comparison')
@@ -1609,7 +1713,11 @@ class IncomeStatementContext(ModelView):
         states={
             'required': Eval('comparison', False),
             'invisible': ~Eval('comparison', False),
-            })
+            },
+        domain=[
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
     start_period_cmp = fields.Many2One('account.period', 'Start Period',
         domain=[
             ('fiscalyear', '=', Eval('fiscalyear_cmp')),
@@ -1628,6 +1736,26 @@ class IncomeStatementContext(ModelView):
             'invisible': ~Eval('comparison', False),
             },
         depends=['start_period_cmp', 'fiscalyear_cmp'])
+    from_date_cmp = fields.Date("From Date",
+        domain=[
+            If(Eval('to_date_cmp') & Eval('from_date_cmp'),
+                ('from_date_cmp', '<=', Eval('to_date_cmp')),
+                ()),
+            ],
+        states={
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['to_date_cmp', 'comparison'])
+    to_date_cmp = fields.Date("To Date",
+        domain=[
+            If(Eval('from_date_cmp') & Eval('to_date_cmp'),
+                ('to_date_cmp', '>=', Eval('from_date_cmp')),
+                ()),
+            ],
+        states={
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['from_date_cmp', 'comparison'])
 
     @staticmethod
     def default_fiscalyear():

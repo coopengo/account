@@ -968,7 +968,13 @@ class AccountTestCase(ModuleTestCase):
                         Party.search([(field, '=', value)]),
                         [party_test], msg=msg)
                     self.assertEqual(
+                        Party.search([(field, 'in', [value])]),
+                        [party_test], msg=msg)
+                    self.assertEqual(
                         Party.search([(field, '!=', value)]),
+                        [], msg=msg)
+                    self.assertEqual(
+                        Party.search([(field, 'not in', [value])]),
                         [], msg=msg)
 
             check_fields()
@@ -986,6 +992,82 @@ class AccountTestCase(ModuleTestCase):
         tax3 = Tax(sequence=1, id=-1)
         self.assertSequenceEqual(
             Tax.sort_taxes([tax3, tax2, tax1]), [tax1, tax2, tax3])
+
+    @with_transaction()
+    def test_configuration_accounts_on_party(self):
+        'Test configuration accounts are used as fallback on party'
+        pool = Pool()
+        Party = pool.get('party.party')
+        Account = pool.get('account.account')
+
+        party = Party(name='Party')
+        party.save()
+
+        self.assertIsNone(party.account_payable)
+        self.assertIsNone(party.account_receivable)
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company)
+            receivable, = Account.search([
+                    ('kind', '=', 'receivable'),
+                    ])
+            payable, = Account.search([
+                    ('kind', '=', 'payable'),
+                    ])
+
+            party = Party(party.id)
+
+            self.assertEqual(party.account_payable_used, payable)
+            self.assertEqual(party.account_receivable_used, receivable)
+
+    @with_transaction()
+    def test_tax_rule(self):
+        "Test tax rule"
+        pool = Pool()
+        TaxRule = pool.get('account.tax.rule')
+        Tax = pool.get('account.tax')
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company, tax=True)
+            tax, = Tax.search([])
+            target_tax, = Tax.copy([tax])
+
+            tax_rule, = TaxRule.create([{
+                        'name': 'Test',
+                        'kind': 'both',
+                        'lines': [('create', [{
+                                        'origin_tax': tax.id,
+                                        'tax': target_tax.id,
+                                        }])],
+                        }])
+            self.assertListEqual(tax_rule.apply(tax, {}), [target_tax.id])
+
+    @with_transaction()
+    def test_tax_rule_keep_origin(self):
+        "Test tax rule keeps origin"
+        pool = Pool()
+        TaxRule = pool.get('account.tax.rule')
+        Tax = pool.get('account.tax')
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company, tax=True)
+            tax, = Tax.search([])
+            target_tax, = Tax.copy([tax])
+
+            tax_rule, = TaxRule.create([{
+                        'name': 'Test',
+                        'kind': 'both',
+                        'lines': [('create', [{
+                                        'origin_tax': tax.id,
+                                        'tax': target_tax.id,
+                                        'keep_origin': True,
+                                        }])],
+                        }])
+            self.assertListEqual(
+                tax_rule.apply(tax, {}),  [target_tax.id, tax.id])
 
 
 def suite():
@@ -1009,6 +1091,11 @@ def suite():
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_reports.rst',
+            tearDown=doctest_teardown, encoding='utf-8',
+            checker=doctest_checker,
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+    suite.addTests(doctest.DocFileSuite(
+            'scenario_renew_fiscalyear.rst',
             tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
