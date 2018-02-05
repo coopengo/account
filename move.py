@@ -435,8 +435,8 @@ class Move(ModelSQL, ModelView):
                     and l.account.reconcile)]
             to_reconcile = sorted(to_reconcile, key=keyfunc)
             # NKH: handle bulk reconcile to improve perf
-            to_reconcile_list.extend([list(zero_lines) for _, zero_lines in
-                    groupby(to_reconcile, keyfunc)])
+            to_reconcile_list.extend([list(zero_lines)
+                    for _, zero_lines in groupby(to_reconcile, keyfunc)])
         if to_reconcile_list:
             Line.bulk_reconcile(to_reconcile_list)
 
@@ -1609,14 +1609,13 @@ class Line(ModelSQL, ModelView):
                         or Decimal('0.0')),
                     ], limit=1)
         return {
-                'lines': [('add', [x.id for x in lines])],
-                'date': max(l.date for l in lines),
-                }
+            'lines': [('add', [x.id for x in lines])],
+            'date': max(l.date for l in lines),
+            }
 
     @classmethod
     def reconcile(cls, lines, journal=None, date=None, account=None,
             description=None):
-
         Reconciliation = Pool().get('account.move.reconciliation')
         return Reconciliation.create([cls._reconcile(lines, journal, date,
                     account, description)])[0]
@@ -2070,8 +2069,8 @@ class CancelMoves(Wizard):
                 if line.account.reconcile:
                     to_reconcile[line.account].append(line)
             # NKH: handle bulk reconcile to improve perf
-            to_reconcile_list.extend([lines for lines in
-                    to_reconcile.itervalues()])
+            to_reconcile_list.extend([lines
+                    for lines in to_reconcile.itervalues()])
         if to_reconcile_list:
             Line.bulk_reconcile(to_reconcile_list)
         return 'end'
