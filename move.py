@@ -434,6 +434,7 @@ class Move(ModelSQL, ModelView):
                 if ((l.debit == l.credit == Decimal('0'))
                     and l.account.reconcile)]
             to_reconcile = sorted(to_reconcile, key=keyfunc)
+            # NKH: handle bulk reconcile to improve perf
             to_reconcile_list.extend([list(zero_lines) for _, zero_lines in
                     groupby(to_reconcile, keyfunc)])
         if to_reconcile_list:
@@ -1623,7 +1624,9 @@ class Line(ModelSQL, ModelView):
     @classmethod
     def bulk_reconcile(cls, lines_list, journal=None, date=None, account=None,
             description=None):
-
+        # NKH: handle bulk reconcile to improve perf : reconciliation call post
+        # and paid method on invoices. These methods call thoses methods with an
+        # invoice list instead of one unique invoice
         Reconciliation = Pool().get('account.move.reconciliation')
         reconciliations = [cls._reconcile(lines, journal, date,
                     account, description) for lines in lines_list]
@@ -2066,7 +2069,8 @@ class CancelMoves(Wizard):
             for line in move.lines + cancel_move.lines:
                 if line.account.reconcile:
                     to_reconcile[line.account].append(line)
-            to_reconcile_list.extend([lines for lines in 
+            # NKH: handle bulk reconcile to improve perf
+            to_reconcile_list.extend([lines for lines in
                     to_reconcile.itervalues()])
         if to_reconcile_list:
             Line.bulk_reconcile(to_reconcile_list)
