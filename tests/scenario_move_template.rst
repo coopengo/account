@@ -10,7 +10,7 @@ Imports::
     >>> from trytond.modules.company.tests.tools import create_company, \
     ...     get_company
     >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
-    ...     create_chart, get_accounts, create_tax, set_tax_code
+    ...     create_chart, get_accounts, create_tax, create_tax_code
 
 Install account::
 
@@ -25,7 +25,7 @@ Create fiscal year::
 
     >>> fiscalyear = create_fiscalyear(company)
     >>> fiscalyear.click('create_period')
-    >>> period = fiscalyear.periods[0]
+    >>> period_ids = [p.id for p in fiscalyear.periods]
 
 Create chart of accounts::
 
@@ -35,10 +35,15 @@ Create chart of accounts::
     >>> expense = accounts['expense']
     >>> tax = accounts['tax']
 
-Create tax with code::
+Create tax code::
 
-    >>> tax = set_tax_code(create_tax(Decimal('0.1')))
+    >>> TaxCode = Model.get('account.tax.code')
+    >>> tax = create_tax(Decimal('0.1'))
     >>> tax.save()
+    >>> base_code = create_tax_code(tax, amount='base')
+    >>> base_code.save()
+    >>> tax_code = create_tax_code(tax)
+    >>> tax_code.save()
 
 Create parties::
 
@@ -73,16 +78,16 @@ Create Template::
     >>> line.amount = 'amount / 1.1'
     >>> ttax = line.taxes.new()
     >>> ttax.amount = line.amount
-    >>> ttax.code = tax.invoice_base_code
     >>> ttax.tax = tax
+    >>> ttax.type = 'base'
     >>> line = template.lines.new()
     >>> line.operation = 'debit'
     >>> line.account = tax.invoice_account
     >>> line.amount = 'amount * (1 - 1/1.1)'
     >>> ttax = line.taxes.new()
     >>> ttax.amount = line.amount
-    >>> ttax.code = tax.invoice_tax_code
     >>> ttax.tax = tax
+    >>> ttax.type = 'tax'
     >>> template.save()
 
 Create Move::
@@ -112,7 +117,11 @@ Check the Move::
     [(Decimal('0'), Decimal('12.24')), (Decimal('1.11'), Decimal('0')), (Decimal('11.13'), Decimal('0'))]
     >>> move.description
     u'Supplier - Test'
-    >>> tax.invoice_base_code.sum
+    >>> with config.set_context(periods=period_ids):
+    ...     base_code = TaxCode(base_code.id)
+    ...     base_code.amount
     Decimal('11.13')
-    >>> tax.invoice_tax_code.sum
+    >>> with config.set_context(periods=period_ids):
+    ...     tax_code = TaxCode(tax_code.id)
+    ...     tax_code.amount
     Decimal('1.11')

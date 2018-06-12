@@ -9,14 +9,13 @@ from .period import *
 from .journal import *
 from .move import *
 from .move_template import *
-from .tax import *
+from . import tax
 from . import party
 
 
 def register():
     Pool.register(
         FiscalYear,
-        FiscalYearLine,
         BalanceNonDeferralStart,
         TypeTemplate,
         Type,
@@ -31,6 +30,7 @@ def register():
         GeneralLedgerLine,
         GeneralLedgerLineContext,
         BalanceSheetContext,
+        BalanceSheetComparisionContext,
         IncomeStatementContext,
         CreateChartStart,
         CreateChartAccount,
@@ -57,19 +57,21 @@ def register():
         ReconcileShow,
         CancelMovesDefault,
         PrintGeneralJournalStart,
-        TaxGroup,
-        TaxCodeTemplate,
-        TaxCode,
-        OpenChartTaxCodeStart,
-        TaxTemplate,
-        Tax,
-        TaxLine,
-        TaxRuleTemplate,
-        TaxRule,
-        TaxRuleLineTemplate,
-        TaxRuleLine,
-        TestTaxView,
-        TestTaxViewResult,
+        tax.TaxGroup,
+        tax.TaxCodeTemplate,
+        tax.TaxCode,
+        tax.TaxCodeLineTemplate,
+        tax.TaxCodeLine,
+        tax.OpenChartTaxCodeStart,
+        tax.TaxTemplate,
+        tax.Tax,
+        tax.TaxLine,
+        tax.TaxRuleTemplate,
+        tax.TaxRule,
+        tax.TaxRuleLineTemplate,
+        tax.TaxRuleLine,
+        tax.TestTaxView,
+        tax.TestTaxViewResult,
         MoveTemplate,
         MoveTemplateKeyword,
         MoveLineTemplate,
@@ -81,6 +83,7 @@ def register():
         RenewFiscalYearStart,
         module='account', type_='model')
     Pool.register(
+        OpenType,
         BalanceNonDeferral,
         OpenChartAccount,
         CreateChart,
@@ -93,9 +96,9 @@ def register():
         CancelMoves,
         PrintGeneralJournal,
         CreateMove,
-        OpenChartTaxCode,
-        OpenTaxCode,
-        TestTax,
+        tax.OpenChartTaxCode,
+        tax.OpenTaxCode,
+        tax.TestTax,
         party.PartyReplace,
         party.PartyErase,
         RenewFiscalYear,

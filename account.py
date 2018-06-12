@@ -10,24 +10,26 @@ from sql import Column, Null, Window, Literal
 from sql.aggregate import Sum, Max
 from sql.conditionals import Coalesce, Case
 
-from trytond.model import ModelView, ModelSQL, fields, Unique, sequence_ordered
+from trytond.model import (
+    ModelView, ModelSQL, DeactivableMixin, fields, Unique, sequence_ordered)
 from trytond.wizard import Wizard, StateView, StateAction, StateTransition, \
     Button
 from trytond.report import Report
 from trytond.tools import reduce_ids, grouped_slice
-from trytond.pyson import Eval, If, PYSONEncoder
+from trytond.pyson import Eval, If, PYSONEncoder, Bool
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond import backend
 
-__all__ = ['TypeTemplate', 'Type',
+__all__ = ['TypeTemplate', 'Type', 'OpenType',
     'AccountTemplate', 'AccountTemplateTaxTemplate',
     'Account', 'AccountDeferral', 'AccountTax',
     'OpenChartAccountStart', 'OpenChartAccount',
     'GeneralLedgerAccount', 'GeneralLedgerAccountContext',
     'GeneralLedgerLine', 'GeneralLedgerLineContext',
     'GeneralLedger', 'TrialBalance',
-    'BalanceSheetContext', 'IncomeStatementContext',
+    'BalanceSheetContext', 'BalanceSheetComparisionContext',
+    'IncomeStatementContext',
     'AgedBalanceContext', 'AgedBalance', 'AgedBalanceReport',
     'CreateChartStart', 'CreateChartAccount', 'CreateChartProperties',
     'CreateChart', 'UpdateChartStart', 'UpdateChartSucceed', 'UpdateChart']
@@ -149,15 +151,23 @@ class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
 class Type(sequence_ordered(), ModelSQL, ModelView):
     'Account Type'
     __name__ = 'account.account.type'
-    name = fields.Char('Name', size=None, required=True)
+
+    _states = {
+        'readonly': (Bool(Eval('template', -1)) &
+            ~Eval('template_override', False)),
+        }
+    name = fields.Char('Name', size=None, required=True, states=_states)
     parent = fields.Many2One('account.account.type', 'Parent',
-        ondelete="RESTRICT", domain=[
+        ondelete="RESTRICT", states=_states,
+        domain=[
             ('company', '=', Eval('company')),
-            ], depends=['company'])
+            ],
+        depends=['company'])
     childs = fields.One2Many('account.account.type', 'parent', 'Children',
         domain=[
             ('company', '=', Eval('company')),
-        ], depends=['company'])
+        ],
+        depends=['company'])
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
             'get_currency_digits')
     amount = fields.Function(fields.Numeric('Amount',
@@ -166,15 +176,22 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
     amount_cmp = fields.Function(fields.Numeric('Amount',
         digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
         'get_amount_cmp')
-    balance_sheet = fields.Boolean('Balance Sheet')
-    income_statement = fields.Boolean('Income Statement')
+    balance_sheet = fields.Boolean('Balance Sheet', states=_states)
+    income_statement = fields.Boolean('Income Statement', states=_states)
     display_balance = fields.Selection([
         ('debit-credit', 'Debit - Credit'),
         ('credit-debit', 'Credit - Debit'),
-        ], 'Display Balance', required=True)
+        ], 'Display Balance', required=True, states=_states)
     company = fields.Many2One('company.company', 'Company', required=True,
             ondelete="RESTRICT")
     template = fields.Many2One('account.account.type.template', 'Template')
+    template_override = fields.Boolean('Override Template',
+        help="Check to override template definition",
+        states={
+            'invisible': ~Bool(Eval('template', -1)),
+            },
+        depends=['template'])
+    del _states
 
     @classmethod
     def __register__(cls, module_name):
@@ -202,6 +219,10 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
     @staticmethod
     def default_display_balance():
         return 'debit-credit'
+
+    @classmethod
+    def default_template_override(cls):
+        return False
 
     def get_currency_digits(self, name):
         return self.company.currency.digits
@@ -242,7 +263,8 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
                     ])
             for child in childs:
                 res[type_.id] += type_sum[child.id]
-            res[type_.id] = type_.company.currency.round(res[type_.id])
+            exp = Decimal(str(10.0 ** -type_.currency_digits))
+            res[type_.id] = res[type_.id].quantize(exp)
             if type_.display_balance == 'credit-debit':
                 res[type_.id] = - res[type_.id]
         return res
@@ -294,7 +316,7 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
         childs = [self]
         while childs:
             for child in childs:
-                if child.template:
+                if child.template and not child.template_override:
                     vals = child.template._get_type_value(type=child)
                     if vals:
                         values.append([child])
@@ -303,6 +325,46 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
         if values:
             self.write(*values)
+
+
+class OpenType(Wizard):
+    'Open Type'
+    __name__ = 'account.account.open_type'
+    start = StateTransition()
+    account = StateAction('account.act_account_balance_sheet')
+    ledger_account = StateAction('account.act_account_general_ledger')
+
+    def transition_start(self):
+        context_model = Transaction().context.get('context_model')
+        if context_model == 'account.balance_sheet.comparision.context':
+            return 'account'
+        elif context_model == 'account.income_statement.context':
+            return 'ledger_account'
+        return 'end'
+
+    def open_action(self, action):
+        pool = Pool()
+        Type = pool.get('account.account.type')
+        type = Type(Transaction().context['active_id'])
+        action['name'] = '%s (%s)' % (action['name'], type.rec_name)
+        trans_context = Transaction().context
+        context = {
+            'active_id': trans_context.get('active_id'),
+            'active_ids': trans_context.get('active_ids', []),
+            'active_model': trans_context.get('active_model'),
+            }
+        context_model = trans_context.get('context_model')
+        if context_model:
+            Model = pool.get(context_model)
+            for fname in Model._fields.keys():
+                if fname == 'id':
+                    continue
+                context[fname] = trans_context.get(fname)
+        action['pyson_context'] = PYSONEncoder().encode(context)
+        return action, {}
+
+    do_account = open_action
+    do_ledger_account = open_action
 
 
 class AccountTemplate(ModelSQL, ModelView):
@@ -336,10 +398,16 @@ class AccountTemplate(ModelSQL, ModelView):
             'invisible': Eval('kind') == 'view',
             }, depends=['kind'])
     party_required = fields.Boolean('Party Required',
+        domain=[
+            If((Eval('kind') == 'view') | ~Eval('deferral', False),
+                ('party_required', '=', False),
+                (),
+                )
+            ],
         states={
-            'invisible': Eval('kind') == 'view',
+            'invisible': (Eval('kind') == 'view') | ~Eval('deferral', False),
             },
-        depends=['kind'])
+        depends=['kind', 'deferral'])
     general_ledger_balance = fields.Boolean('General Ledger Balance',
         states={
             'invisible': Eval('kind') == 'view',
@@ -494,10 +562,10 @@ class AccountTemplate(ModelSQL, ModelView):
             to_write = []
             for template in templates:
                 if template.id not in template_done:
-                    if template.taxes:
+                    account = Account(template2account[template.id])
+                    if template.taxes and not account.template_override:
                         tax_ids = [template2tax[x.id] for x in template.taxes]
-                        to_write.append(
-                            [Account(template2account[template.id])])
+                        to_write.append([account])
                         to_write.append({
                                 'taxes': [
                                     ('add', tax_ids)],
@@ -522,12 +590,15 @@ class AccountTemplateTaxTemplate(ModelSQL):
             ondelete='RESTRICT', select=True, required=True)
 
 
-class Account(ModelSQL, ModelView):
+class Account(DeactivableMixin, ModelSQL, ModelView):
     'Account'
     __name__ = 'account.account'
-    name = fields.Char('Name', size=None, required=True, select=True)
-    code = fields.Char('Code', size=None, select=True)
-    active = fields.Boolean('Active', select=True)
+    _states = {
+        'readonly': (Bool(Eval('template', -1)) &
+            ~Eval('template_override', False)),
+        }
+    name = fields.Char('Name', required=True, select=True, states=_states)
+    code = fields.Char('Code', select=True, states=_states)
     company = fields.Many2One('company.company', 'Company', required=True,
             ondelete="RESTRICT")
     currency = fields.Function(fields.Many2One('currency.currency',
@@ -541,6 +612,7 @@ class Account(ModelSQL, ModelView):
             ('id', '!=', Eval('currency', -1)),
             ],
         states={
+            'reaodnly': _states['readonly'],
             'invisible': (Eval('kind').in_(
                     ['payable', 'revenue', 'receivable', 'expense'])
                 | ~Eval('deferral', False)),
@@ -552,6 +624,7 @@ class Account(ModelSQL, ModelView):
         states={
             'invisible': Eval('kind') == 'view',
             'required': Eval('kind') != 'view',
+            'readonly': _states['readonly'],
             },
         domain=[
             ('company', '=', Eval('company')),
@@ -559,10 +632,13 @@ class Account(ModelSQL, ModelView):
     parent = fields.Many2One('account.account', 'Parent', select=True,
         left="left", right="right", ondelete="RESTRICT",
         domain=[('company', '=', Eval('company'))],
-        depends=['company'])
+        states=_states, depends=['company'])
     left = fields.Integer('Left', required=True, select=True)
     right = fields.Integer('Right', required=True, select=True)
-    childs = fields.One2Many('account.account', 'parent', 'Children')
+    childs = fields.One2Many(
+        'account.account', 'parent', 'Children',
+        domain=[('company', '=', Eval('company'))],
+        depends=['company'])
     balance = fields.Function(fields.Numeric('Balance',
         digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
         'get_balance')
@@ -584,6 +660,7 @@ class Account(ModelSQL, ModelView):
         help='Allow move lines of this account \nto be reconciled.',
         states={
             'invisible': Eval('kind') == 'view',
+            'readonly': _states['readonly'],
             }, depends=['kind'])
     note = fields.Text('Note')
     kind = fields.Selection([
@@ -594,19 +671,27 @@ class Account(ModelSQL, ModelView):
             ('expense', 'Expense'),
             ('stock', 'Stock'),
             ('view', 'View'),
-            ], 'Kind', required=True)
+            ], 'Kind', required=True, states=_states)
     deferral = fields.Boolean('Deferral', states={
             'invisible': Eval('kind') == 'view',
+            'readonly': _states['readonly'],
             }, depends=['kind'])
     deferrals = fields.One2Many('account.account.deferral', 'account',
         'Deferrals', readonly=True, states={
             'invisible': Eval('kind') == 'view',
             }, depends=['kind'])
     party_required = fields.Boolean('Party Required',
+        domain=[
+            If((Eval('kind') == 'view') | ~Eval('deferral', False),
+                ('party_required', '=', False),
+                (),
+                )
+            ],
         states={
-            'invisible': Eval('kind') == 'view',
+            'invisible': (Eval('kind') == 'view') | ~Eval('deferral', False),
+            'readonly': _states['readonly'],
             },
-        depends=['kind'])
+        depends=['kind', 'deferral'])
     general_ledger_balance = fields.Boolean('General Ledger Balance',
         states={
             'invisible': Eval('kind') == 'view',
@@ -623,6 +708,13 @@ class Account(ModelSQL, ModelView):
                 'for journal types: "expense" and "revenue"'),
             depends=['company'])
     template = fields.Many2One('account.account.template', 'Template')
+    template_override = fields.Boolean('Override Template',
+        help="Check to override template definition",
+        states={
+            'invisible': ~Bool(Eval('template', -1)),
+            },
+        depends=['template'])
+    del _states
 
     @classmethod
     def __setup__(cls):
@@ -691,6 +783,10 @@ class Account(ModelSQL, ModelView):
     def default_kind():
         return 'view'
 
+    @classmethod
+    def default_template_override(cls):
+        return False
+
     def get_currency(self, name):
         return self.company.currency.id
 
@@ -714,7 +810,7 @@ class Account(ModelSQL, ModelView):
         table_c = cls.__table__()
         line = MoveLine.__table__()
         ids = [a.id for a in accounts]
-        balances = dict((i, 0) for i in ids)
+        balances = dict((i, Decimal(0)) for i in ids)
         line_query, fiscalyear_ids = MoveLine.query_get(line)
         for sub_ids in grouped_slice(ids):
             red_sql = reduce_ids(table_a.id, sub_ids)
@@ -730,15 +826,12 @@ class Account(ModelSQL, ModelView):
             result = cursor.fetchall()
             balances.update(dict(result))
 
-        # SQLite uses float for SUM
-        for account_id, balance in balances.iteritems():
-            if isinstance(balance, Decimal):
-                break
-            balances[account_id] = Decimal(str(balance))
-
         for account in accounts:
-            balances[account.id] = account.company.currency.round(
-                balances[account.id])
+            # SQLite uses float for SUM
+            if not isinstance(balances[account.id], Decimal):
+                balances[account.id] = Decimal(str(balances[account.id]))
+            exp = Decimal(str(10.0 ** -account.currency_digits))
+            balances[account.id] = balances[account.id].quantize(exp)
 
         fiscalyears = FiscalYear.browse(fiscalyear_ids)
 
@@ -764,7 +857,7 @@ class Account(ModelSQL, ModelView):
         for name in names:
             if name not in {'credit', 'debit', 'amount_second_currency'}:
                 raise ValueError('Unknown name: %s' % name)
-            result[name] = dict((i, 0) for i in ids)
+            result[name] = dict((i, Decimal(0)) for i in ids)
 
         table = cls.__table__()
         line = MoveLine.__table__()
@@ -790,12 +883,11 @@ class Account(ModelSQL, ModelView):
         for account in accounts:
             for name in names:
                 if name == 'amount_second_currency':
-                    currency = account.second_currency
+                    exp = Decimal(str(10.0 ** -account.second_currency_digits))
                 else:
-                    currency = account.company.currency
-                if currency:
-                    result[name][account.id] = currency.round(
-                        result[name][account.id])
+                    exp = Decimal(str(10.0 ** -account.currency_digits))
+                result[name][account.id] = (
+                    result[name][account.id].quantize(exp))
 
         cumulate_names = []
         if Transaction().context.get('cumulate'):
@@ -985,7 +1077,7 @@ class Account(ModelSQL, ModelView):
         childs = [self]
         while childs:
             for child in childs:
-                if child.template:
+                if child.template and not child.template_override:
                     vals = child.template._get_account_value(account=child)
                     current_type = child.type.id if child.type else None
                     if child.template.type:
@@ -1176,15 +1268,15 @@ class OpenChartAccount(Wizard):
         return 'end'
 
 
-class GeneralLedgerAccount(ModelSQL, ModelView):
+class GeneralLedgerAccount(DeactivableMixin, ModelSQL, ModelView):
     'General Ledger Account'
     __name__ = 'account.general_ledger.account'
 
     # TODO reuse rec_name of Account
     name = fields.Char('Name')
     code = fields.Char('Code')
-    active = fields.Boolean('Active')
     company = fields.Many2One('company.company', 'Company')
+    type = fields.Many2One('account.account.type', 'Type')
     start_debit = fields.Function(fields.Numeric('Start Debit',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']),
@@ -1632,17 +1724,11 @@ class BalanceSheetContext(ModelView):
     date = fields.Date('Date', required=True)
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help='Show only posted move')
-    comparison = fields.Boolean('Comparison')
-    date_cmp = fields.Date('Date', states={
-            'required': Eval('comparison', False),
-            'invisible': ~Eval('comparison', False),
-            },
-        depends=['comparison'])
 
     @staticmethod
     def default_date():
         Date_ = Pool().get('ir.date')
-        return Date_.today()
+        return Transaction().context.get('date', Date_.today())
 
     @staticmethod
     def default_company():
@@ -1650,7 +1736,18 @@ class BalanceSheetContext(ModelView):
 
     @staticmethod
     def default_posted():
-        return False
+        return Transaction().context.get('posted', False)
+
+
+class BalanceSheetComparisionContext(BalanceSheetContext):
+    'Balance Sheet Context'
+    __name__ = 'account.balance_sheet.comparision.context'
+    comparison = fields.Boolean('Comparison')
+    date_cmp = fields.Date('Date', states={
+            'required': Eval('comparison', False),
+            'invisible': ~Eval('comparison', False),
+            },
+        depends=['comparison'])
 
     @classmethod
     def default_comparison(cls):
@@ -1911,7 +2008,10 @@ class AgedBalance(ModelSQL, ModelView):
 
         terms = cls.get_terms()
         factor = cls.get_unit_factor()
-        term_values = sorted(terms.values(), key=lambda x: x or 0)
+        # Ensure None are before 0 to get the next index pointing to the next
+        # value and not a None value
+        term_values = sorted(
+            terms.values(), key=lambda x: ((x is not None), x or 0))
 
         for name, value in terms.iteritems():
             if value is None or factor is None or date is None:
@@ -1921,7 +2021,7 @@ class AgedBalance(ModelSQL, ModelView):
             idx = term_values.index(value)
             if idx + 1 < len(terms):
                 cond &= line.maturity_date > (
-                    date - term_values[idx + 1] * factor)
+                    date - (term_values[idx + 1] or 0) * factor)
             else:
                 cond |= line.maturity_date == Null
             columns.append(
@@ -2067,19 +2167,39 @@ class CreateChart(Wizard):
             ])
     create_properties = StateTransition()
 
+    @classmethod
+    def __setup__(cls):
+        super(CreateChart, cls).__setup__()
+        cls._error_messages.update({
+                'account_chart_exists': ('A chart of accounts already exists '
+                    'for the company "%(company)s".')
+                })
+
     def transition_create_account(self):
         pool = Pool()
         TaxCodeTemplate = pool.get('account.tax.code.template')
+        TaxCodeLineTemplate = pool.get('account.tax.code.line.template')
         TaxTemplate = pool.get('account.tax.template')
         TaxRuleTemplate = pool.get('account.tax.rule.template')
         TaxRuleLineTemplate = \
             pool.get('account.tax.rule.line.template')
         Config = pool.get('ir.configuration')
+        Account = pool.get('account.account')
+        transaction = Transaction()
 
-        with Transaction().set_context(language=Config.get_language(),
-                company=self.account.company.id):
+        company = self.account.company
+        # Skip access rule
+        with transaction.set_user(0):
+            accounts = Account.search([('company', '=', company.id)], limit=1)
+        if accounts:
+            self.raise_user_warning('duplicated_chart.%d' % company.id,
+                'account_chart_exists', {
+                    'company': company.rec_name,
+                    })
+
+        with transaction.set_context(language=Config.get_language(),
+                company=company.id):
             account_template = self.account.account_template
-            company = self.account.company
 
             # Create account types
             template2type = {}
@@ -2094,19 +2214,26 @@ class CreateChart(Wizard):
                 template2account=template2account,
                 template2type=template2type)
 
+            # Create taxes
+            template2tax = {}
+            TaxTemplate.create_tax(
+                account_template.id, company.id,
+                template2account=template2account,
+                template2tax=template2tax)
+
             # Create tax codes
             template2tax_code = {}
             TaxCodeTemplate.create_tax_code(
                 account_template.id, company.id,
                 template2tax_code=template2tax_code)
 
-            # Create taxes
-            template2tax = {}
-            TaxTemplate.create_tax(
-                account_template.id, company.id,
+            # Create tax code lines
+            template2tax_code_line = {}
+            TaxCodeLineTemplate.create_tax_code_line(
+                account_template.id,
+                template2tax=template2tax,
                 template2tax_code=template2tax_code,
-                template2account=template2account,
-                template2tax=template2tax)
+                template2tax_code_line=template2tax_code_line)
 
             # Update taxes on accounts
             account_template.update_account_taxes(template2account,
@@ -2175,6 +2302,8 @@ class UpdateChart(Wizard):
         pool = Pool()
         TaxCode = pool.get('account.tax.code')
         TaxCodeTemplate = pool.get('account.tax.code.template')
+        TaxCodeLine = pool.get('account.tax.code.line')
+        TaxCodeLineTemplate = pool.get('account.tax.code.line.template')
         Tax = pool.get('account.tax')
         TaxTemplate = pool.get('account.tax.template')
         TaxRule = pool.get('account.tax.rule')
@@ -2206,6 +2335,19 @@ class UpdateChart(Wizard):
                 template2account=template2account,
                 template2type=template2type)
 
+        # Update taxes
+        template2tax = {}
+        Tax.update_tax(
+            company.id,
+            template2account=template2account,
+            template2tax=template2tax)
+        # Create missing taxes
+        if account.template:
+            TaxTemplate.create_tax(
+                account.template.id, account.company.id,
+                template2account=template2account,
+                template2tax=template2tax)
+
         # Update tax codes
         template2tax_code = {}
         TaxCode.update_tax_code(
@@ -2217,20 +2359,20 @@ class UpdateChart(Wizard):
                 account.template.id, company.id,
                 template2tax_code=template2tax_code)
 
-        # Update taxes
-        template2tax = {}
-        Tax.update_tax(
+        # Update tax code lines
+        template2tax_code_line = {}
+        TaxCodeLine.update_tax_code_line(
             company.id,
+            template2tax=template2tax,
             template2tax_code=template2tax_code,
-            template2account=template2account,
-            template2tax=template2tax)
-        # Create missing taxes
+            template2tax_code_line=template2tax_code_line)
+        # Create missing tax code lines
         if account.template:
-            TaxTemplate.create_tax(
-                account.template.id, account.company.id,
+            TaxCodeLineTemplate.create_tax_code_line(
+                account.template.id,
+                template2tax=template2tax,
                 template2tax_code=template2tax_code,
-                template2account=template2account,
-                template2tax=template2tax)
+                template2tax_code_line=template2tax_code_line)
 
         # Update taxes on accounts
         account.update_account_taxes(template2account, template2tax)

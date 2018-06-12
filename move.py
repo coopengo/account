@@ -100,6 +100,7 @@ class Move(ModelSQL, ModelView):
         cls._buttons.update({
                 'post': {
                     'invisible': Eval('state') == 'posted',
+                    'depends': ['state'],
                     },
                 })
 
@@ -542,15 +543,9 @@ class Reconciliation(ModelSQL, ModelView):
                             'party2': party.rec_name,
                             })
             if not account.company.currency.is_zero(debit - credit):
-                language = Transaction().language
-                languages = Lang.search([('code', '=', language)])
-                if not languages:
-                    languages = Lang.search([('code', '=', 'en')])
-                language = languages[0]
-                debit = Lang.currency(
-                    language, debit, account.company.currency)
-                credit = Lang.currency(
-                    language, credit, account.company.currency)
+                lang = Lang.get()
+                debit = lang.currency(debit, account.company.currency)
+                credit = lang.currency(credit, account.company.currency)
                 cls.raise_user_error('reconciliation_unbalanced', {
                         'debit': debit,
                         'credit': credit,
@@ -1207,7 +1202,6 @@ class Line(ModelSQL, ModelView):
                     reconcile_account = line.account
                 if not reconcile_party:
                     reconcile_party = line.party
-            amount = reconcile_account.currency.round(amount)
             if amount:
                 move = cls._get_writeoff_move(
                     reconcile_account, reconcile_party, amount, **writeoff)
@@ -1500,17 +1494,27 @@ class Reconcile(Wizard):
         cursor = Transaction().connection.cursor()
         account_rule = Rule.query_get(Account.__name__)
 
+        context = Transaction().context
+        if context['active_model'] == Line.__name__:
+            lines = [l for l in Line.browse(context['active_ids'])
+                if not l.reconciliation]
+            return list({l.account for l in lines if l.account.reconcile})
+
         balance = line.debit - line.credit
         cursor.execute(*line.join(account,
                 condition=line.account == account.id).select(
                 account.id,
                 where=((line.reconciliation == Null) & account.reconcile
                     & account.id.in_(account_rule)),
-                group_by=account.id,
-                having=(
-                    Sum(Case((balance > 0, 1), else_=0)) > 0)
-                & (Sum(Case((balance < 0, 1), else_=0)) > 0)
-                ))
+                group_by=[account.id, account.kind],
+                having=((
+                        Sum(Case((balance > 0, 1), else_=0)) > 0)
+                    & (Sum(Case((balance < 0, 1), else_=0)) > 0)
+                    | (Case((account.kind == 'receivable', Sum(balance) < 0),
+                            else_=False))
+                    | (Case((account.kind == 'payable', Sum(balance) > 0),
+                            else_=False))
+                    )))
         return [a for a, in cursor.fetchall()]
 
     def get_parties(self, account):
@@ -1520,15 +1524,25 @@ class Reconcile(Wizard):
         line = Line.__table__()
         cursor = Transaction().connection.cursor()
 
+        context = Transaction().context
+        if context['active_model'] == Line.__name__:
+            lines = [l for l in Line.browse(context['active_ids'])
+                if not l.reconciliation]
+            return list({l.party for l in lines if l.account == account})
+
         balance = line.debit - line.credit
         cursor.execute(*line.select(line.party,
                 where=(line.reconciliation == Null)
                 & (line.account == account.id),
                 group_by=line.party,
-                having=(
-                    Sum(Case((balance > 0, 1), else_=0)) > 0)
-                & (Sum(Case((balance < 0, 1), else_=0)) > 0)
-                ))
+                having=((
+                        Sum(Case((balance > 0, 1), else_=0)) > 0)
+                    & (Sum(Case((balance < 0, 1), else_=0)) > 0)
+                    | (Case((account.kind == 'receivable', Sum(balance) < 0),
+                            else_=False))
+                    | (Case((account.kind == 'payable', Sum(balance) > 0),
+                            else_=False))
+                    )))
         return [p for p, in cursor.fetchall()]
 
     def transition_next_(self):
@@ -1592,6 +1606,16 @@ class Reconcile(Wizard):
 
     def _default_lines(self):
         'Return the larger list of lines which can be reconciled'
+        pool = Pool()
+        Line = pool.get('account.move.line')
+        context = Transaction().context
+        if context['active_model'] == Line.__name__:
+            requested = {l for l in Line.browse(context['active_ids'])
+                if l.account == self.show.account
+                and l.party == self.show.party}
+        else:
+            requested = None
+
         currency = self.show.account.company.currency
         chunk = config.getint('account', 'reconciliation_chunk', default=10)
         # Combination is exponential so it must be limited to small number
@@ -1601,6 +1625,8 @@ class Reconcile(Wizard):
             best = None
             for n in xrange(len(lines), 1, -1):
                 for comb_lines in combinations(lines, n):
+                    if requested and not requested.intersection(comb_lines):
+                        continue
                     amount = sum((l.debit - l.credit) for l in comb_lines)
                     if currency.is_zero(amount):
                         best = [l.id for l in comb_lines]
@@ -1609,6 +1635,8 @@ class Reconcile(Wizard):
                     break
             if best:
                 default.extend(best)
+        if not default and requested:
+            default = map(int, requested)
         return default
 
     def transition_reconcile(self):

@@ -10,7 +10,7 @@ from trytond.pyson import Eval, If, PYSONEncoder
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 
-__all__ = ['FiscalYear', 'FiscalYearLine',
+__all__ = ['FiscalYear',
     'BalanceNonDeferralStart', 'BalanceNonDeferral',
     'RenewFiscalYearStart', 'RenewFiscalYear']
 
@@ -53,8 +53,6 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
             ('id', If(Eval('context', {}).contains('company'), '=', '!='),
                 Eval('context', {}).get('company', -1)),
             ], select=True)
-    close_lines = fields.Many2Many('account.fiscalyear-account.move.line',
-            'fiscalyear', 'line', 'Close Lines')
     icon = fields.Function(fields.Char("Icon"), 'get_icon')
 
     @classmethod
@@ -85,19 +83,24 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                 'create_period': {
                     'invisible': ((Eval('state') != 'open')
                         | Eval('periods', [0])),
+                    'depends': ['state'],
                     },
                 'create_period_3': {
                     'invisible': ((Eval('state') != 'open')
                         | Eval('periods', [0])),
+                    'depends': ['state'],
                     },
                 'close': {
                     'invisible': Eval('state') != 'open',
+                    'depends': ['state'],
                     },
                 'reopen': {
                     'invisible': Eval('state') != 'close',
+                    'depends': ['state'],
                     },
                 'lock': {
                     'invisible': Eval('state') != 'close',
+                    'depends': ['state'],
                     },
                 })
 
@@ -235,13 +238,8 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
             ], order=[('start_date', 'DESC')], limit=1)
         if not fiscalyears:
             if exception:
-                language = Transaction().language
-                languages = Lang.search([('code', '=', language)])
-                if not languages:
-                    languages = Lang.search([('code', '=', 'en')])
-                language, = languages
-                formatted = Lang.strftime(date, language.code, language.date)
-                cls.raise_user_error('no_fiscalyear_date', (formatted,))
+                lang = Lang.get()
+                cls.raise_user_error('no_fiscalyear_date', lang.strftime(date))
             else:
                 return None
         return fiscalyears[0].id
@@ -340,16 +338,6 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                 ('fiscalyear', 'in', [f.id for f in fiscalyears]),
                 ])
         Period.lock(periods)
-
-
-class FiscalYearLine(ModelSQL):
-    'Fiscal Year - Move Line'
-    __name__ = 'account.fiscalyear-account.move.line'
-    _table = 'account_fiscalyear_line_rel'
-    fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
-            ondelete='CASCADE', select=True)
-    line = fields.Many2One('account.move.line', 'Line', ondelete='RESTRICT',
-            select=True, required=True)
 
 
 class BalanceNonDeferralStart(ModelView):

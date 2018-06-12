@@ -5,7 +5,9 @@ from decimal import Decimal
 
 from simpleeval import simple_eval
 
-from trytond.model import ModelSQL, ModelView, fields, sequence_ordered
+from trytond import backend
+from trytond.model import (
+    ModelSQL, ModelView, DeactivableMixin, fields, sequence_ordered)
 from trytond.pyson import Eval
 from trytond.wizard import (Wizard, StateView, StateAction, StateTransition,
     Button)
@@ -18,7 +20,7 @@ __all__ = ['MoveTemplate', 'MoveTemplateKeyword',
     'CreateMove', 'CreateMoveTemplate', 'CreateMoveKeywords']
 
 
-class MoveTemplate(ModelSQL, ModelView):
+class MoveTemplate(DeactivableMixin, ModelSQL, ModelView):
     'Account Move Template'
     __name__ = 'account.move.template'
     name = fields.Char('Name', required=True, translate=True)
@@ -35,15 +37,10 @@ class MoveTemplate(ModelSQL, ModelView):
             ('account.company', '=', Eval('company', -1)),
             ],
         depends=['company'])
-    active = fields.Boolean('Active')
 
     @staticmethod
     def default_company():
         return Transaction().context.get('company')
-
-    @staticmethod
-    def default_active():
-        return True
 
     def get_move(self, values):
         'Return the move for the keyword values'
@@ -103,7 +100,7 @@ class MoveTemplateKeyword(sequence_ordered(), ModelSQL, ModelView):
 
     def _format_numeric(self, lang, value):
         if value:
-            return lang.format(lang, '%.*f', (self.digits, value), True)
+            return lang.format('%.*f', (self.digits, value), True)
         else:
             return ''
 
@@ -112,7 +109,7 @@ class MoveTemplateKeyword(sequence_ordered(), ModelSQL, ModelView):
 
     def _format_date(self, lang, value):
         if value:
-            return lang.strftime(value, lang.code, lang.date)
+            return lang.strftime(value)
         else:
             return ''
 
@@ -216,16 +213,27 @@ class TaxLineTemplate(ModelSQL, ModelView):
     line = fields.Many2One('account.move.line.template', 'Line', required=True)
     amount = fields.Char('Amount', required=True,
         help="A python expression that will be evaluated with the keywords.")
-    code = fields.Many2One('account.tax.code', 'Code', required=True,
-        domain=[
-            ('company', '=', Eval('_parent_line', {}
-                    ).get('_parent_move', {}).get('company', -1)),
-            ])
+    type = fields.Selection([
+            ('tax', "Tax"),
+            ('base', "Base"),
+            ], "Type", required=True)
+
     tax = fields.Many2One('account.tax', 'Tax',
         domain=[
             ('company', '=', Eval('_parent_line', {}
                     ).get('_parent_move', {}).get('company', -1)),
             ])
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+
+        super(TaxLineTemplate, cls).__register__(module_name)
+
+        table_h = TableHandler(cls, module_name)
+
+        # Migration from 4.6: remove code
+        table_h.drop_column('code')
 
     def get_line(self, values):
         'Return the tax line for the keyword values'
@@ -237,7 +245,7 @@ class TaxLineTemplate(ModelSQL, ModelView):
             functions={'Decimal': Decimal}, names=values)
         amount = self.line.move.company.currency.round(amount)
         line.amount = amount
-        line.code = self.code
+        line.type = self.type
         line.tax = self.tax
         return line
 
