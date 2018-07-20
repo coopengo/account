@@ -936,6 +936,9 @@ class Line(ModelSQL, ModelView):
     def search_rec_name(cls, name, clause):
         return [('account.rec_name',) + tuple(clause[1:])]
 
+    def get_query_get_where_clause(cls, table, where):
+        return where
+
     @classmethod
     def query_get(cls, table):
         '''
@@ -995,6 +998,7 @@ class Line(ModelSQL, ModelView):
                     ])
             fiscalyear_ids = map(int, fiscalyears)
 
+        where = cls.get_query_get_where_clause(table, where)
         # Use LEFT JOIN to allow database optimization
         # if no joined table is used in the where clause.
         return ((table.state != 'draft')
