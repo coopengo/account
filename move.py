@@ -936,6 +936,7 @@ class Line(ModelSQL, ModelView):
     def search_rec_name(cls, name, clause):
         return [('account.rec_name',) + tuple(clause[1:])]
 
+    @classmethod
     def get_query_get_where_clause(cls, table, where):
         return where
 
