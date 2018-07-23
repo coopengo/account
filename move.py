@@ -938,6 +938,8 @@ class Line(ModelSQL, ModelView):
 
     @classmethod
     def get_query_get_where_clause(cls, table, where):
+        # RSE add hook to override where clause #9462
+        # overriden in account_per_product module
         return where
 
     @classmethod
