@@ -937,6 +937,12 @@ class Line(ModelSQL, ModelView):
         return [('account.rec_name',) + tuple(clause[1:])]
 
     @classmethod
+    def get_query_get_where_clause(cls, table, where):
+        # RSE add hook to override where clause #9462
+        # overriden in account_per_product module
+        return where
+
+    @classmethod
     def query_get(cls, table):
         '''
         Return SQL clause and fiscal years for account move line
@@ -995,6 +1001,7 @@ class Line(ModelSQL, ModelView):
                     ])
             fiscalyear_ids = map(int, fiscalyears)
 
+        where = cls.get_query_get_where_clause(table, where)
         # Use LEFT JOIN to allow database optimization
         # if no joined table is used in the where clause.
         return ((table.state != 'draft')
