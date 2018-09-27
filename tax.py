@@ -816,10 +816,9 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
             if not (start_date <= date <= end_date):
                 continue
 
-            if tax.type == 'percentage':
-                rate += tax.rate
-            elif tax.type == 'fixed':
-                amount += tax.amount
+            tax_rate, tax_amount = tax._reverse_rate_amount_from_type()
+            rate += tax_rate
+            amount += tax_amount
 
             if tax.childs:
                 child_rate, child_amount = cls._reverse_rate_amount(
@@ -827,6 +826,13 @@ class Tax(sequence_ordered(), ModelSQL, ModelView):
                 rate += child_rate
                 amount += child_amount
         return rate, amount
+
+    def _reverse_rate_amount_from_type(self):
+        # Use another method to allow override for custom tax types
+        if self.type == 'percentage':
+            return self.rate, 0
+        elif self.type == 'fixed':
+            return 0, self.amount
 
     @classmethod
     def _reverse_unit_compute(cls, price_unit, taxes, date):
