@@ -965,6 +965,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         return rate, amount
 
     def _reverse_rate_amount_from_type(self):
+        # Use another method to allow override for custom tax types
         if self.type == 'percentage':
             return self.rate, 0
         elif self.type == 'fixed':
