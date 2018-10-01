@@ -970,6 +970,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
             return self.rate, 0
         elif self.type == 'fixed':
             return 0, self.amount
+        return 0, 0
 
     @classmethod
     def _reverse_unit_compute(cls, price_unit, taxes, date):
