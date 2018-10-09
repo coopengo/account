@@ -8,6 +8,7 @@ from collections import defaultdict
 
 from sql import Null, Literal
 from sql.aggregate import Sum, Max
+from sql.functions import CharLength
 from sql.conditionals import Coalesce, Case
 
 from trytond.model import ModelView, ModelSQL, fields, Check
@@ -142,6 +143,11 @@ class Move(ModelSQL, ModelView):
 
         # Add index on create_date
         table.index_action('create_date', action='add')
+
+    @classmethod
+    def order_post_number(cls, tables):
+        table, _ = tables[None]
+        return [CharLength(table.post_number), table.post_number]
 
     @staticmethod
     def default_company():
@@ -1737,7 +1743,7 @@ class CancelMoves(Wizard):
             to_reconcile = defaultdict(list)
             for line in move.lines + cancel_move.lines:
                 if line.account.reconcile:
-                    to_reconcile[line.account].append(line)
+                    to_reconcile[(line.account, line.party)].append(line)
             for lines in to_reconcile.itervalues():
                 Line.reconcile(lines)
         return 'end'
