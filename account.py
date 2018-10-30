@@ -276,7 +276,7 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
         if not current.get('comparison'):
             return dict.fromkeys([t.id for t in types], None)
         new = {}
-        for key, value in current.iteritems():
+        for key, value in current.items():
             if key.endswith('_cmp'):
                 new[key[:-4]] = value
         with transaction.set_context(new):
@@ -356,7 +356,7 @@ class OpenType(Wizard):
         context_model = trans_context.get('context_model')
         if context_model:
             Model = pool.get(context_model)
-            for fname in Model._fields.keys():
+            for fname in list(Model._fields.keys()):
                 if fname == 'id':
                     continue
                 context[fname] = trans_context.get(fname)
@@ -1328,7 +1328,7 @@ class GeneralLedgerAccount(DeactivableMixin, ModelSQL, ModelView):
         Account = pool.get('account.account')
         account = Account.__table__()
         columns = []
-        for fname, field in cls._fields.iteritems():
+        for fname, field in cls._fields.items():
             if not hasattr(field, 'set'):
                 columns.append(Column(account, fname).as_(fname))
         return account.select(*columns,
@@ -1600,7 +1600,7 @@ class GeneralLedgerLine(ModelSQL, ModelView):
         move = Move.__table__()
         account = Account.__table__()
         columns = []
-        for fname, field in cls._fields.iteritems():
+        for fname, field in cls._fields.items():
             if hasattr(field, 'set'):
                 continue
             field_line = getattr(Line, fname, None)
@@ -2011,9 +2011,9 @@ class AgedBalance(ModelSQL, ModelView):
         # Ensure None are before 0 to get the next index pointing to the next
         # value and not a None value
         term_values = sorted(
-            terms.values(), key=lambda x: ((x is not None), x or 0))
+            list(terms.values()), key=lambda x: ((x is not None), x or 0))
 
-        for name, value in terms.iteritems():
+        for name, value in terms.items():
             if value is None or factor is None or date is None:
                 columns.append(Literal(None).as_(name))
                 continue

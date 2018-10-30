@@ -244,7 +244,7 @@ class Move(ModelSQL, ModelView):
         all_moves = []
         args = []
         for moves, values in zip(actions, actions):
-            keys = values.keys()
+            keys = list(values.keys())
             for key in cls._check_modify_exclude:
                 if key in keys:
                     keys.remove(key)
@@ -985,7 +985,7 @@ class Line(ModelSQL, ModelView):
                 fiscalyear_id = fiscalyears[0].id
             else:
                 fiscalyear_id = -1
-            fiscalyear_ids = map(int, fiscalyears)
+            fiscalyear_ids = list(map(int, fiscalyears))
             where &= period.fiscalyear == fiscalyear_id
             where &= move.date <= date
         elif fiscalyear_id or period_ids or from_date or to_date:
@@ -1005,7 +1005,7 @@ class Line(ModelSQL, ModelView):
                     ('state', '=', 'open'),
                     ('company', '=', company),
                     ])
-            fiscalyear_ids = map(int, fiscalyears)
+            fiscalyear_ids = list(map(int, fiscalyears))
 
         where = cls.get_query_get_where_clause(table, where)
         # Use LEFT JOIN to allow database optimization
@@ -1636,7 +1636,7 @@ class Reconcile(Wizard):
         for lines in grouped_slice(self._all_lines(), chunk):
             lines = list(lines)
             best = None
-            for n in xrange(len(lines), 1, -1):
+            for n in range(len(lines), 1, -1):
                 for comb_lines in combinations(lines, n):
                     if requested and not requested.intersection(comb_lines):
                         continue
@@ -1649,7 +1649,7 @@ class Reconcile(Wizard):
             if best:
                 default.extend(best)
         if not default and requested:
-            default = map(int, requested)
+            default = list(map(int, requested))
         return default
 
     def transition_reconcile(self):
@@ -1744,7 +1744,7 @@ class CancelMoves(Wizard):
             for line in move.lines + cancel_move.lines:
                 if line.account.reconcile:
                     to_reconcile[(line.account, line.party)].append(line)
-            for lines in to_reconcile.itervalues():
+            for lines in to_reconcile.values():
                 Line.reconcile(lines)
         return 'end'
 
