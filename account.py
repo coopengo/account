@@ -316,7 +316,7 @@ class OpenType(Wizard):
         context_model = trans_context.get('context_model')
         if context_model:
             Model = pool.get(context_model)
-            for fname in list(Model._fields.keys()):
+            for fname in Model._fields.keys():
                 if fname == 'id':
                     continue
                 context[fname] = trans_context.get(fname)
