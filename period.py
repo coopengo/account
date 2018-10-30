@@ -5,7 +5,6 @@ from trytond.pyson import Eval
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.const import OPERATORS
-from trytond import backend
 
 __all__ = ['Period']
 
@@ -49,16 +48,6 @@ class Period(Workflow, ModelSQL, ModelView):
     company = fields.Function(fields.Many2One('company.company', 'Company',),
         'on_change_with_company', searcher='search_company')
     icon = fields.Function(fields.Char("Icon"), 'get_icon')
-
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-
-        super(Period, cls).__register__(module_name)
-
-        table = TableHandler(cls, module_name)
-        # Migration from 2.6: post_move_sequence is no longer required
-        table.not_null_action('post_move_sequence', 'remove')
 
     @classmethod
     def __setup__(cls):

@@ -11,7 +11,7 @@ from sql.aggregate import Sum, Max
 from sql.conditionals import Coalesce, Case
 
 from trytond.model import (
-    ModelView, ModelSQL, DeactivableMixin, fields, Unique, sequence_ordered)
+    ModelView, ModelSQL, fields, Unique, sequence_ordered, tree)
 from trytond.wizard import Wizard, StateView, StateAction, StateTransition, \
     Button
 from trytond.report import Report
@@ -19,7 +19,8 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.pyson import Eval, If, PYSONEncoder, Bool
 from trytond.transaction import Transaction
 from trytond.pool import Pool
-from trytond import backend
+
+from .common import PeriodMixin, ActivePeriodMixin
 
 __all__ = ['TypeTemplate', 'Type', 'OpenType',
     'AccountTemplate', 'AccountTemplateTaxTemplate',
@@ -43,7 +44,8 @@ def inactive_records(func):
     return wrapper
 
 
-class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
+class TypeTemplate(
+        sequence_ordered(), tree(separator='\\'), ModelSQL, ModelView):
     'Account Type Template'
     __name__ = 'account.account.type.template'
     name = fields.Char('Name', required=True)
@@ -58,21 +60,6 @@ class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
         ('credit-debit', 'Credit - Debit'),
         ], 'Display Balance', required=True)
 
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        super(TypeTemplate, cls).__register__(module_name)
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-    @classmethod
-    def validate(cls, records):
-        super(TypeTemplate, cls).validate(records)
-        cls.check_recursion(records, rec_name='name')
-
     @staticmethod
     def default_balance_sheet():
         return False
@@ -84,12 +71,6 @@ class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
     @staticmethod
     def default_display_balance():
         return 'debit-credit'
-
-    def get_rec_name(self, name):
-        if self.parent:
-            return self.parent.get_rec_name(name) + '\\' + self.name
-        else:
-            return self.name
 
     def _get_type_value(self, type=None):
         '''
@@ -148,7 +129,7 @@ class TypeTemplate(sequence_ordered(), ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
 
 
-class Type(sequence_ordered(), ModelSQL, ModelView):
+class Type(sequence_ordered(), tree(separator='\\'), ModelSQL, ModelView):
     'Account Type'
     __name__ = 'account.account.type'
 
@@ -192,21 +173,6 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
             },
         depends=['template'])
     del _states
-
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        super(Type, cls).__register__(module_name)
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-    @classmethod
-    def validate(cls, types):
-        super(Type, cls).validate(types)
-        cls.check_recursion(types, rec_name='name')
 
     @staticmethod
     def default_balance_sheet():
@@ -289,12 +255,6 @@ class Type(sequence_ordered(), ModelSQL, ModelView):
                 ~Eval('comparison', False)),
             ]
 
-    def get_rec_name(self, name):
-        if self.parent:
-            return self.parent.get_rec_name(name) + '\\' + self.name
-        else:
-            return self.name
-
     @classmethod
     def delete(cls, types):
         types = cls.search([
@@ -367,7 +327,7 @@ class OpenType(Wizard):
     do_ledger_account = open_action
 
 
-class AccountTemplate(ModelSQL, ModelView):
+class AccountTemplate(PeriodMixin, tree(), ModelSQL, ModelView):
     'Account Template'
     __name__ = 'account.account.template'
     name = fields.Char('Name', size=None, required=True, select=True)
@@ -417,17 +377,17 @@ class AccountTemplate(ModelSQL, ModelView):
     taxes = fields.Many2Many('account.account.template-account.tax.template',
             'account', 'tax', 'Default Taxes',
             domain=[('parent', '=', None)])
+    replaced_by = fields.Many2One(
+        'account.account.template', "Replaced By",
+        states={
+            'invisible': ~Eval('end_date'),
+            })
 
     @classmethod
     def __setup__(cls):
         super(AccountTemplate, cls).__setup__()
         cls._order.insert(0, ('code', 'ASC'))
         cls._order.insert(1, ('name', 'ASC'))
-
-    @classmethod
-    def validate(cls, templates):
-        super(AccountTemplate, cls).validate(templates)
-        cls.check_recursion(templates)
 
     @staticmethod
     def default_kind():
@@ -477,6 +437,10 @@ class AccountTemplate(ModelSQL, ModelView):
             res['code'] = self.code
         if not account or account.kind != self.kind:
             res['kind'] = self.kind
+        if not account or account.start_date != self.start_date:
+            res['start_date'] = self.start_date
+        if not account or account.end_date != self.end_date:
+            res['end_date'] = self.end_date
         if not account or account.reconcile != self.reconcile:
             res['reconcile'] = self.reconcile
         if not account or account.deferral != self.deferral:
@@ -538,10 +502,10 @@ class AccountTemplate(ModelSQL, ModelView):
             create(childs)
             childs = sum((c.childs for c in childs), ())
 
-    def update_account_taxes(self, template2account, template2tax,
+    def update_account2(self, template2account, template2tax,
             template_done=None):
         '''
-        Update recursively account taxes based on template.
+        Update recursively account taxes and replaced_by based on template.
         template2account is a dictionary with template id as key and account id
         as value, used to convert template id into account.
         template2tax is a dictionary with tax template id as key and tax id as
@@ -562,15 +526,20 @@ class AccountTemplate(ModelSQL, ModelView):
             to_write = []
             for template in templates:
                 if template.id not in template_done:
-                    account = Account(template2account[template.id])
-                    if template.taxes and not account.template_override:
-                        tax_ids = [template2tax[x.id] for x in template.taxes]
-                        to_write.append([account])
-                        to_write.append({
-                                'taxes': [
-                                    ('add', tax_ids)],
-                                })
                     template_done.append(template.id)
+                    account = Account(template2account[template.id])
+                    if account.template_override:
+                        continue
+                    values = {}
+                    if template.taxes:
+                        tax_ids = [template2tax[x.id] for x in template.taxes]
+                        values['taxes'] = [('add', tax_ids)]
+                    if template.replaced_by:
+                        values['replaced_by'] = template2account[
+                            template.replaced_by.id]
+                    if values:
+                        to_write.append([account])
+                        to_write.append(values)
             if to_write:
                 Account.write(*to_write)
 
@@ -590,7 +559,7 @@ class AccountTemplateTaxTemplate(ModelSQL):
             ondelete='RESTRICT', select=True, required=True)
 
 
-class Account(DeactivableMixin, ModelSQL, ModelView):
+class Account(ActivePeriodMixin, tree(), ModelSQL, ModelView):
     'Account'
     __name__ = 'account.account'
     _states = {
@@ -707,6 +676,14 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
             help=('Default tax for manual encoding of move lines \n'
                 'for journal types: "expense" and "revenue"'),
             depends=['company'])
+    replaced_by = fields.Many2One(
+        'account.account', "Replaced By",
+        domain=[('company', '=', Eval('company', -1))],
+        states={
+            'readonly': _states['readonly'],
+            'invisible': ~Eval('end_date'),
+            },
+        depends=['company'])
     template = fields.Many2One('account.account.template', 'Template')
     template_override = fields.Boolean('Override Template',
         help="Check to override template definition",
@@ -719,6 +696,11 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(Account, cls).__setup__()
+        for date in [cls.start_date, cls.end_date]:
+            date.states = {
+                'readonly': (Bool(Eval('template', -1))
+                    & ~Eval('template_override', False)),
+                }
         cls._error_messages.update({
                 'delete_account_containing_move_lines': ('You can not delete '
                     'account "%s" because it has move lines.'),
@@ -744,7 +726,6 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
     @classmethod
     def validate(cls, accounts):
         super(Account, cls).validate(accounts)
-        cls.check_recursion(accounts)
         cls.check_second_currency(accounts)
 
     @staticmethod
@@ -754,10 +735,6 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
     @staticmethod
     def default_right():
         return 0
-
-    @staticmethod
-    def default_active():
-        return True
 
     @staticmethod
     def default_company():
@@ -821,7 +798,7 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
                     ).select(
                     table_a.id,
                     Sum(Coalesce(line.debit, 0) - Coalesce(line.credit, 0)),
-                    where=red_sql & line_query & (table_c.active == True),
+                    where=red_sql & line_query,
                     group_by=table_a.id))
             result = cursor.fetchall()
             balances.update(dict(result))
@@ -1019,30 +996,11 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
             default = {}
         else:
             default = default.copy()
-        default.setdefault('template')
+        default.setdefault('template', None)
         default.setdefault('deferrals', [])
         new_accounts = super(Account, cls).copy(accounts, default=default)
         cls._rebuild_tree('parent', None, 0)
         return new_accounts
-
-    @classmethod
-    def write(cls, *args):
-        pool = Pool()
-        MoveLine = pool.get('account.move.line')
-        actions = iter(args)
-        args = []
-        for accounts, values in zip(actions, actions):
-            if not values.get('active', True):
-                childs = cls.search([
-                        ('parent', 'child_of', [a.id for a in accounts]),
-                        ])
-                if MoveLine.search([
-                            ('account', 'in', [a.id for a in childs]),
-                            ]):
-                    values = values.copy()
-                    del values['active']
-            args.extend((accounts, values))
-        super(Account, cls).write(*args)
 
     @classmethod
     def delete(cls, accounts):
@@ -1095,9 +1053,9 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
         if values:
             self.write(*values)
 
-    def update_account_taxes(self, template2account, template2tax):
+    def update_account2(self, template2account, template2tax):
         '''
-        Update recursively account taxes base on template.
+        Update recursively account taxes and replaced_by base on template.
         template2account is a dictionary with template id as key and account id
         as value, used to convert template id into account.
         template2tax is a dictionary with tax template id as key and tax id as
@@ -1109,7 +1067,7 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
         if template2tax is None:
             template2tax = {}
 
-        values = []
+        to_write = []
         childs = [self]
         while childs:
             for child in childs:
@@ -1117,22 +1075,49 @@ class Account(DeactivableMixin, ModelSQL, ModelView):
                     continue
                 if not child.template.taxes:
                     continue
+                values = {}
                 tax_ids = [template2tax[x.id] for x in child.template.taxes
                     if x.id in template2tax]
                 old_tax_ids = [x.id for x in child.taxes]
                 for tax_id in tax_ids:
                     if tax_id not in old_tax_ids:
-                        values.append([child])
-                        values.append({
-                                'taxes': [
-                                    ('add', template2tax[x.id])
-                                    for x in self.template.taxes
-                                    if x.id in template2tax],
-                                })
+                        values['taxes'] = [
+                            ('add', template2tax[x.id])
+                            for x in self.template.taxes
+                            if x.id in template2tax]
                         break
+                if child.template.replaced_by:
+                    replaced_by = template2account[
+                        child.template.replaced_by.id]
+                else:
+                    replaced_by = None
+                old_replaced_by = (
+                    child.replaced_by.id if child.replaced_by else None)
+                if old_replaced_by != replaced_by:
+                    values['replaced_by'] = replaced_by
+                if values:
+                    to_write.append([child])
+                    to_write.append(values)
             childs = sum((c.childs for c in childs), ())
-        if values:
-            self.write(*values)
+        if to_write:
+            self.write(*to_write)
+
+    def current(self, date=None):
+        "Return the actual account for the date"
+        pool = Pool()
+        Date = pool.get('ir.date')
+        context = Transaction().context
+        if date is None:
+            date = context.get('date') or Date.today()
+        if self.start_date and date < self.start_date:
+            return None
+        elif self.end_date and self.end_date < date:
+            if self.replaced_by:
+                return self.replaced_by.current(date=date)
+            else:
+                return None
+        else:
+            return self
 
 
 class AccountDeferral(ModelSQL, ModelView):
@@ -1268,7 +1253,7 @@ class OpenChartAccount(Wizard):
         return 'end'
 
 
-class GeneralLedgerAccount(DeactivableMixin, ModelSQL, ModelView):
+class GeneralLedgerAccount(ActivePeriodMixin, ModelSQL, ModelView):
     'General Ledger Account'
     __name__ = 'account.general_ledger.account'
 
@@ -2033,7 +2018,6 @@ class AgedBalance(ModelSQL, ModelView):
                 condition=reconciliation.id == line.reconciliation
             ).select(*columns,
                 where=(line.party != Null)
-                & (account.active == True)
                 & account.kind.in_(kind)
                 & ((line.reconciliation == Null)
                     | (reconciliation.date > date))
@@ -2235,9 +2219,8 @@ class CreateChart(Wizard):
                 template2tax_code=template2tax_code,
                 template2tax_code_line=template2tax_code_line)
 
-            # Update taxes on accounts
-            account_template.update_account_taxes(template2account,
-                template2tax)
+            # Update taxes and replaced_by on accounts
+            account_template.update_account2(template2account, template2tax)
 
             # Create tax rules
             template2rule = {}
@@ -2374,8 +2357,8 @@ class UpdateChart(Wizard):
                 template2tax_code=template2tax_code,
                 template2tax_code_line=template2tax_code_line)
 
-        # Update taxes on accounts
-        account.update_account_taxes(template2account, template2tax)
+        # Update taxes and replaced_by on accounts
+        account.update_account2(template2account, template2tax)
 
         # Update tax rules
         template2rule = {}

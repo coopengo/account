@@ -16,7 +16,7 @@ from trytond.tools.multivalue import migrate_property
 from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
 
-__all__ = ['JournalType', 'Journal', 'JournalSequence', 'JournalAccount',
+__all__ = ['Journal', 'JournalSequence',
     'JournalCashContext',
     'JournalPeriod']
 
@@ -26,29 +26,20 @@ STATES = {
 DEPENDS = ['state']
 
 
-class JournalType(ModelSQL, ModelView):
-    'Journal Type'
-    __name__ = 'account.journal.type'
-    name = fields.Char('Name', size=None, required=True, translate=True)
-    code = fields.Char('Code', size=None, required=True)
-
-    @classmethod
-    def __setup__(cls):
-        super(JournalType, cls).__setup__()
-        t = cls.__table__()
-        cls._sql_constraints += [
-            ('code_uniq', Unique(t, t.code), 'The code must be unique.'),
-            ]
-        cls._order.insert(0, ('code', 'ASC'))
-
-
 class Journal(
         DeactivableMixin, ModelSQL, ModelView, CompanyMultiValueMixin):
     'Journal'
     __name__ = 'account.journal'
     name = fields.Char('Name', size=None, required=True, translate=True)
     code = fields.Char('Code', size=None)
-    type = fields.Selection('get_types', 'Type', required=True)
+    type = fields.Selection([
+            ('general', "General"),
+            ('revenue', "Revenue"),
+            ('expense', "Expense"),
+            ('cash', "Cash"),
+            ('situation', "Situation"),
+            ('write-off', "Write-Off"),
+            ], 'Type', required=True)
     sequence = fields.MultiValue(fields.Many2One(
             'ir.sequence', "Sequence",
             domain=[
@@ -61,32 +52,6 @@ class Journal(
                 }))
     sequences = fields.One2Many(
         'account.journal.sequence', 'journal', "Sequences")
-    credit_account = fields.MultiValue(fields.Many2One(
-            'account.account', "Default Credit Account",
-            domain=[
-                ('kind', '!=', 'view'),
-                ('company', '=', Eval('context', {}).get('company', -1)),
-                ],
-            states={
-                'required': ((Eval('type').in_(['cash', 'write-off']))
-                    & (Eval('context', {}).get('company', -1) != -1)),
-                'invisible': ~Eval('context', {}).get('company', -1),
-                },
-            depends=['type']))
-    debit_account = fields.MultiValue(fields.Many2One(
-            'account.account', "Default Debit Account",
-            domain=[
-                ('kind', '!=', 'view'),
-                ('company', '=', Eval('context', {}).get('company', -1)),
-                ],
-            states={
-                'required': ((Eval('type').in_(['cash', 'write-off']))
-                    & (Eval('context', {}).get('company', -1) != -1)),
-                'invisible': ~Eval('context', {}).get('company', -1),
-                },
-            depends=['type']))
-    accounts = fields.One2Many(
-        'account.journal.account', 'journal', "Accounts")
     debit = fields.Function(fields.Numeric('Debit',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_debit_credit_balance')
@@ -103,27 +68,6 @@ class Journal(
     def __setup__(cls):
         super(Journal, cls).__setup__()
         cls._order.insert(0, ('name', 'ASC'))
-
-    @classmethod
-    def __register__(cls, module_name):
-        pool = Pool()
-        JournalSequence = pool.get('account.journal.sequence')
-        TableHandler = backend.get('TableHandler')
-        sql_table = cls.__table__()
-        journal_sequence = JournalSequence.__table__()
-
-        super(Journal, cls).__register__(module_name)
-
-        cursor = Transaction().connection.cursor()
-        table = TableHandler(cls, module_name)
-
-        # Migration from 1.0 sequence Many2One change into MultiValue
-        if table.column_exist('sequence'):
-            query = journal_sequence.insert(
-                [journal_sequence.journal, journal_sequence.sequence],
-                sql_table.select(sql_table.id, sql_table.sequence))
-            cursor.execute(*query)
-            table.drop_column('sequence')
 
     @classmethod
     def multivalue_model(cls, field):
@@ -354,11 +298,9 @@ class JournalPeriod(
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-
         super(JournalPeriod, cls).__register__(module_name)
 
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(cls, module_name)
         # Migration from 4.2: remove name column
         table.drop_column('name')
 

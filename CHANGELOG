@@ -1,3 +1,14 @@
+Version 5.0.0 - 2018-10-01
+* Bug fixes (see mercurial logs for details)
+* Set party required on account payable and receivable of party
+* Add writeoff method
+* Remove default account from journal
+* Add replacement account
+* Add period on account and tax code
+* Add template override mechanism to tax rules and tax rule lines
+* Remove support for Python 2.7
+* Remove journal type
+
 Version 4.8.2 - 2018-09-22
 * Bug fixes (see mercurial logs for details)
 

@@ -1,6 +1,5 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-from trytond import backend
 from trytond.pool import Pool
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 from trytond.transaction import Transaction
@@ -25,12 +24,14 @@ class Configuration(
             'account.account', "Default Account Receivable",
             domain=[
                 ('kind', '=', 'receivable'),
+                ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ]))
     default_account_payable = fields.MultiValue(fields.Many2One(
             'account.account', "Default Account Payable",
             domain=[
                 ('kind', '=', 'payable'),
+                ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ]))
     tax_rounding = fields.MultiValue(fields.Selection(
@@ -58,6 +59,7 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
         'account.account', "Default Account Receivable",
         domain=[
             ('kind', '=', 'receivable'),
+            ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
         depends=['company'])
@@ -65,6 +67,7 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
         'account.account', "Default Account Payable",
         domain=[
             ('kind', '=', 'payable'),
+            ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
         depends=['company'])
@@ -98,14 +101,13 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
         sql_table = cls.__table__()
         cursor = Transaction().connection.cursor()
 
         exist = TableHandler.table_exist(cls._table)
         super(ConfigurationTaxRounding, cls).__register__(module_name)
 
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(module_name)
 
         # Migration from 4.2: rename method into tax_rounding
         if table.column_exist('method'):
