@@ -1,5 +1,6 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+from trytond import backend
 from trytond.pool import Pool
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 from trytond.transaction import Transaction
@@ -103,6 +104,7 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     def __register__(cls, module_name):
         sql_table = cls.__table__()
         cursor = Transaction().connection.cursor()
+        TableHandler = backend.get('TableHandler')
 
         exist = TableHandler.table_exist(cls._table)
         super(ConfigurationTaxRounding, cls).__register__(module_name)
