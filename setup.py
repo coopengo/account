@@ -5,10 +5,7 @@
 import io
 import os
 import re
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from configparser import ConfigParser
+from configparser import ConfigParser
 from setuptools import setup
 
 
