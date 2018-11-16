@@ -940,7 +940,13 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
                     if tax.update_unit_price:
                         unit_price_variation += value['amount']
                 if len(tax.childs):
-                    res.extend(cls._unit_compute(tax.childs, price_unit, date))
+                    # change to handle update_unit_price with child tax
+                    # see tryton issues 7862
+                    child_tax = cls._unit_compute(tax.childs, price_unit, date)
+                    if tax.update_unit_price:
+                        for cur_tax in child_tax:
+                            unit_price_variation += cur_tax['amount']
+                    res.extend(child_tax)
             price_unit += unit_price_variation
         return res
 
