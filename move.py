@@ -11,7 +11,7 @@ from sql.aggregate import Sum, Max
 from sql.functions import CharLength
 from sql.conditionals import Coalesce, Case
 
-from trytond.model import ModelView, ModelSQL, fields, Check
+from trytond.model import ModelView, ModelSQL, fields, Check, DeactivableMixin
 from trytond.wizard import Wizard, StateTransition, StateView, StateAction, \
     StateReport, Button
 from trytond.report import Report
@@ -23,7 +23,7 @@ from trytond.rpc import RPC
 from trytond.tools import reduce_ids, grouped_slice
 from trytond.config import config
 
-__all__ = ['Move', 'Reconciliation', 'Line', 'OpenJournalAsk',
+__all__ = ['Move', 'Reconciliation', 'Line', 'WriteOff', 'OpenJournalAsk',
     'OpenJournal', 'OpenAccount',
     'ReconcileLinesWriteOff', 'ReconcileLines',
     'UnreconcileLines',
@@ -104,26 +104,21 @@ class Move(ModelSQL, ModelView):
                     'depends': ['state'],
                     },
                 })
+        cls.__rpc__.update({
+                'post': RPC(
+                    readonly=False, instantiate=0, fresh_session=True),
+                })
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
         cursor = Transaction().connection.cursor()
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(module_name)
         sql_table = cls.__table__()
         pool = Pool()
         Period = pool.get('account.period')
         period = Period.__table__()
         FiscalYear = pool.get('account.fiscalyear')
         fiscalyear = FiscalYear.__table__()
-
-        # Migration from 2.4:
-        #   - name renamed into number
-        #   - reference renamed into post_number
-        if table.column_exist('name'):
-            table.column_rename('name', 'number')
-        if table.column_exist('reference'):
-            table.column_rename('reference', 'post_number')
 
         created_company = not table.column_exist('company')
 
@@ -138,7 +133,7 @@ class Move(ModelSQL, ModelView):
                     where=period.id == sql_table.period)
             cursor.execute(*sql_table.update([sql_table.company], [value]))
 
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(module_name)
         table.index_action(['journal', 'period'], 'add')
 
         # Add index on create_date
@@ -244,7 +239,7 @@ class Move(ModelSQL, ModelView):
         all_moves = []
         args = []
         for moves, values in zip(actions, actions):
-            keys = values.keys()
+            keys = list(values.keys())
             for key in cls._check_modify_exclude:
                 if key in keys:
                     keys.remove(key)
@@ -268,7 +263,8 @@ class Move(ModelSQL, ModelView):
                         or Transaction().context.get('journal'))
                 if journal_id:
                     journal = Journal(journal_id)
-                    vals['number'] = Sequence.get_id(journal.sequence.id)
+                    if journal.sequence:
+                        vals['number'] = Sequence.get_id(journal.sequence.id)
 
         moves = super(Move, cls).create(vlist)
         cls.validate_move(moves)
@@ -283,25 +279,15 @@ class Move(ModelSQL, ModelView):
 
     @classmethod
     def copy(cls, moves, default=None):
-        Line = Pool().get('account.move.line')
-
         if default is None:
             default = {}
-        default = default.copy()
-        default['number'] = None
-        default['post_number'] = None
-        default['state'] = cls.default_state()
-        default['post_date'] = None
-        default['lines'] = None
-
-        new_moves = []
-        for move in moves:
-            new_move, = super(Move, cls).copy([move], default=default)
-            Line.copy(move.lines, default={
-                    'move': new_move.id,
-                    })
-            new_moves.append(new_move)
-        return new_moves
+        else:
+            default = default.copy()
+        default.setdefault('number', None)
+        default.setdefault('post_number', None)
+        default.setdefault('state', cls.default_state())
+        default.setdefault('post_date', None)
+        return super().copy(moves, default=default)
 
     @classmethod
     def validate_move(cls, moves):
@@ -378,24 +364,23 @@ class Move(ModelSQL, ModelView):
                     'date': date,
                     'period': period_id,
                     })
+        default['lines.debit'] = lambda data: data['debit'] * -1
+        default['lines.credit'] = lambda data: data['credit'] * -1
+        default['lines.amount_second_currency'] = (
+            lambda data: data['amount_second_currency'] * -1
+            if data['amount_second_currency']
+            else data['amount_second_currency'])
+        default['lines.tax_lines.amount'] = lambda data: data['amount'] * -1
         return default
 
     def cancel(self, default=None):
         'Return a cancel move'
         if default is None:
             default = {}
+        else:
+            default = default.copy()
         default.update(self._cancel_default())
         cancel_move, = self.copy([self], default=default)
-        for line in cancel_move.lines:
-            line.debit *= -1
-            line.credit *= -1
-            if line.second_currency:
-                line.amount_second_currency *= -1
-            for tax_line in line.tax_lines:
-                tax_line.amount *= -1
-            line.tax_lines = line.tax_lines  # Force tax_lines changing
-        cancel_move.lines = cancel_move.lines  # Force lines changing
-        cancel_move.save()
         return cancel_move
 
     @classmethod
@@ -469,7 +454,7 @@ class Reconciliation(ModelSQL, ModelView):
     def __register__(cls, module_name):
         TableHandler = backend.get('TableHandler')
         cursor = Transaction().connection.cursor()
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(module_name)
         sql_table = cls.__table__()
         pool = Pool()
         Move = pool.get('account.move')
@@ -484,7 +469,7 @@ class Reconciliation(ModelSQL, ModelView):
         # Migration from 3.8: new date field
         if (not date_exist
                 and TableHandler.table_exist(Line._table)
-                and TableHandler(Line).column_exist('move')):
+                and Line.__table_handler__().column_exist('move')):
             cursor.execute(*sql_table.update(
                     [sql_table.date],
                     line.join(move,
@@ -576,8 +561,18 @@ class Line(ModelSQL, ModelView):
         depends=['currency_digits', 'debit', 'tax_lines', 'journal'] +
         _depends)
     account = fields.Many2One('account.account', 'Account', required=True,
-            domain=[('kind', '!=', 'view')],
-            select=True, states=_states, depends=_depends)
+        domain=[
+            ('kind', '!=', 'view'),
+            ['OR',
+                ('start_date', '=', None),
+                ('start_date', '<=', Eval('date', None)),
+                ],
+            ['OR',
+                ('end_date', '=', None),
+                ('end_date', '>=', Eval('date', None)),
+                ],
+            ],
+        select=True, states=_states, depends=_depends + ['date'])
     move = fields.Many2One('account.move', 'Move', select=True, required=True,
         ondelete='CASCADE',
         states={
@@ -596,7 +591,7 @@ class Line(ModelSQL, ModelView):
             searcher='search_move_field')
     date = fields.Function(fields.Date('Effective Date', required=True,
             states=_states, depends=_depends),
-            'get_move_field', setter='set_move_field',
+            'on_change_with_date', setter='set_move_field',
             searcher='search_move_field')
     origin = fields.Function(fields.Reference('Origin',
             selection='get_origin'),
@@ -641,7 +636,6 @@ class Line(ModelSQL, ModelView):
     party_required = fields.Function(fields.Boolean('Party Required'),
         'on_change_with_party_required')
     maturity_date = fields.Date('Maturity Date',
-        states=_states, depends=_depends,
         help='This field is used for payable and receivable lines. \n'
         'You can put the limit date for the payment.')
     state = fields.Selection([
@@ -674,7 +668,8 @@ class Line(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(Line, cls).__setup__()
-        cls._check_modify_exclude = {'reconciliation'}
+        cls._check_modify_exclude = {
+            'maturity_date', 'reconciliation', 'tax_lines'}
         cls._reconciliation_modify_disallow = {
             'account', 'debit', 'credit', 'party',
             }
@@ -703,8 +698,6 @@ class Line(ModelSQL, ModelView):
                     'no journal defined.'),
                 'move_view_account': ('You can not create a move line with '
                     'account "%s" because it is a view account.'),
-                'move_inactive_account': ('You can not create a move line '
-                    'with account "%s" because it is inactive.'),
                 'already_reconciled': 'Line "%s" (%d) already reconciled.',
                 'party_required': 'Party is required on line "%s"',
                 'party_set': 'Party must not be set on line "%s"',
@@ -712,26 +705,11 @@ class Line(ModelSQL, ModelView):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        # Migration from 2.4: reference renamed into description
-        if table.column_exist('reference'):
-            table.column_rename('reference', 'description')
-
         super(Line, cls).__register__(module_name)
 
-        table = TableHandler(cls, module_name)
+        table = cls.__table_handler__(module_name)
         # Index for General Ledger
         table.index_action(['move', 'account'], 'add')
-
-        # Migration from 1.2
-        table.not_null_action('blocked', action='remove')
-
-        # Migration from 2.4: remove name, active
-        table.not_null_action('name', action='remove')
-        table.not_null_action('active', action='remove')
-        table.index_action('active', action='remove')
 
     @classmethod
     def default_date(cls):
@@ -871,6 +849,11 @@ class Line(ModelSQL, ModelView):
             return value.id
         return value
 
+    @fields.depends('move', '_parent_move.date')
+    def on_change_with_date(self, name=None):
+        if self.move:
+            return self.move.date
+
     @classmethod
     def set_move_field(cls, lines, name, value):
         if name.startswith('move_'):
@@ -985,7 +968,7 @@ class Line(ModelSQL, ModelView):
                 fiscalyear_id = fiscalyears[0].id
             else:
                 fiscalyear_id = -1
-            fiscalyear_ids = map(int, fiscalyears)
+            fiscalyear_ids = list(map(int, fiscalyears))
             where &= period.fiscalyear == fiscalyear_id
             where &= move.date <= date
         elif fiscalyear_id or period_ids or from_date or to_date:
@@ -1005,7 +988,7 @@ class Line(ModelSQL, ModelView):
                     ('state', '=', 'open'),
                     ('company', '=', company),
                     ])
-            fiscalyear_ids = map(int, fiscalyears)
+            fiscalyear_ids = list(map(int, fiscalyears))
 
         where = cls.get_query_get_where_clause(table, where)
         # Use LEFT JOIN to allow database optimization
@@ -1031,9 +1014,6 @@ class Line(ModelSQL, ModelView):
     def check_account(self):
         if self.account.kind in ('view',):
             self.raise_user_error('move_view_account', (
-                    self.account.rec_name,))
-        if not self.account.active:
-            self.raise_user_error('move_inactive_account', (
                     self.account.rec_name,))
         if bool(self.party) != bool(self.account.party_required):
             error = 'party_set' if self.party else 'party_required'
@@ -1156,10 +1136,10 @@ class Line(ModelSQL, ModelView):
     def copy(cls, lines, default=None):
         if default is None:
             default = {}
-        if 'move' not in default:
-            default['move'] = None
-        if 'reconciliation' not in default:
-            default['reconciliation'] = None
+        else:
+            default = default.copy()
+        default.setdefault('move', None)
+        default.setdefault('reconciliation', None)
         return super(Line, cls).copy(lines, default=default)
 
     @classmethod
@@ -1191,10 +1171,11 @@ class Line(ModelSQL, ModelView):
         return toolbar
 
     @classmethod
-    def reconcile(cls, *lines_list, **writeoff):
+    def reconcile(
+            cls, *lines_list, date=None, writeoff=None, description=None):
         """
         Reconcile each list of lines together.
-        The writeoff keys are: journal, date, account and description.
+        The writeoff keys are: date, method and description.
         """
         pool = Pool()
         Reconciliation = pool.get('account.move.reconciliation')
@@ -1217,7 +1198,8 @@ class Line(ModelSQL, ModelView):
                     reconcile_party = line.party
             if amount:
                 move = cls._get_writeoff_move(
-                    reconcile_account, reconcile_party, amount, **writeoff)
+                    reconcile_account, reconcile_party, amount,
+                    date, writeoff, description)
                 move.save()
                 lines += cls.search([
                         ('move', '=', move.id),
@@ -1235,7 +1217,7 @@ class Line(ModelSQL, ModelView):
 
     @classmethod
     def _get_writeoff_move(cls, reconcile_account, reconcile_party, amount,
-            journal=None, date=None, account=None, description=None):
+            date=None, writeoff=None, description=None):
         pool = Pool()
         Date = pool.get('ir.date')
         Period = pool.get('account.period')
@@ -1243,11 +1225,14 @@ class Line(ModelSQL, ModelView):
         if not date:
             date = Date.today()
         period_id = Period.find(reconcile_account.company.id, date=date)
-        if not account and journal:
+        account = None
+        journal = None
+        if writeoff:
             if amount >= 0:
-                account = journal.debit_account
+                account = writeoff.debit_account
             else:
-                account = journal.credit_account
+                account = writeoff.credit_account
+            journal = writeoff.journal
 
         move = Move()
         move.journal = journal
@@ -1273,6 +1258,33 @@ class Line(ModelSQL, ModelView):
 
         move.lines = lines
         return move
+
+
+class WriteOff(DeactivableMixin, ModelSQL, ModelView):
+    'Reconcile Write Off'
+    __name__ = 'account.move.reconcile.write_off'
+    company = fields.Many2One('company.company', "Company", required=True)
+    name = fields.Char("Name", required=True, translate=True)
+    journal = fields.Many2One('account.journal', "Journal", required=True,
+        domain=[('type', '=', 'write-off')])
+    credit_account = fields.Many2One('account.account', "Credit Account",
+        required=True,
+        domain=[
+            ('kind', '!=', 'view'),
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
+    debit_account = fields.Many2One('account.account', "Debit Account",
+        required=True,
+        domain=[
+            ('kind', '!=', 'view'),
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
+
+    @classmethod
+    def default_company(cls):
+        return Transaction().context.get('company')
 
 
 class OpenJournalAsk(ModelView):
@@ -1400,20 +1412,28 @@ class OpenAccount(Wizard):
 class ReconcileLinesWriteOff(ModelView):
     'Reconcile Lines Write-Off'
     __name__ = 'account.move.reconcile_lines.writeoff'
-    journal = fields.Many2One('account.journal', 'Journal', required=True,
+    company = fields.Many2One('company.company', "Company", readonly=True)
+    writeoff = fields.Many2One('account.move.reconcile.write_off', "Write Off",
         domain=[
-            ('type', '=', 'write-off'),
-            ])
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
     date = fields.Date('Date', required=True)
     amount = fields.Numeric('Amount', digits=(16, Eval('currency_digits', 2)),
         readonly=True, depends=['currency_digits'])
-    currency_digits = fields.Integer('Currency Digits', readonly=True)
+    currency_digits = fields.Function(fields.Integer('Currency Digits'),
+        'on_change_with_currency_digits')
     description = fields.Char('Description')
 
     @staticmethod
     def default_date():
         Date = Pool().get('ir.date')
         return Date.today()
+
+    @fields.depends('company')
+    def on_change_with_currency_digits(self, name=None):
+        if self.company:
+            return self.company.currency.digits
 
 
 class ReconcileLines(Wizard):
@@ -1451,17 +1471,17 @@ class ReconcileLines(Wizard):
         amount, company = self.get_writeoff()
         return {
             'amount': amount,
-            'currency_digits': company.currency.digits,
+            'company': company.id,
             }
 
     def transition_reconcile(self):
         Line = Pool().get('account.move.line')
 
-        journal = getattr(self.writeoff, 'journal', None)
+        writeoff = getattr(self.writeoff, 'writeoff', None)
         date = getattr(self.writeoff, 'date', None)
         description = getattr(self.writeoff, 'description', None)
         Line.reconcile(Line.browse(Transaction().context['active_ids']),
-            journal=journal, date=date, description=description)
+            writeoff=writeoff, date=date, description=description)
         return 'end'
 
 
@@ -1491,7 +1511,7 @@ class Reconcile(Wizard):
     show = StateView('account.reconcile.show',
         'account.reconcile_show_view_form', [
             Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Skip', 'next_', 'tryton-go-next'),
+            Button('Skip', 'next_', 'tryton-forward'),
             Button('Reconcile', 'reconcile', 'tryton-ok', default=True),
             ])
     reconcile = StateTransition()
@@ -1602,7 +1622,7 @@ class Reconcile(Wizard):
         defaults['party'] = self.show.party.id if self.show.party else None
         defaults['currency_digits'] = self.show.account.company.currency.digits
         defaults['lines'] = self._default_lines()
-        defaults['write_off'] = Decimal(0)
+        defaults['write_off_amount'] = Decimal(0)
         defaults['date'] = Date.today()
         return defaults
 
@@ -1636,7 +1656,7 @@ class Reconcile(Wizard):
         for lines in grouped_slice(self._all_lines(), chunk):
             lines = list(lines)
             best = None
-            for n in xrange(len(lines), 1, -1):
+            for n in range(len(lines), 1, -1):
                 for comb_lines in combinations(lines, n):
                     if requested and not requested.intersection(comb_lines):
                         continue
@@ -1649,7 +1669,7 @@ class Reconcile(Wizard):
             if best:
                 default.extend(best)
         if not default and requested:
-            default = map(int, requested)
+            default = list(map(int, requested))
         return default
 
     def transition_reconcile(self):
@@ -1658,8 +1678,8 @@ class Reconcile(Wizard):
 
         if self.show.lines:
             Line.reconcile(self.show.lines,
-                journal=self.show.journal,
                 date=self.show.date,
+                writeoff=self.show.write_off,
                 description=self.show.description)
         return 'next_'
 
@@ -1682,31 +1702,34 @@ class ReconcileShow(ModelView):
         depends=['account', 'party'])
 
     _write_off_states = {
-        'required': Bool(Eval('write_off', 0)),
-        'invisible': ~Eval('write_off', 0),
+        'required': Bool(Eval('write_off_amount', 0)),
+        'invisible': ~Eval('write_off_amount', 0),
         }
-    _write_off_depends = ['write_off']
+    _write_off_depends = ['write_off_amount']
 
-    write_off = fields.Function(fields.Numeric('Write-Off',
+    write_off_amount = fields.Function(fields.Numeric('Amount',
             digits=(16, Eval('currency_digits', 2)),
             states=_write_off_states,
             depends=_write_off_depends + ['currency_digits']),
-        'on_change_with_write_off')
+        'on_change_with_write_off_amount')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
         'on_change_with_currency_digits')
-    journal = fields.Many2One('account.journal', 'Journal',
-        states=_write_off_states, depends=_write_off_depends,
-        domain=[
-            ('type', '=', 'write-off'),
-            ])
+    write_off = fields.Many2One(
+        'account.move.reconcile.write_off', "Write Off",
+        states=_write_off_states, depends=_write_off_depends)
     date = fields.Date('Date',
         states=_write_off_states, depends=_write_off_depends)
     description = fields.Char('Description',
-        states=_write_off_states, depends=_write_off_depends)
+        states={
+            'invisible': _write_off_states['invisible'],
+            }, depends=_write_off_depends)
 
-    @fields.depends('lines')
-    def on_change_with_write_off(self, name=None):
-        return sum((l.debit - l.credit) for l in self.lines)
+    @fields.depends('lines', 'currency_digits')
+    def on_change_with_write_off_amount(self, name=None):
+        digits = self.currency_digits or 0
+        exp = Decimal(str(10.0 ** -digits))
+        amount = sum(((l.debit - l.credit) for l in self.lines), Decimal(0))
+        return amount.quantize(exp)
 
     @fields.depends('account')
     def on_change_with_currency_digits(self, name=None):
@@ -1744,7 +1767,7 @@ class CancelMoves(Wizard):
             for line in move.lines + cancel_move.lines:
                 if line.account.reconcile:
                     to_reconcile[(line.account, line.party)].append(line)
-            for lines in to_reconcile.itervalues():
+            for lines in to_reconcile.values():
                 Line.reconcile(lines)
         return 'end'
 

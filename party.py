@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
 
-from sql import Literal, Null, Cast
+from sql import Literal, Null
 from sql.aggregate import Sum
 from sql.conditionals import Coalesce
 
@@ -22,14 +22,14 @@ account_names = [
     'customer_tax_rule', 'supplier_tax_rule']
 
 
-class Party(CompanyMultiValueMixin):
-    __metaclass__ = PoolMeta
+class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
     __name__ = 'party.party'
     accounts = fields.One2Many('party.party.account', 'party', "Accounts")
     account_payable = fields.MultiValue(fields.Many2One(
             'account.account', "Account Payable",
             domain=[
                 ('kind', '=', 'payable'),
+                ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
             states={
@@ -39,6 +39,7 @@ class Party(CompanyMultiValueMixin):
             'account.account', "Account Receivable",
             domain=[
                 ('kind', '=', 'receivable'),
+                ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
             states={
@@ -152,8 +153,7 @@ class Party(CompanyMultiValueMixin):
                 cursor.execute(*line.join(account,
                         condition=account.id == line.account
                         ).select(line.party, amount,
-                        where=(account.active
-                            & (account.kind == code)
+                        where=((account.kind == code)
                             & (line.reconciliation == Null)
                             & (account.company == company_id)
                             & party_where
@@ -197,18 +197,15 @@ class Party(CompanyMultiValueMixin):
         Operator = fields.SQL_OPERATORS[operator]
 
         # Need to cast numeric for sqlite
-        type_ = MoveLine.debit.sql_type().base
-        amount = Cast(
-            Sum(Coalesce(line.debit, 0) - Coalesce(line.credit, 0)),
-            type_)
+        cast_ = MoveLine.debit.sql_cast
+        amount = cast_(Sum(Coalesce(line.debit, 0) - Coalesce(line.credit, 0)))
         if operator in {'in', 'not in'}:
-            value = [Cast(Literal(Decimal(v or 0)), type_) for v in value]
+            value = [cast_(Literal(Decimal(v or 0))) for v in value]
         else:
-            value = Cast(Literal(Decimal(value or 0)), type_)
+            value = cast_(Literal(Decimal(value or 0)))
         query = line.join(account, condition=account.id == line.account
                 ).select(line.party,
-                    where=account.active
-                    & (account.kind == code)
+                    where=(account.kind == code)
                     & (line.party != Null)
                     & (line.reconciliation == Null)
                     & (account.company == company_id)
@@ -230,7 +227,8 @@ class Party(CompanyMultiValueMixin):
             self.raise_user_error('missing_payable_account', {
                     'name': self.rec_name,
                     })
-        return account
+        if account:
+            return account.current()
 
     @property
     def account_receivable_used(self):
@@ -245,7 +243,8 @@ class Party(CompanyMultiValueMixin):
             self.raise_user_error('missing_receivable_account', {
                     'name': self.rec_name,
                     })
-        return account
+        if account:
+            return account.current()
 
 
 class PartyAccount(ModelSQL, CompanyValueMixin):
@@ -257,6 +256,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
         'account.account', "Account Payable",
         domain=[
             ('kind', '=', 'payable'),
+            ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
         depends=['company'])
@@ -264,6 +264,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
         'account.account', "Account Receivable",
         domain=[
             ('kind', '=', 'receivable'),
+            ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
         depends=['company'])
@@ -302,8 +303,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
             parent='party', fields=fields)
 
 
-class PartyReplace:
-    __metaclass__ = PoolMeta
+class PartyReplace(metaclass=PoolMeta):
     __name__ = 'party.replace'
 
     @classmethod
@@ -313,8 +313,7 @@ class PartyReplace:
             ]
 
 
-class PartyErase:
-    __metaclass__ = PoolMeta
+class PartyErase(metaclass=PoolMeta):
     __name__ = 'party.erase'
 
     @classmethod

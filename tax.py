@@ -5,19 +5,21 @@ from collections import namedtuple
 from decimal import Decimal
 from itertools import groupby
 
-from sql import Literal, Cast
+from sql import Literal
 from sql.aggregate import Sum
 from sql.conditionals import Case
 
 from trytond.model import (
     ModelView, ModelSQL, MatchMixin, DeactivableMixin, fields,
-    sequence_ordered)
+    sequence_ordered, tree)
 from trytond.wizard import Wizard, StateView, StateAction, Button
 from trytond import backend
 from trytond.pyson import Eval, If, Bool, PYSONEncoder
 from trytond.transaction import Transaction
 from trytond.tools import cursor_dict
 from trytond.pool import Pool
+
+from .common import PeriodMixin, ActivePeriodMixin
 
 __all__ = ['TaxGroup', 'TaxCodeTemplate', 'TaxCode',
     'TaxCodeLineTemplate', 'TaxCodeLine',
@@ -41,21 +43,12 @@ class TaxGroup(ModelSQL, ModelView):
     code = fields.Char('Code', size=None, required=True)
     kind = fields.Selection(KINDS, 'Kind', required=True)
 
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        super(TaxGroup, cls).__register__(module_name)
-        table = TableHandler(cls, module_name)
-
-        # Migration from 1.4 drop code_uniq constraint
-        table.drop_constraint('code_uniq')
-
     @staticmethod
     def default_kind():
         return 'both'
 
 
-class TaxCodeTemplate(ModelSQL, ModelView):
+class TaxCodeTemplate(PeriodMixin, tree(), ModelSQL, ModelView):
     'Tax Code Template'
     __name__ = 'account.tax.code.template'
     name = fields.Char('Name', required=True)
@@ -73,11 +66,6 @@ class TaxCodeTemplate(ModelSQL, ModelView):
         cls._order.insert(0, ('code', 'ASC'))
         cls._order.insert(0, ('account', 'ASC'))
 
-    @classmethod
-    def validate(cls, templates):
-        super(TaxCodeTemplate, cls).validate(templates)
-        cls.check_recursion(templates)
-
     def _get_tax_code_value(self, code=None):
         '''
         Set values for tax code creation.
@@ -87,6 +75,10 @@ class TaxCodeTemplate(ModelSQL, ModelView):
             res['name'] = self.name
         if not code or code.code != self.code:
             res['code'] = self.code
+        if not code or code.start_date != self.start_date:
+            res['start_date'] = self.start_date
+        if not code or code.end_date != self.end_date:
+            res['end_date'] = self.end_date
         if not code or code.description != self.description:
             res['description'] = self.description
         if not code or code.template.id != self.id:
@@ -134,7 +126,7 @@ class TaxCodeTemplate(ModelSQL, ModelView):
             childs = sum((c.childs for c in childs), ())
 
 
-class TaxCode(DeactivableMixin, ModelSQL, ModelView):
+class TaxCode(ActivePeriodMixin, tree(), ModelSQL, ModelView):
     'Tax Code'
     __name__ = 'account.tax.code'
     _states = {
@@ -171,12 +163,12 @@ class TaxCode(DeactivableMixin, ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(TaxCode, cls).__setup__()
+        for date in [cls.start_date, cls.end_date]:
+            date.states = {
+                'readonly': (Bool(Eval('template', -1))
+                    & ~Eval('template_override', False)),
+                }
         cls._order.insert(0, ('code', 'ASC'))
-
-    @classmethod
-    def validate(cls, codes):
-        super(TaxCode, cls).validate(codes)
-        cls.check_recursion(codes)
 
     @staticmethod
     def default_company():
@@ -207,7 +199,7 @@ class TaxCode(DeactivableMixin, ModelSQL, ModelView):
             parents[code.id] = code.parent.id if code.parent else None
 
         ids = set(map(int, childs))
-        leafs = ids - set(parents.itervalues())
+        leafs = ids - set(parents.values())
         while leafs:
             for code in leafs:
                 ids.remove(code)
@@ -247,7 +239,7 @@ class TaxCode(DeactivableMixin, ModelSQL, ModelView):
             default = {}
         else:
             default = default.copy()
-        default.setdefault('template')
+        default.setdefault('template', None)
         return super(TaxCode, cls).copy(codes, default=default)
 
     @classmethod
@@ -307,7 +299,7 @@ class TaxCodeLineTemplate(ModelSQL, ModelView):
 
     def _get_tax_code_line_value(self, line=None):
         value = {}
-        for name in ['code', 'operator', 'amount', 'type']:
+        for name in ['operator', 'amount', 'type']:
             if not line or getattr(line, name) != getattr(self, name):
                 value[name] = getattr(self, name)
         if not line or line.template != self:
@@ -366,7 +358,8 @@ class TaxCodeLine(ModelSQL, ModelView):
             ('credit', "Credit"),
             ], "Type", required=True, states=_states)
 
-    template = fields.Many2One('account.tax.code.line.template', 'Template')
+    template = fields.Many2One(
+        'account.tax.code.line.template', 'Template', ondelete='CASCADE')
     template_override = fields.Boolean('Override Template',
         help="Check to override template definition",
         states={
@@ -418,8 +411,10 @@ class TaxCodeLine(ModelSQL, ModelView):
                     value['tax'] = template2tax.get(template.tax.id)
                 if value:
                     values.append([line])
-                    values.append(values)
+                    values.append(value)
                 template2tax_code_line[line.template.id] = line.id
+        if values:
+            cls.write(*values)
 
 
 class OpenChartTaxCodeStart(ModelView):
@@ -526,27 +521,6 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
                 'update_unit_price_with_parent': ('"Update Unit Price" can '
                     'not be set on tax "%(template)s" which has a parent.'),
                 })
-
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        super(TaxTemplate, cls).__register__(module_name)
-        cursor = Transaction().connection.cursor()
-        table = TableHandler(cls, module_name)
-
-        # Migration from 1.0 group is no more required
-        table.not_null_action('group', action='remove')
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-        # Migration from 2.8: rename percentage into rate
-        if table.column_exist('percentage'):
-            sql_table = cls.__table__()
-            cursor.execute(*sql_table.update(
-                    columns=[sql_table.rate],
-                    values=[sql_table.percentage / 100]))
-            table.drop_column('percentage')
 
     @classmethod
     def validate(cls, tax_templates):
@@ -767,27 +741,6 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
                 })
 
     @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        super(Tax, cls).__register__(module_name)
-        cursor = Transaction().connection.cursor()
-        table = TableHandler(cls, module_name)
-
-        # Migration from 1.0 group is no more required
-        table.not_null_action('group', action='remove')
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-        # Migration from 2.8: rename percentage into rate
-        if table.column_exist('percentage'):
-            sql_table = cls.__table__()
-            cursor.execute(*sql_table.update(
-                    columns=[sql_table.rate],
-                    values=[sql_table.percentage / 100]))
-            table.drop_column('percentage')
-
-    @classmethod
     def validate(cls, taxes):
         super(Tax, cls).validate(taxes)
         for tax in taxes:
@@ -827,7 +780,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         move_line = MoveLine.__table__()
         tax_line = TaxLine.__table__()
 
-        tax_ids = map(int, taxes)
+        tax_ids = list(map(int, taxes))
         result = {}
         for name in names:
             result[name] = dict.fromkeys(tax_ids, Decimal(0))
@@ -835,7 +788,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         columns = []
         amount = tax_line.amount
         if backend.name() == 'sqlite':
-            amount = Cast(tax_line.amount, TaxLine.amount.sql_type()[0])
+            amount = TaxLine.amount.sql_cast(tax_line.amount)
         for name, clause in [
                 ('invoice_base_amount',
                     (amount > 0) & (tax_line.type == 'base')),
@@ -901,7 +854,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
             default = {}
         else:
             default = default.copy()
-        default.setdefault('template')
+        default.setdefault('template', None)
         return super(Tax, cls).copy(taxes, default=default)
 
     def _process_tax(self, price_unit):
@@ -1163,7 +1116,7 @@ class TaxableMixin(object):
     def _round_taxes(self, taxes):
         if not self.currency:
             return
-        for taxline in taxes.itervalues():
+        for taxline in taxes.values():
             taxline['amount'] = self.currency.round(taxline['amount'])
 
     def _get_taxes(self):
@@ -1237,12 +1190,12 @@ class TaxLine(ModelSQL, ModelView):
 
         migrate_type = False
         if TableHandler.table_exist(cls._table):
-            table_h = TableHandler(cls, module_name)
+            table_h = cls.__table_handler__(module_name)
             migrate_type = not table_h.column_exist('type')
 
         super(TaxLine, cls).__register__(module_name)
 
-        table_h = TableHandler(cls, module_name)
+        table_h = cls.__table_handler__(module_name)
 
         # Migrate from 4.6: remove code and fill type
         table_h.not_null_action('code', action='remove')
@@ -1377,8 +1330,12 @@ class TaxRuleTemplate(ModelSQL, ModelView):
 class TaxRule(ModelSQL, ModelView):
     'Tax Rule'
     __name__ = 'account.tax.rule'
-    name = fields.Char('Name', required=True)
-    kind = fields.Selection(KINDS, 'Kind', required=True)
+    _states = {
+        'readonly': (Bool(Eval('template', -1))
+            & ~Eval('template_override', False)),
+        }
+    name = fields.Char('Name', required=True, states=_states)
+    kind = fields.Selection(KINDS, 'Kind', required=True, states=_states)
     company = fields.Many2One('company.company', 'Company', required=True,
         select=True, domain=[
             ('id', If(Eval('context', {}).contains('company'), '=', '!='),
@@ -1386,6 +1343,13 @@ class TaxRule(ModelSQL, ModelView):
             ])
     lines = fields.One2Many('account.tax.rule.line', 'rule', 'Lines')
     template = fields.Many2One('account.tax.rule.template', 'Template')
+    template_override = fields.Boolean("Override Template",
+        help="Check to override template definition",
+        states={
+            'invisible': ~Bool(Eval('template', -1)),
+            },
+        depends=['template'])
+    del _states
 
     @staticmethod
     def default_kind():
@@ -1401,7 +1365,7 @@ class TaxRule(ModelSQL, ModelView):
             default = {}
         else:
             default = default.copy()
-        default.setdefault('template')
+        default.setdefault('template', None)
         return super(TaxRule, cls).copy(rules, default=default)
 
     def apply(self, tax, pattern):
@@ -1437,11 +1401,13 @@ class TaxRule(ModelSQL, ModelView):
                 ])
         for rule in rules:
             if rule.template:
+                template2rule[rule.template.id] = rule.id
+                if rule.template_override:
+                    continue
                 vals = rule.template._get_tax_rule_value(rule=rule)
                 if vals:
                     values.append([rule])
                     values.append(vals)
-                template2rule[rule.template.id] = rule.id
         if values:
             cls.write(*values)
 
@@ -1496,16 +1462,6 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
     def __setup__(cls):
         super(TaxRuleLineTemplate, cls).__setup__()
         cls._order.insert(1, ('rule', 'ASC'))
-
-    @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        super(TaxRuleLineTemplate, cls).__register__(module_name)
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
 
     def _get_tax_rule_line_value(self, rule_line=None):
         '''
@@ -1569,10 +1525,14 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
 class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
     'Tax Rule Line'
     __name__ = 'account.tax.rule.line'
+    _states = {
+        'readonly': (Bool(Eval('template', -1))
+            & ~Eval('template_override', False)),
+        }
     rule = fields.Many2One('account.tax.rule', 'Rule', required=True,
-            select=True, ondelete='CASCADE')
+            select=True, ondelete='CASCADE', states=_states)
     group = fields.Many2One('account.tax.group', 'Tax Group',
-        ondelete='RESTRICT')
+        ondelete='RESTRICT', states=_states)
     origin_tax = fields.Many2One('account.tax', 'Original Tax',
         domain=[
             ('parent', '=', None),
@@ -1591,8 +1551,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
         help=('If the original tax is filled, the rule will be applied '
             'only for this tax.'),
         depends=['group'],
-        ondelete='RESTRICT')
-    keep_origin = fields.Boolean("Keep Origin",
+        ondelete='RESTRICT', states=_states)
+    keep_origin = fields.Boolean("Keep Origin", states=_states,
         help="Check to append the original tax to substituted tax.")
     tax = fields.Many2One('account.tax', 'Substitution Tax',
         domain=[
@@ -1610,8 +1570,16 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 ],
             ],
         depends=['group'],
-        ondelete='RESTRICT')
-    template = fields.Many2One('account.tax.rule.line.template', 'Template')
+        ondelete='RESTRICT', states=_states)
+    template = fields.Many2One(
+        'account.tax.rule.line.template', 'Template', ondelete='CASCADE')
+    template_override = fields.Boolean("Override Template",
+        help="Check to override template definition",
+        states={
+            'invisible': ~Bool(Eval('template', -1)),
+            },
+        depends=['template'])
+    del _states
 
     @classmethod
     def __setup__(cls):
@@ -1619,22 +1587,12 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
         cls._order.insert(1, ('rule', 'ASC'))
 
     @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        super(TaxRuleLine, cls).__register__(module_name)
-
-        # Migration from 2.4: drop required on sequence
-        table.not_null_action('sequence', action='remove')
-
-    @classmethod
     def copy(cls, lines, default=None):
         if default is None:
             default = {}
         else:
             default = default.copy()
-        default.setdefault('template')
+        default.setdefault('template', None)
         return super(TaxRuleLine, cls).copy(lines, default=default)
 
     def match(self, pattern):
@@ -1676,6 +1634,9 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 ])
         for line in lines:
             if line.template:
+                template2rule_line[line.template.id] = line.id
+                if line.template_override:
+                    continue
                 vals = line.template._get_tax_rule_line_value(rule_line=line)
                 if line.rule.id != template2rule[line.template.rule.id]:
                     vals['rule'] = template2rule[line.template.rule.id]
@@ -1701,7 +1662,6 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 if vals:
                     values.append([line])
                     values.append(vals)
-                template2rule_line[line.template.id] = line.id
         if values:
             cls.write(*values)
 

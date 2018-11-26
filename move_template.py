@@ -5,7 +5,6 @@ from decimal import Decimal
 
 from simpleeval import simple_eval
 
-from trytond import backend
 from trytond.model import (
     ModelSQL, ModelView, DeactivableMixin, fields, sequence_ordered)
 from trytond.pyson import Eval
@@ -138,7 +137,7 @@ class MoveTemplateKeyword(sequence_ordered(), ModelSQL, ModelView):
                 ])
         keywords = {k.name: k for k in template.keywords}
 
-        for k, v in values.iteritems():
+        for k, v in values.items():
             keyword = keywords[k]
             func = getattr(keyword, '_format_%s' % keyword.type_, None)
             if func:
@@ -226,11 +225,9 @@ class TaxLineTemplate(ModelSQL, ModelView):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-
         super(TaxLineTemplate, cls).__register__(module_name)
 
-        table_h = TableHandler(cls, module_name)
+        table_h = cls.__table_handler__(module_name)
 
         # Migration from 4.6: remove code
         table_h.drop_column('code')
@@ -285,7 +282,7 @@ class CreateMove(Wizard):
     template = StateView('account.move.template.create.template',
         'account.move_template_create_template_view_form', [
             Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Next', 'keywords', 'tryton-go-next', default=True),
+            Button('Next', 'keywords', 'tryton-forward', default=True),
             ])
     keywords = KeywordStateView('account.move.template.create.keywords',
         None, [

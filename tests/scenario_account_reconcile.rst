@@ -1,11 +1,9 @@
-===============================
-Account Reconciliation Scenario
-===============================
+==========================
+Account Reconcile Scenario
+==========================
 
 Imports::
 
-    >>> import datetime
-    >>> from dateutil.relativedelta import relativedelta
     >>> from decimal import Decimal
     >>> from proteus import Model, Wizard
     >>> from trytond.tests.tools import activate_modules
@@ -13,7 +11,6 @@ Imports::
     ...     get_company
     >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
     ...     create_chart, get_accounts
-    >>> today = datetime.date.today()
 
 Install account::
 
@@ -45,7 +42,7 @@ Create parties::
     >>> customer = Party(name='Customer')
     >>> customer.save()
 
-Create Moves for direct reconciliation::
+Create Moves to reconcile::
 
     >>> Journal = Model.get('account.journal')
     >>> Move = Model.get('account.move')
@@ -55,6 +52,7 @@ Create Moves for direct reconciliation::
     >>> journal_cash, = Journal.find([
     ...         ('code', '=', 'CASH'),
     ...         ])
+
     >>> move = Move()
     >>> move.period = period
     >>> move.journal = journal_revenue
@@ -67,65 +65,21 @@ Create Moves for direct reconciliation::
     >>> line.debit = Decimal(42)
     >>> line.party = customer
     >>> move.save()
-    >>> reconcile1, = [l for l in move.lines if l.account == receivable]
+
     >>> move = Move()
     >>> move.period = period
     >>> move.journal = journal_cash
     >>> move.date = period.start_date
     >>> line = move.lines.new()
     >>> line.account = cash
-    >>> line.debit = Decimal(42)
+    >>> line.debit = Decimal(40)
     >>> line = move.lines.new()
     >>> line.account = receivable
-    >>> line.credit = Decimal(42)
+    >>> line.credit = Decimal(40)
     >>> line.party = customer
     >>> move.save()
-    >>> reconcile2, = [l for l in move.lines if l.account == receivable]
 
-Reconcile Lines without writeoff::
-
-    >>> reconcile_lines = Wizard('account.move.reconcile_lines',
-    ...     [reconcile1, reconcile2])
-    >>> reconcile_lines.state == 'end'
-    True
-    >>> reconcile1.reload()
-    >>> reconcile2.reload()
-    >>> reconcile1.reconciliation == reconcile2.reconciliation != None
-    True
-    >>> len(reconcile1.reconciliation.lines)
-    2
-
-Create Moves for writeoff reconciliation::
-
-    >>> move = Move()
-    >>> move.period = period
-    >>> move.journal = journal_revenue
-    >>> move.date = period.start_date
-    >>> line = move.lines.new()
-    >>> line.account = revenue
-    >>> line.credit = Decimal(68)
-    >>> line = move.lines.new()
-    >>> line.account = receivable
-    >>> line.debit = Decimal(68)
-    >>> line.party = customer
-    >>> move.save()
-    >>> reconcile1, = [l for l in move.lines if l.account == receivable]
-    >>> move = Move()
-    >>> move.period = period
-    >>> move.journal = journal_cash
-    >>> move.date = period.start_date
-    >>> line = move.lines.new()
-    >>> line.account = cash
-    >>> line.debit = Decimal(65)
-    >>> line = move.lines.new()
-    >>> line.account = receivable
-    >>> line.credit = Decimal(65)
-    >>> line.party = customer
-    >>> move.save()
-    >>> reconcile2, = [l for l in move.lines if l.account == receivable]
-
-Create a writeof payment method::
-
+Create a write off method::
 
     >>> Sequence = Model.get('ir.sequence')
     >>> sequence_journal, = Sequence.find([('code', '=', 'account.journal')])
@@ -140,24 +94,19 @@ Create a writeof payment method::
     >>> writeoff_method.credit_account = expense
     >>> writeoff_method.save()
 
-Reconcile Lines with writeoff::
-    >>> reconcile_lines = Wizard('account.move.reconcile_lines',
-    ...     [reconcile1, reconcile2])
-    >>> reconcile_lines.form_state == 'writeoff'
+Run Reconcile wizard::
+
+    >>> reconcile = Wizard('account.reconcile')
+    >>> reconcile.form.party == customer
     True
-    >>> reconcile_lines.form.writeoff = writeoff_method
-    >>> reconcile_lines.execute('reconcile')
-    >>> reconcile1.reload()
-    >>> reconcile2.reload()
-    >>> reconcile1.reconciliation == reconcile2.reconciliation != None
-    True
-    >>> len(reconcile1.reconciliation.lines)
-    3
-    >>> writeoff_line1, = [l for l in reconcile1.reconciliation.lines
-    ...     if l.credit == Decimal(3)]
-    >>> writeoff_line2, = [l for l in writeoff_line1.move.lines
-    ...     if l != writeoff_line1]
-    >>> writeoff_line2.account == expense
-    True
-    >>> writeoff_line2.debit
-    Decimal('3.0')
+    >>> reconcile.form.write_off_amount
+    Decimal('0.00')
+    >>> len(reconcile.form.lines)
+    0
+    >>> reconcile.form.lines.extend(reconcile.form.lines.find())
+    >>> len(reconcile.form.lines)
+    2
+    >>> reconcile.form.write_off_amount
+    Decimal('2.00')
+    >>> reconcile.form.write_off = writeoff_method
+    >>> reconcile.execute('reconcile')
