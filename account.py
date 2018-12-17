@@ -598,16 +598,13 @@ class Account(ActivePeriodMixin, tree(), ModelSQL, ModelView):
         domain=[
             ('company', '=', Eval('company')),
             ], depends=['kind', 'company'])
-    parent = fields.Many2One('account.account', 'Parent', select=True,
-        left="left", right="right", ondelete="RESTRICT",
-        domain=[('company', '=', Eval('company'))],
-        states=_states, depends=['company'])
+    parent = fields.Many2One(
+        'account.account', 'Parent', select=True,
+        left="left", right="right", ondelete="RESTRICT", states=_states)
     left = fields.Integer('Left', required=True, select=True)
     right = fields.Integer('Right', required=True, select=True)
     childs = fields.One2Many(
-        'account.account', 'parent', 'Children',
-        domain=[('company', '=', Eval('company'))],
-        depends=['company'])
+        'account.account', 'parent', 'Children')
     balance = fields.Function(fields.Numeric('Balance',
         digits=(16, Eval('currency_digits', 2)), depends=['currency_digits']),
         'get_balance')
@@ -1082,9 +1079,9 @@ class Account(ActivePeriodMixin, tree(), ModelSQL, ModelView):
                 for tax_id in tax_ids:
                     if tax_id not in old_tax_ids:
                         values['taxes'] = [
-                            ('add', template2tax[x.id])
-                            for x in self.template.taxes
-                            if x.id in template2tax]
+                            ('add', [template2tax[x.id]
+                                    for x in child.template.taxes
+                                    if x.id in template2tax])]
                         break
                 if child.template.replaced_by:
                     replaced_by = template2account[
@@ -1328,13 +1325,21 @@ class GeneralLedgerAccount(ActivePeriodMixin, ModelSQL, ModelView):
 
         period = None
         if name.startswith('start_'):
-            period_ids = [0]
+            period_ids = []
             if context.get('start_period'):
                 period = Period(context['start_period'])
         elif name.startswith('end_'):
             period_ids = []
             if context.get('end_period'):
                 period = Period(context['end_period'])
+            else:
+                periods = Period.search([
+                        ('fiscalyear', '=', context.get('fiscalyear')),
+                        ('type', '=', 'standard'),
+                        ],
+                    order=[('start_date', 'DESC')], limit=1)
+                if periods:
+                    period, = periods
 
         if period:
             periods = Period.search([
@@ -1354,7 +1359,10 @@ class GeneralLedgerAccount(ActivePeriodMixin, ModelSQL, ModelView):
     def get_dates(cls, name):
         context = Transaction().context
         if name.startswith('start_'):
-            return None, context.get('from_date')
+            from_date = context.get('from_date')
+            if from_date:
+                from_date -= datetime.timedelta(days=1)
+            return None, from_date
         elif name.startswith('end_'):
             return None, context.get('to_date')
         return None, None
