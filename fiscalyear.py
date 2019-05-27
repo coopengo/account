@@ -2,12 +2,17 @@
 # this repository contains the full copyright notices and license terms.
 
 from dateutil.relativedelta import relativedelta
+
+from trytond.i18n import gettext
 from trytond.model import ModelView, ModelSQL, Workflow, fields
+from trytond.model.exceptions import AccessError
 from trytond.wizard import Wizard, StateView, StateAction, Button
-from trytond.tools import datetime_strftime
 from trytond.pyson import Eval, If, PYSONEncoder
 from trytond.transaction import Transaction
 from trytond.pool import Pool
+
+from .exceptions import (FiscalYearNotFoundError, FiscalYearDatesError,
+    FiscalYearSequenceError, FiscalYearCloseError, FiscalYearReOpenError)
 
 __all__ = ['FiscalYear',
     'BalanceNonDeferralStart', 'BalanceNonDeferral',
@@ -58,21 +63,6 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
     def __setup__(cls):
         super(FiscalYear, cls).__setup__()
         cls._order.insert(0, ('start_date', 'ASC'))
-        cls._error_messages.update({
-                'change_post_move_sequence': ('You can not change the post '
-                    'move sequence in fiscal year "%s".'),
-                'no_fiscalyear_date': 'No fiscal year defined for "%s".',
-                'fiscalyear_overlaps': ('Fiscal year "%(first)s" and '
-                    '"%(second)s" overlap.'),
-                'different_post_move_sequence': ('Fiscal year "%(first)s" and '
-                    '"%(second)s" have the same post move sequence.'),
-                'account_balance_not_zero': ('The balance of the account "%s" '
-                    'must be zero.'),
-                'close_error': ('You can not close fiscal year "%s" until you '
-                    'close all previous fiscal years.'),
-                'reopen_error': ('You can not reopen fiscal year "%s" until '
-                    'you reopen all later fiscal years.'),
-                })
         cls._transitions |= set((
                 ('open', 'close'),
                 ('close', 'locked'),
@@ -113,9 +103,9 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
 
     def get_icon(self, name):
         return {
-            'open': 'tryton-open',
-            'close': 'tryton-close',
-            'locked': 'tryton-readonly',
+            'open': 'tryton-account-open',
+            'close': 'tryton-account-close',
+            'locked': 'tryton-account-block',
             }.get(self.state)
 
     @classmethod
@@ -143,10 +133,10 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
         second_id = cursor.fetchone()
         if second_id:
             second = self.__class__(second_id[0])
-            self.raise_user_error('fiscalyear_overlaps', {
-                    'first': self.rec_name,
-                    'second': second.rec_name,
-                    })
+            raise FiscalYearDatesError(
+                gettext('account.msg_fiscalyear_overlap',
+                    first=self.rec_name,
+                    second=second.rec_name))
 
     def check_post_move_sequence(self):
         years = self.search([
@@ -154,13 +144,15 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                 ('id', '!=', self.id),
                 ])
         if years:
-            self.raise_user_error('different_post_move_sequence', {
-                    'first': self.rec_name,
-                    'second': years[0].rec_name,
-                    })
+            raise FiscalYearSequenceError(
+                gettext('account.msg_fiscalyear_different_post_move_sequence',
+                    first=self.rec_name,
+                    second=years[0].rec_name))
 
     @classmethod
     def write(cls, *args):
+        pool = Pool()
+        Move = pool.get('account.move')
         actions = iter(args)
         for fiscalyears, values in zip(actions, actions):
             if values.get('post_move_sequence'):
@@ -168,8 +160,14 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                     if (fiscalyear.post_move_sequence
                             and fiscalyear.post_move_sequence.id !=
                             values['post_move_sequence']):
-                        cls.raise_user_error('change_post_move_sequence', (
-                                fiscalyear.rec_name,))
+                        if Move.search([
+                                    ('period.fiscalyear', '=', fiscalyear.id),
+                                    ('state', '=', 'posted'),
+                                    ]):
+                            raise AccessError(
+                                gettext('account.'
+                                    'msg_change_fiscalyear_post_move_sequence',
+                                    fiscalyear=fiscalyear.rec_name))
         super(FiscalYear, cls).write(*args)
 
     @classmethod
@@ -194,9 +192,9 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                     relativedelta(day=31)
                 if period_end_date > fiscalyear.end_date:
                     period_end_date = fiscalyear.end_date
-                name = datetime_strftime(period_start_date, '%Y-%m')
-                if name != datetime_strftime(period_end_date, '%Y-%m'):
-                    name += ' - ' + datetime_strftime(period_end_date, '%Y-%m')
+                name = period_start_date.strftime('%Y-%m')
+                if name != period_end_date.strftime('%Y-%m'):
+                    name += ' - ' + period_end_date.strftime('%Y-%m')
                 to_create.append({
                     'name': name,
                     'start_date': period_start_date,
@@ -238,7 +236,9 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
         if not fiscalyears:
             if exception:
                 lang = Lang.get()
-                cls.raise_user_error('no_fiscalyear_date', lang.strftime(date))
+                raise FiscalYearNotFoundError(
+                    gettext('account.msg_no_fiscalyear_date',
+                        date=lang.strftime(date)))
             else:
                 return None
         return fiscalyears[0].id
@@ -249,12 +249,14 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
         Currency = pool.get('currency.currency')
         Deferral = pool.get('account.account.deferral')
 
-        if account.kind == 'view':
+        if not account.type:
             return
         if not account.deferral:
             if not Currency.is_zero(self.company.currency, account.balance):
-                self.raise_user_error('account_balance_not_zero',
-                        error_args=(account.rec_name,))
+                raise FiscalYearCloseError(
+                    gettext('account'
+                        '.msg_close_fiscalyear_account_balance_not_zero',
+                        account=account.rec_name))
         else:
             deferral = Deferral()
             deferral.account = account
@@ -289,7 +291,9 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                         ('state', '=', 'open'),
                         ('company', '=', fiscalyear.company.id),
                         ]):
-                cls.raise_user_error('close_error', (fiscalyear.rec_name,))
+                raise FiscalYearCloseError(
+                    gettext('account.msg_close_fiscalyear_earlier',
+                        fiscalyear=fiscalyear.rec_name))
 
             periods = Period.search([
                     ('fiscalyear', '=', fiscalyear.id),
@@ -320,7 +324,9 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
                         ('state', '!=', 'open'),
                         ('company', '=', fiscalyear.company.id),
                         ]):
-                cls.raise_user_error('reopen_error')
+                raise FiscalYearReOpenError(
+                    gettext('account.msg_reopen_fiscalyear_later',
+                        fiscalyear=fiscalyear.rec_name))
 
             deferrals = Deferral.search([
                 ('fiscalyear', '=', fiscalyear.id),
@@ -359,7 +365,8 @@ class BalanceNonDeferralStart(ModelView):
     credit_account = fields.Many2One('account.account', 'Credit Account',
         required=True,
         domain=[
-            ('kind', '!=', 'view'),
+            ('type', '!=', None),
+            ('closed', '!=', True),
             ('company', '=', Eval('company', -1)),
             ('deferral', '=', True),
             ],
@@ -367,7 +374,8 @@ class BalanceNonDeferralStart(ModelView):
     debit_account = fields.Many2One('account.account', 'Debit Account',
         required=True,
         domain=[
-            ('kind', '!=', 'view'),
+            ('type', '!=', None),
+            ('closed', '!=', True),
             ('company', '=', Eval('company', -1)),
             ('deferral', '=', True),
             ],
@@ -432,7 +440,8 @@ class BalanceNonDeferral(Wizard):
             accounts = Account.search([
                     ('company', '=', self.start.fiscalyear.company.id),
                     ('deferral', '=', False),
-                    ('kind', '!=', 'view'),
+                    ('type', '!=', None),
+                    ('closed', '!=', True),
                     ])
         lines = []
         for account in accounts:
@@ -458,7 +467,7 @@ class BalanceNonDeferral(Wizard):
     def do_balance(self, action):
         self.create_move()
         action['pyson_domain'] = PYSONEncoder().encode([
-                ('origin', '=', str(self.start.fiscalyear)),
+                ('move.origin', '=', str(self.start.fiscalyear)),
                 ])
         return action, {}
 

@@ -9,14 +9,16 @@ from sql import Literal
 from sql.aggregate import Sum
 from sql.conditionals import Case
 
+from trytond.i18n import gettext
 from trytond.model import (
     ModelView, ModelSQL, MatchMixin, DeactivableMixin, fields,
     sequence_ordered, tree)
+from trytond.model.exceptions import AccessError
 from trytond.wizard import Wizard, StateView, StateAction, Button
 from trytond import backend
 from trytond.pyson import Eval, If, Bool, PYSONEncoder
 from trytond.transaction import Transaction
-from trytond.tools import cursor_dict
+from trytond.tools import cursor_dict, lstrip_wildcard
 from trytond.pool import Pool
 
 from .common import PeriodMixin, ActivePeriodMixin
@@ -225,8 +227,11 @@ class TaxCode(ActivePeriodMixin, tree(), ModelSQL, ModelView):
             bool_op = 'AND'
         else:
             bool_op = 'OR'
+        code_value = clause[2]
+        if clause[1].endswith('like'):
+            code_value = lstrip_wildcard(clause[2])
         return [bool_op,
-            ('code',) + tuple(clause[1:]),
+            ('code', clause[1], code_value) + tuple(clause[3:]),
             (cls._rec_name,) + tuple(clause[1:]),
             ]
 
@@ -473,7 +478,7 @@ class OpenChartTaxCode(Wizard):
         return 'end'
 
 
-class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
+class TaxTemplate(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     'Account Tax Template'
     __name__ = 'account.tax.template'
     name = fields.Char('Name', required=True)
@@ -504,10 +509,18 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
         depends=['parent'])
     parent = fields.Many2One('account.tax.template', 'Parent')
     childs = fields.One2Many('account.tax.template', 'parent', 'Children')
-    invoice_account = fields.Many2One('account.account.template',
-            'Invoice Account')
-    credit_note_account = fields.Many2One('account.account.template',
-            'Credit Note Account')
+    invoice_account = fields.Many2One(
+        'account.account.template', 'Invoice Account',
+        domain=[
+            ('type.statement', '=', 'balance'),
+            ('closed', '!=', True),
+            ])
+    credit_note_account = fields.Many2One(
+        'account.account.template', 'Credit Note Account',
+        domain=[
+            ('type.statement', '=', 'balance'),
+            ('closed', '!=', True),
+            ])
     account = fields.Many2One('account.account.template', 'Account Template',
             domain=[('parent', '=', None)], required=True)
     legal_notice = fields.Text("Legal Notice")
@@ -516,10 +529,6 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
     def __setup__(cls):
         super(TaxTemplate, cls).__setup__()
         cls._order.insert(0, ('account', 'ASC'))
-        cls._error_messages.update({
-                'update_unit_price_with_parent': ('"Update Unit Price" can '
-                    'not be set on tax "%(template)s" which has a parent.'),
-                })
 
     @classmethod
     def validate(cls, tax_templates):
@@ -529,9 +538,9 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
 
     def check_update_unit_price(self):
         if self.update_unit_price and self.parent:
-            self.raise_user_error('update_unit_price_with_parent', {
-                    'template': self.rec_name,
-                    })
+            raise AccessError(
+                gettext('account.msg_tax_update_unit_price_with_parent',
+                    tax=self.rec_name))
 
     @staticmethod
     def default_type():
@@ -548,7 +557,7 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView):
         res = {}
         for field in ['name', 'description', 'sequence', 'amount', 'rate',
                 'type', 'start_date', 'end_date', 'update_unit_price',
-                'legal_notice']:
+                'legal_notice', 'active']:
             if not tax or getattr(tax, field) != getattr(self, field):
                 res[field] = getattr(self, field)
         for field in ('group',):
@@ -679,7 +688,8 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     invoice_account = fields.Many2One('account.account', 'Invoice Account',
         domain=[
             ('company', '=', Eval('company')),
-            ('kind', 'not in', ['view', 'receivable', 'payable']),
+            ('type.statement', '=', 'balance'),
+            ('closed', '!=', True),
             ],
         states={
             'readonly': _states['readonly'],
@@ -691,7 +701,8 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         'Credit Note Account',
         domain=[
             ('company', '=', Eval('company')),
-            ('kind', 'not in', ['view', 'receivable', 'payable']),
+            ('type.statement', '=', 'balance'),
+            ('closed', '!=', True),
             ],
         states={
             'readonly': _states['readonly'],
@@ -701,7 +712,8 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         depends=['company', 'type'])
     legal_notice = fields.Text("Legal Notice", translate=True,
         states=_states)
-    template = fields.Many2One('account.tax.template', 'Template')
+    template = fields.Many2One('account.tax.template', 'Template',
+        ondelete='RESTRICT')
     template_override = fields.Boolean('Override Template',
         help="Check to override template definition",
         states={
@@ -732,14 +744,6 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     del _states
 
     @classmethod
-    def __setup__(cls):
-        super(Tax, cls).__setup__()
-        cls._error_messages.update({
-                'update_unit_price_with_parent': ('"Update Unit Price" can '
-                    'not be set on tax "%(template)s" which has a parent.'),
-                })
-
-    @classmethod
     def validate(cls, taxes):
         super(Tax, cls).validate(taxes)
         for tax in taxes:
@@ -747,9 +751,9 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
 
     def check_update_unit_price(self):
         if self.parent and self.update_unit_price:
-            self.raise_user_error('update_unit_price_with_parent', {
-                    'tax': self.rec_name,
-                    })
+            raise AccessError(
+                gettext('account.msg_tax_update_unit_price_with_parent',
+                    tax=self.rec_name))
 
     @staticmethod
     def default_type():
@@ -1172,14 +1176,6 @@ class TaxLine(ModelSQL, ModelView):
         'on_change_with_company')
 
     @classmethod
-    def __setup__(cls):
-        super(TaxLine, cls).__setup__()
-        cls._error_messages.update({
-                'modify_closed_period': (
-                    'You can not add/modify tax lines in closed period "%s".'),
-                })
-
-    @classmethod
     def __register__(cls, module_name):
         pool = Pool()
         Tax = pool.get('account.tax')
@@ -1265,8 +1261,9 @@ class TaxLine(ModelSQL, ModelView):
         for line in lines:
             period = line.period_checked
             if period and period.state != 'open':
-                cls.raise_user_error(
-                    'modify_closed_period', (period.rec_name,))
+                raise AccessError(
+                    gettext('account.msg_modify_tax_line_closed_period',
+                        period=period.rec_name))
 
 
 class TaxRuleTemplate(ModelSQL, ModelView):
@@ -1759,10 +1756,7 @@ class TestTaxViewResult(ModelView):
     __name__ = 'account.tax.test.result'
     tax = fields.Many2One('account.tax', "Tax")
     description = fields.Char("Description")
+    legal_notice = fields.Char("Legal Notice")
     account = fields.Many2One('account.account', "Account")
     base = fields.Numeric("Base")
-    base_code = fields.Many2One('account.tax.code', "Base Code")
-    base_sign = fields.Numeric("Base Sign", digits=(2, 0))
     amount = fields.Numeric("Amount")
-    tax_code = fields.Many2One('account.tax.code', "Tax Code")
-    tax_sign = fields.Numeric("Tax Sign", digits=(2, 0))

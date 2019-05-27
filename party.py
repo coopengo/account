@@ -7,6 +7,7 @@ from sql.aggregate import Sum
 from sql.conditionals import Coalesce
 
 from trytond import backend
+from trytond.i18n import gettext
 from trytond.model import ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
@@ -15,6 +16,9 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.tools.multivalue import migrate_property
 from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
+from trytond.modules.party.exceptions import EraseError
+
+from .exceptions import AccountMissing
 
 __all__ = ['Party', 'PartyAccount', 'PartyReplace', 'PartyErase']
 account_names = [
@@ -28,7 +32,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
     account_payable = fields.MultiValue(fields.Many2One(
             'account.account', "Account Payable",
             domain=[
-                ('kind', '=', 'payable'),
+                ('type.payable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
@@ -38,7 +42,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
     account_receivable = fields.MultiValue(fields.Many2One(
             'account.account', "Account Receivable",
             domain=[
-                ('kind', '=', 'receivable'),
+                ('type.receivable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ],
@@ -83,16 +87,6 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
             'get_receivable_payable', searcher='search_receivable_payable')
 
     @classmethod
-    def __setup__(cls):
-        super(Party, cls).__setup__()
-        cls._error_messages.update({
-            'missing_receivable_account': (
-                    'There is no receivable account on party "%(name)s".'),
-            'missing_payable_account': (
-                    'There is no payable account on party "%(name)s".'),
-            })
-
-    @classmethod
     def multivalue_model(cls, field):
         pool = Pool()
         if field in account_names:
@@ -120,12 +114,14 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
         pool = Pool()
         MoveLine = pool.get('account.move.line')
         Account = pool.get('account.account')
+        AccountType = pool.get('account.account.type')
         User = pool.get('res.user')
         Date = pool.get('ir.date')
         cursor = Transaction().connection.cursor()
 
         line = MoveLine.__table__()
         account = Account.__table__()
+        account_type = AccountType.__table__()
 
         for name in names:
             if name not in ('receivable', 'payable',
@@ -152,8 +148,10 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
                 party_where = reduce_ids(line.party, sub_ids)
                 cursor.execute(*line.join(account,
                         condition=account.id == line.account
+                        ).join(account_type,
+                        condition=account.type == account_type.id
                         ).select(line.party, amount,
-                        where=((account.kind == code)
+                        where=(getattr(account_type, code)
                             & (line.reconciliation == Null)
                             & (account.company == company_id)
                             & party_where
@@ -171,11 +169,13 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
         pool = Pool()
         MoveLine = pool.get('account.move.line')
         Account = pool.get('account.account')
+        AccountType = pool.get('account.account.type')
         User = pool.get('res.user')
         Date = pool.get('ir.date')
 
         line = MoveLine.__table__()
         account = Account.__table__()
+        account_type = AccountType.__table__()
 
         if name not in ('receivable', 'payable',
                 'receivable_today', 'payable_today'):
@@ -203,15 +203,16 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
             value = [cast_(Literal(Decimal(v or 0))) for v in value]
         else:
             value = cast_(Literal(Decimal(value or 0)))
-        query = line.join(account, condition=account.id == line.account
+        query = (line.join(account, condition=account.id == line.account
+                ).join(account_type, condition=account.type == account_type.id
                 ).select(line.party,
-                    where=(account.kind == code)
+                where=(getattr(account_type, code)
                     & (line.party != Null)
                     & (line.reconciliation == Null)
                     & (account.company == company_id)
-                    & today_query,
-                    group_by=line.party,
-                    having=Operator(amount, value))
+                    & today_query),
+                group_by=line.party,
+                having=Operator(amount, value)))
         return [('id', 'in', query)]
 
     @property
@@ -224,9 +225,9 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
             account = config.get_multivalue('default_account_payable')
         # Allow empty values on on_change
         if not account and not Transaction().readonly:
-            self.raise_user_error('missing_payable_account', {
-                    'name': self.rec_name,
-                    })
+            raise AccountMissing(
+                gettext('account.msg_party_missing_payable_account',
+                    party=self.rec_name))
         if account:
             return account.current()
 
@@ -240,9 +241,9 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
             account = config.get_multivalue('default_account_receivable')
         # Allow empty values on on_change
         if not account and not Transaction().readonly:
-            self.raise_user_error('missing_receivable_account', {
-                    'name': self.rec_name,
-                    })
+            raise AccountMissing(
+                gettext('account.msg_party_missing_receivable_account',
+                    party=self.rec_name))
         if account:
             return account.current()
 
@@ -255,7 +256,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
     account_payable = fields.Many2One(
         'account.account', "Account Payable",
         domain=[
-            ('kind', '=', 'payable'),
+            ('type.payable', '=', True),
             ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
@@ -263,7 +264,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
     account_receivable = fields.Many2One(
         'account.account', "Account Receivable",
         domain=[
-            ('kind', '=', 'receivable'),
+            ('type.receivable', '=', True),
             ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
@@ -316,20 +317,10 @@ class PartyReplace(metaclass=PoolMeta):
 class PartyErase(metaclass=PoolMeta):
     __name__ = 'party.erase'
 
-    @classmethod
-    def __setup__(cls):
-        super(PartyErase, cls).__setup__()
-        cls._error_messages.update({
-                'receivable_payable': (
-                    'The party "%(party)s" can not be erased '
-                    'because he has pending receivable/payable '
-                    'for the company "%(company)s".'),
-                })
-
     def check_erase_company(self, party, company):
         super(PartyErase, self).check_erase_company(party, company)
         if party.receivable or party.payable:
-            self.raise_user_error('receivable_payable', {
-                    'party': party.rec_name,
-                    'company': company.rec_name,
-                    })
+            raise EraseError(
+                gettext('account.msg_erase_party_receivable_payable',
+                    party=party.rec_name,
+                    company=company.rec_name))

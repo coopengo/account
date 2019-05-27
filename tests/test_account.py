@@ -41,14 +41,25 @@ def create_chart(company, tax=False):
             tax.credit_note_account = tax_account
             tax.save()
 
-            tax_code = TaxCodeTemplate()
-            tax_code.name = 'Tax Code'
-            tax_code.account = template
-            tax_code.save()
-            base_code = TaxCodeTemplate()
-            base_code.name = 'Base Code'
-            base_code.account = template
-            base_code.save()
+            TaxCodeTemplate.create([{
+                        'name': 'Tax Code',
+                        'account': template,
+                        'lines': [('create', [{
+                                        'operator': '+',
+                                        'type': 'invoice',
+                                        'amount': 'tax',
+                                        'tax': tax.id,
+                                        }])],
+                        }, {
+                        'name': 'Base Code',
+                        'account': template,
+                        'lines': [('create', [{
+                                        'operator': '+',
+                                        'type': 'invoice',
+                                        'amount': 'base',
+                                        'tax': tax.id,
+                                        }])],
+                        }])
 
     session_id, _, _ = CreateChart.create()
     create_chart = CreateChart(session_id)
@@ -56,11 +67,11 @@ def create_chart(company, tax=False):
     create_chart.account.company = company
     create_chart.transition_create_account()
     receivable, = Account.search([
-            ('kind', '=', 'receivable'),
+            ('type.receivable', '=', True),
             ('company', '=', company.id),
             ])
     payable, = Account.search([
-            ('kind', '=', 'payable'),
+            ('type.payable', '=', True),
             ('company', '=', company.id),
             ])
     create_chart.properties.company = company
@@ -122,14 +133,12 @@ def close_fiscalyear(fiscalyear):
             ('name', '=', 'Equity'),
             ])
     revenue, = Account.search([
-            ('kind', '=', 'revenue'),
+            ('type.revenue', '=', True),
             ])
     account_pl, = Account.create([{
                 'name': 'P&L',
                 'type': type_equity.id,
-                'deferral': True,
                 'parent': revenue.parent.id,
-                'kind': 'other',
                 }])
 
     session_id = BalanceNonDeferral.create()[0]
@@ -225,19 +234,18 @@ class AccountTestCase(ModuleTestCase):
                     ('code', '=', 'EXP'),
                     ])
             revenue, = Account.search([
-                    ('kind', '=', 'revenue'),
+                    ('type.revenue', '=', True),
                     ])
             receivable, = Account.search([
-                    ('kind', '=', 'receivable'),
+                    ('type.receivable', '=', True),
                     ])
             expense, = Account.search([
-                    ('kind', '=', 'expense'),
+                    ('type.expense', '=', True),
                     ])
             payable, = Account.search([
-                    ('kind', '=', 'payable'),
+                    ('type.payable', '=', True),
                     ])
             cash, = Account.search([
-                    ('kind', '=', 'other'),
                     ('name', '=', 'Main Cash'),
                     ])
             cash_cur, = Account.copy([cash], default={
@@ -429,10 +437,10 @@ class AccountTestCase(ModuleTestCase):
                     ('code', '=', 'REV'),
                     ])
             revenue, = Account.search([
-                    ('kind', '=', 'revenue'),
+                    ('type.revenue', '=', True),
                     ])
             receivable, = Account.search([
-                    ('kind', '=', 'receivable'),
+                    ('type.receivable', '=', True),
                     ])
 
             move = Move()
@@ -899,16 +907,16 @@ class AccountTestCase(ModuleTestCase):
                     ('code', '=', 'EXP'),
                     ])
             revenue, = Account.search([
-                    ('kind', '=', 'revenue'),
+                    ('type.revenue', '=', True),
                     ])
             receivable, = Account.search([
-                    ('kind', '=', 'receivable'),
+                    ('type.receivable', '=', True),
                     ])
             expense, = Account.search([
-                    ('kind', '=', 'expense'),
+                    ('type.expense', '=', True),
                     ])
             payable, = Account.search([
-                    ('kind', '=', 'payable'),
+                    ('type.payable', '=', True),
                     ])
             party, = Party.create([{
                         'name': 'Receivable/Payable party',
@@ -1003,10 +1011,10 @@ class AccountTestCase(ModuleTestCase):
         with set_company(company):
             create_chart(company)
             receivable, = Account.search([
-                    ('kind', '=', 'receivable'),
+                    ('type.receivable', '=', True),
                     ])
             payable, = Account.search([
-                    ('kind', '=', 'payable'),
+                    ('type.payable', '=', True),
                     ])
 
             party = Party(party.id)
@@ -1062,6 +1070,237 @@ class AccountTestCase(ModuleTestCase):
             self.assertListEqual(
                 tax_rule.apply(tax, {}), [target_tax.id, tax.id])
 
+    @with_transaction()
+    def test_update_chart(self):
+        'Test all template models are updated when updating chart'
+        pool = Pool()
+        TypeTemplate = pool.get('account.account.type.template')
+        AccountTemplate = pool.get('account.account.template')
+        TaxTemplate = pool.get('account.tax.template')
+        TaxCodeTemplate = pool.get('account.tax.code.template')
+        ModelData = pool.get('ir.model.data')
+        UpdateChart = pool.get('account.update_chart', type='wizard')
+        Type = pool.get('account.account.type')
+        Account = pool.get('account.account')
+        Tax = pool.get('account.tax')
+        TaxCode = pool.get('account.tax.code')
+
+        def check():
+            for type_ in Type.search([]):
+                self.assertEqual(type_.name, type_.template.name)
+                self.assertEqual(
+                    type_.statement, type_.template.statement)
+
+            for account in Account.search([]):
+                self.assertEqual(account.name, account.template.name)
+                self.assertEqual(account.code, account.template.code)
+                self.assertEqual(account.type.template, account.template.type)
+                self.assertEqual(account.reconcile, account.template.reconcile)
+                self.assertEqual(
+                    account.start_date, account.template.start_date)
+                self.assertEqual(account.end_date, account.template.end_date)
+                self.assertEqual(
+                    account.party_required, account.template.party_required)
+                self.assertEqual(
+                    account.general_ledger_balance,
+                    account.template.general_ledger_balance)
+                self.assertEqual(
+                    set(t.template for t in account.taxes),
+                    set(t for t in account.template.taxes))
+
+            for tax_code in TaxCode.search([]):
+                self.assertEqual(tax_code.name, tax_code.template.name)
+                self.assertEqual(tax_code.code, tax_code.template.code)
+                for line in tax_code.lines:
+                    self.assertEqual(line.code.template, line.template.code)
+                    self.assertEqual(line.operator, line.template.operator)
+                    self.assertEqual(line.type, line.template.type)
+                    self.assertEqual(line.tax.template, line.template.tax)
+
+            for tax in Tax.search([]):
+                self.assertEqual(tax.name, tax.template.name)
+                self.assertEqual(tax.description, tax.template.description)
+                self.assertEqual(tax.type, tax.template.type)
+                self.assertEqual(tax.rate, tax.template.rate)
+                self.assertEqual(tax.amount, tax.template.amount)
+                self.assertEqual(
+                    tax.update_unit_price, tax.template.update_unit_price)
+                self.assertEqual(
+                    tax.start_date, tax.template.start_date)
+                self.assertEqual(tax.end_date, tax.template.end_date)
+                self.assertEqual(
+                    tax.invoice_account.template, tax.template.invoice_account)
+                self.assertEqual(
+                    tax.credit_note_account.template,
+                    tax.template.credit_note_account)
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company, True)
+
+            with Transaction().set_context(active_test=False):
+                self.assertEqual(Type.search([], count=True), 16)
+                self.assertEqual(Account.search([], count=True), 7)
+                self.assertEqual(Tax.search([], count=True), 1)
+
+                check()
+
+        with Transaction().set_user(0):
+            root_type = TypeTemplate(ModelData.get_id(
+                'account', 'account_type_template_minimal_en'))
+            root_type.name = 'Updated Minimal Chart'
+            root_type.save()
+            chart = AccountTemplate(ModelData.get_id(
+                    'account', 'account_template_root_en'))
+            new_type = TypeTemplate()
+            new_type.name = 'New Type'
+            new_type.parent = root_type
+            new_type.statement = 'balance'
+            new_type.save()
+            new_account = AccountTemplate()
+            new_account.name = 'New Account'
+            new_account.parent = chart
+            new_account.type = new_type
+            new_account.save()
+            updated_tax, = TaxTemplate.search([])
+            updated_tax.name = 'VAT'
+            updated_tax.invoice_account = new_account
+            updated_tax.save()
+            updated_account = AccountTemplate(ModelData.get_id(
+                    'account', 'account_template_revenue_en'))
+            updated_account.code = 'REV'
+            updated_account.name = 'Updated Account'
+            updated_account.reconcile = True
+            updated_account.end_date = datetime.date.today()
+            updated_account.taxes = [updated_tax]
+            updated_account.save()
+            inactive_account = AccountTemplate(ModelData.get_id(
+                    'account', 'account_template_expense_en'))
+            inactive_account.end_date = datetime.date.min
+            inactive_account.save()
+            new_tax = TaxTemplate()
+            new_tax.name = new_tax.description = '10% VAT'
+            new_tax.type = 'percentage'
+            new_tax.rate = Decimal('0.1')
+            new_tax.account = chart
+            new_tax.invoice_account = new_account
+            new_tax.credit_note_account = new_account
+            new_tax.save()
+            updated_tax_code, = TaxCodeTemplate.search([
+                    ('name', '=', 'Tax Code'),
+                    ])
+            updated_tax_code.name = 'Updated Tax Code'
+            updated_tax_code.save()
+            updated_tax_code_line, = updated_tax_code.lines
+            updated_tax_code_line.operator = '-'
+            updated_tax_code_line.save()
+
+        with set_company(company):
+            account, = Account.search([('parent', '=', None)])
+            session_id, _, _ = UpdateChart.create()
+            update_chart = UpdateChart(session_id)
+            update_chart.start.account = account
+            update_chart.transition_update()
+
+            with Transaction().set_context(active_test=False):
+                self.assertEqual(Type.search([], count=True), 17)
+                self.assertEqual(Account.search([], count=True), 8)
+                self.assertEqual(Tax.search([], count=True), 2)
+
+                check()
+
+    @with_transaction()
+    def test_update_override(self):
+        "Test all models are not updated when template override is True"
+        pool = Pool()
+        ModelData = pool.get('ir.model.data')
+        TypeTemplate = pool.get('account.account.type.template')
+        AccountTemplate = pool.get('account.account.template')
+        TaxTemplate = pool.get('account.tax.template')
+        TaxCodeTemplate = pool.get('account.tax.code.template')
+        UpdateChart = pool.get('account.update_chart', type='wizard')
+        Type = pool.get('account.account.type')
+        Account = pool.get('account.account')
+        Tax = pool.get('account.tax')
+        TaxCode = pool.get('account.tax.code')
+        TaxCodeLine = pool.get('account.tax.code.line')
+
+        new_name = "Updated"
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company, True)
+
+            type_count = Type.search([], count=True)
+            account_count = Account.search([], count=True)
+            tax_count = Tax.search([], count=True)
+            tax_code_count = TaxCode.search([], count=True)
+            tax_code_line_count = TaxCodeLine.search([], count=True)
+
+        with Transaction().set_user(0):
+            root = AccountTemplate(ModelData.get_id(
+                    'account', 'account_template_root_en'))
+
+            template_type, = TypeTemplate.search([
+                    ('parent', '!=', None),
+                    ('parent', 'child_of', [root.type.id]),
+                    ], limit=1)
+            template_type.name = new_name
+            template_type.save()
+            type_, = Type.search([('template', '=', template_type.id)])
+            type_.template_override = True
+            type_.save()
+
+            template_account, = AccountTemplate.search([
+                    ('parent', '!=', None),
+                    ('parent', 'child_of', [root.id]),
+                    ], limit=1)
+            template_account.name = new_name
+            template_account.save()
+            account, = Account.search([('template', '=', template_account.id)])
+            account.template_override = True
+            account.save()
+
+            template_tax, = TaxTemplate.search([])
+            template_tax.name = new_name
+            template_tax.save()
+            tax, = Tax.search([('template', '=', template_tax.id)])
+            tax.template_override = True
+            tax.save()
+
+            template_tax_code, = TaxCodeTemplate.search([], limit=1)
+            template_tax_code.name = new_name
+            template_tax_code.save()
+            tax_code, = TaxCode.search(
+                [('template', '=', template_tax_code.id)])
+            tax_code.template_override = True
+            tax_code.save()
+
+            template_tax_code_line, = TaxCodeLine.search([], limit=1)
+            tax_code_line, = TaxCodeLine.search(
+                [('template', '=', template_tax_code_line.id)])
+            tax_code_line.template_override = True
+            tax_code_line.save()
+
+        with set_company(company):
+            account, = Account.search([('parent', '=', None)])
+            session_id, _, _ = UpdateChart.create()
+            update_chart = UpdateChart(session_id)
+            update_chart.start.account = account
+            update_chart.transition_update()
+
+            self.assertEqual(Type.search([], count=True), type_count)
+            self.assertEqual(Account.search([], count=True), account_count)
+            self.assertEqual(Tax.search([], count=True), tax_count)
+            self.assertEqual(
+                TaxCode.search([], count=True), tax_code_count)
+            self.assertEqual(
+                TaxCodeLine.search([], count=True), tax_code_line_count)
+
+            for Model in [Type, Account, Tax, TaxCode]:
+                for record in Model.search([]):
+                    self.assertNotEqual(record.name, new_name)
+
 
 def suite():
     suite = trytond.tests.test_tryton.suite()
@@ -1079,6 +1318,11 @@ def suite():
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_move_cancel.rst',
+            tearDown=doctest_teardown, encoding='utf-8',
+            checker=doctest_checker,
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+    suite.addTests(doctest.DocFileSuite(
+            'scenario_move_line_group.rst',
             tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))

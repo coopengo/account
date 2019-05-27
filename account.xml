@@ -18,19 +18,23 @@ this repository contains the full copyright notices and license terms. -->
             <field name="group" ref="group_account_admin"/>
         </record>
 
-        <record model="res.user-res.group" id="user_trigger_group_account">
-            <field name="user" ref="res.user_trigger"/>
-            <field name="group" ref="group_account"/>
-        </record>
-        <record model="res.user-res.group" id="user_trigger_group_account_admin">
-            <field name="user" ref="res.user_trigger"/>
-            <field name="group" ref="group_account_admin"/>
-        </record>
-
         <record model="ir.ui.icon" id="account_icon">
             <field name="name">tryton-account</field>
             <field name="path">icons/tryton-account.svg</field>
         </record>
+        <record model="ir.ui.icon" id="account_open_icon">
+            <field name="name">tryton-account-open</field>
+            <field name="path">icons/tryton-account-open.svg</field>
+        </record>
+        <record model="ir.ui.icon" id="account_close_icon">
+            <field name="name">tryton-account-close</field>
+            <field name="path">icons/tryton-account-close.svg</field>
+        </record>
+        <record model="ir.ui.icon" id="account_block_icon">
+            <field name="name">tryton-account-block</field>
+            <field name="path">icons/tryton-account-block.svg</field>
+        </record>
+
         <menuitem name="Financial" id="menu_account" sequence="2" icon="tryton-account"/>
         <record model="ir.ui.menu-res.group" id="menu_account_group_account">
             <field name="menu" ref="menu_account"/>
@@ -174,6 +178,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.rule.group" id="rule_group_account_type">
+            <field name="name">User in company</field>
             <field name="model"
                 search="[('model', '=', 'account.account.type')]"/>
             <field name="global_p" eval="True"/>
@@ -359,7 +364,7 @@ this repository contains the full copyright notices and license terms. -->
                 eval="[('company', '=', Eval('company', -1))]"
                 pyson="1"/>
             <field name="domain"
-                eval="[('type', 'child_of', Eval('active_id'), 'parent'), ('kind', '!=', 'view')]"
+                eval="[('type', 'child_of', Eval('active_id'), 'parent'), ('type', '!=', None)]"
                 pyson="1"/>
         </record>
         <record model="ir.action.act_window.view" id="act_account_list2_view1">
@@ -423,6 +428,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.rule.group" id="rule_group_account">
+            <field name="name">User in company</field>
             <field name="model" search="[('model', '=', 'account.account')]"/>
             <field name="global_p" eval="True"/>
         </record>
@@ -519,6 +525,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.rule.group" id="rule_group_general_ledger_account">
+            <field name="name">User in company</field>
             <field name="model"
                 search="[('model', '=', 'account.general_ledger.account')]"/>
             <field name="global_p" eval="True"/>
@@ -573,6 +580,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.rule.group" id="rule_group_general_ledger_line">
+            <field name="name">User in company</field>
             <field name="model"
                 search="[('model', '=', 'account.general_ledger.line')]"/>
             <field name="global_p" eval="True"/>
@@ -610,7 +618,7 @@ this repository contains the full copyright notices and license terms. -->
                 eval="[('company', '=', Eval('company', -1))]"
                 pyson="1"/>
             <field name="domain"
-                eval="[('balance_sheet', '=', True), ['OR', ('parent', '=', None), ('parent.balance_sheet', '=', False)]]"
+                eval="[('statement', '=', 'balance'), ['OR', ('parent', '=', None), ('parent.statement', '!=', 'balance'), ('parent.statement', '=', None)]]"
                 pyson="1"/>
             <field name="context" eval="{'cumulate': True}" pyson="1"/>
         </record>
@@ -649,7 +657,7 @@ this repository contains the full copyright notices and license terms. -->
                 eval="[('company', '=', Eval('company', -1))]"
                 pyson="1"/>
             <field name="domain"
-                eval="[('income_statement', '=', True), ['OR', ('parent', '=', None), ('parent.income_statement', '=', False)]]"
+                eval="[('statement', '=', 'income'), ['OR', ('parent', '=', None), ('parent.statement', '!=', 'income')]]"
                 pyson="1"/>
         </record>
         <record model="ir.action.act_window.view" id="act_income_statement_view1">
@@ -703,6 +711,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.rule.group" id="rule_group_aged_balance">
+            <field name="name">User in company</field>
             <field name="model" search="[('model', '=', 'account.aged_balance')]"/>
             <field name="global_p" eval="True"/>
         </record>

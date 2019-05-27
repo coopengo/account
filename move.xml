@@ -211,7 +211,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Payable/Receivable Lines</field>
             <field name="res_model">account.move.line</field>
             <field name="domain"
-                eval="[('account.kind', 'in', ['payable', 'receivable']), If(Eval('active_ids', []) == [Eval('active_id')], ('party', '=', Eval('active_id')), ('party', 'in', Eval('active_ids')))]"
+                eval="[['OR', ('account.type.receivable', '=', True), ('account.type.payable', '=', True)], If(Eval('active_ids', []) == [Eval('active_id')], ('party', '=', Eval('active_id')), ('party', 'in', Eval('active_ids')))]"
                 pyson="1"/>
             <field name="search_value"
                 eval="[('reconciliation', '=', None)]" pyson="1"/>
@@ -228,7 +228,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Payable</field>
             <field name="sequence" eval="10"/>
             <field name="domain"
-                eval="[('account.kind', '=', 'payable')]" pyson="1"/>
+                eval="[('account.type.payable', '=', True)]" pyson="1"/>
             <field name="act_window" ref="act_move_line_payable_receivable"/>
         </record>
         <record model="ir.action.act_window.domain"
@@ -236,7 +236,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Receivable</field>
             <field name="sequence" eval="20"/>
             <field name="domain"
-                eval="[('account.kind', '=', 'receivable')]" pyson="1"/>
+                eval="[('account.type.payable', '=', True)]" pyson="1"/>
             <field name="act_window" ref="act_move_line_payable_receivable"/>
         </record>
         <record model="ir.action.act_window.domain"
@@ -390,6 +390,22 @@ this repository contains the full copyright notices and license terms. -->
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
             <field name="perm_delete" eval="True"/>
+        </record>
+
+        <record model="ir.action.wizard" id="act_group_lines_wizard">
+            <field name="name">Group Lines</field>
+            <field name="wiz_name">account.move.line.group</field>
+        </record>
+        <record model="ir.action.keyword" id="act_group_lines_keyword1">
+            <field name="keyword">form_action</field>
+            <field name="model">account.move.line,-1</field>
+            <field name="action" ref="act_group_lines_wizard"/>
+        </record>
+
+        <record model="ir.ui.view" id="move_line_group_start_view_form">
+            <field name="model">account.move.line.group.start</field>
+            <field name="type">form</field>
+            <field name="name">move_line_group_start_form</field>
         </record>
 
         <record model="ir.ui.view" id="print_general_journal_start_view_form">
