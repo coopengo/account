@@ -4,13 +4,15 @@ from decimal import Decimal
 
 from sql.aggregate import Sum
 
+from trytond import backend
+from trytond.i18n import gettext
 from trytond.model import (
     ModelView, ModelSQL, Workflow, DeactivableMixin, fields, Unique)
-from trytond import backend
+from trytond.model.exceptions import AccessError
 from trytond.pyson import Eval, Bool
 from trytond.transaction import Transaction
 from trytond.pool import Pool
-from trytond.tools import reduce_ids, grouped_slice
+from trytond.tools import reduce_ids, grouped_slice, lstrip_wildcard
 from trytond.tools.multivalue import migrate_property
 from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
@@ -72,20 +74,17 @@ class Journal(
     def default_sequence(cls, **pattern):
         return None
 
-    @staticmethod
-    def get_types():
-        Type = Pool().get('account.journal.type')
-        types = Type.search([])
-        return [(x.code, x.name) for x in types]
-
     @classmethod
     def search_rec_name(cls, name, clause):
         if clause[1].startswith('!') or clause[1].startswith('not '):
             bool_op = 'AND'
         else:
             bool_op = 'OR'
+        code_value = clause[2]
+        if clause[1].endswith('like'):
+            code_value = lstrip_wildcard(clause[2])
         return [bool_op,
-            ('code',) + tuple(clause[1:]),
+            ('code', clause[1], code_value) + tuple(clause[3:]),
             (cls._rec_name,) + tuple(clause[1:]),
             ]
 
@@ -107,6 +106,7 @@ class Journal(
         MoveLine = pool.get('account.move.line')
         Move = pool.get('account.move')
         Account = pool.get('account.account')
+        AccountType = pool.get('account.account.type')
         Company = pool.get('company.company')
         context = Transaction().context
         cursor = Transaction().connection.cursor()
@@ -124,15 +124,19 @@ class Journal(
         line = MoveLine.__table__()
         move = Move.__table__()
         account = Account.__table__()
+        account_type = AccountType.__table__()
         where = ((move.date >= context.get('start_date'))
             & (move.date <= context.get('end_date'))
-            & ~account.kind.in_(['receivable', 'payable'])
+            & ~account_type.receivable
+            & ~account_type.payable
             & (move.company == company.id))
         for sub_journals in grouped_slice(journals):
             sub_journals = list(sub_journals)
             red_sql = reduce_ids(move.journal, [j.id for j in sub_journals])
             query = line.join(move, 'LEFT', condition=line.move == move.id
                 ).join(account, 'LEFT', condition=line.account == account.id
+                ).join(account_type, 'LEFT',
+                    condition=account.type == account_type.id
                 ).select(move.journal, Sum(line.debit), Sum(line.credit),
                     where=where & red_sql,
                     group_by=move.journal)
@@ -215,18 +219,8 @@ class JournalPeriod(
         t = cls.__table__()
         cls._sql_constraints += [
             ('journal_period_uniq', Unique(t, t.journal, t.period),
-                'You can only open one journal per period.'),
+                'account.msg_journal_period_unique'),
             ]
-
-        cls._error_messages.update({
-                'modify_del_journal_period': ('You can not modify/delete '
-                        'journal - period "%s" because it has moves.'),
-                'create_journal_period': ('You can not create a '
-                        'journal - period on closed period "%s".'),
-                'open_journal_period': ('You can not open '
-                    'journal - period "%(journal_period)s" because period '
-                    '"%(period)s" is closed.'),
-                })
         cls._transitions |= set((
                 ('open', 'close'),
                 ('close', 'open'),
@@ -272,8 +266,8 @@ class JournalPeriod(
 
     def get_icon(self, name):
         return {
-            'open': 'tryton-open',
-            'close': 'tryton-close',
+            'open': 'tryton-account-open',
+            'close': 'tryton-account-close',
             }.get(self.state)
 
     @classmethod
@@ -285,8 +279,9 @@ class JournalPeriod(
                     ('period', '=', period.period.id),
                     ], limit=1)
             if moves:
-                cls.raise_user_error('modify_del_journal_period', (
-                        period.rec_name,))
+                raise AccessError(
+                    gettext('account.msg_modify_delete_journal_period_moves',
+                        journal_period=period.rec_name))
 
     @classmethod
     def create(cls, vlist):
@@ -295,8 +290,10 @@ class JournalPeriod(
             if vals.get('period'):
                 period = Period(vals['period'])
                 if period.state != 'open':
-                    cls.raise_user_error('create_journal_period', (
-                            period.rec_name,))
+                    raise AccessError(
+                        gettext('account'
+                            '.msg_create_journal_period_closed_period',
+                            period=period.rec_name))
         return super(JournalPeriod, cls).create(vlist)
 
     @classmethod
@@ -309,10 +306,11 @@ class JournalPeriod(
             if values.get('state') == 'open':
                 for journal_period in journal_periods:
                     if journal_period.period.state != 'open':
-                        cls.raise_user_error('open_journal_period', {
-                                'journal_period': journal_period.rec_name,
-                                'period': journal_period.period.rec_name,
-                                })
+                        raise AccessError(
+                            gettext('account'
+                                '.msg_open_journal_period_closed_period',
+                                journal_period=journal_period.rec_name,
+                                period=journal_period.period.rec_name))
         super(JournalPeriod, cls).write(*args)
 
     @classmethod
