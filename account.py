@@ -560,11 +560,10 @@ class AccountTemplate(
     def __register__(cls, module_name):
         super().__register__(module_name)
 
-        # JMO: keep the data so that migration is possible
-        # table_h = cls.__table_handler__(module_name)
+        table_h = cls.__table_handler__(module_name)
 
         # Migration from 5.0: remove kind
-        # table_h.drop_column('kind')
+        table_h.drop_column('kind')
 
     def _get_account_value(self, account=None):
         '''
