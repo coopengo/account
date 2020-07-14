@@ -25,19 +25,6 @@ from trytond.pool import Pool
 from .common import PeriodMixin, ActivePeriodMixin
 from .exceptions import SecondCurrencyError, ChartWarning
 
-__all__ = ['TypeTemplate', 'Type', 'OpenType',
-    'AccountTemplate', 'AccountTemplateTaxTemplate',
-    'Account', 'AccountDeferral', 'AccountTax',
-    'OpenChartAccountStart', 'OpenChartAccount',
-    'GeneralLedgerAccount', 'GeneralLedgerAccountContext',
-    'GeneralLedgerLine', 'GeneralLedgerLineContext',
-    'GeneralLedger', 'TrialBalance',
-    'BalanceSheetContext', 'BalanceSheetComparisionContext',
-    'IncomeStatementContext',
-    'AgedBalanceContext', 'AgedBalance', 'AgedBalanceReport',
-    'CreateChartStart', 'CreateChartAccount', 'CreateChartProperties',
-    'CreateChart', 'UpdateChartStart', 'UpdateChartSucceed', 'UpdateChart']
-
 
 def inactive_records(func):
     @wraps(func)
@@ -50,6 +37,7 @@ def inactive_records(func):
 def TypeMixin(template=False):
 
     class Mixin:
+        __slots__ = ()
         name = fields.Char('Name', required=True)
 
         statement = fields.Selection([
@@ -230,8 +218,8 @@ class Type(
     parent = fields.Many2One('account.account.type', 'Parent',
         ondelete="RESTRICT",
         states={
-            'readonly': (Bool(Eval('template', -1)) &
-                ~Eval('template_override', False)),
+            'readonly': (Bool(Eval('template', -1))
+                & ~Eval('template_override', False)),
             },
         domain=[
             ('company', '=', Eval('company')),
@@ -274,6 +262,10 @@ class Type(
     def default_template_override(cls):
         return False
 
+    @classmethod
+    def default_company(cls):
+        return Transaction().context.get('company')
+
     def get_currency_digits(self, name):
         return self.company.currency.digits
 
@@ -303,8 +295,18 @@ class Type(
             accounts = Account.search([
                     ('type', 'in', [t.id for t in childs]),
                     ])
+            debit_accounts = Account.search([
+                    ('type', '!=', None),
+                    ('debit_type', 'in', [t.id for t in childs]),
+                    ])
         for account in accounts:
-            type_sum[account.type.id] += (account.credit - account.debit)
+            balance = account.credit - account.debit
+            if not account.debit_type or balance > 0:
+                type_sum[account.type.id] += balance
+        for account in debit_accounts:
+            balance = account.credit - account.debit
+            if balance < 0:
+                type_sum[account.debit_type.id] += balance
 
         for type_ in types:
             childs = cls.search([
@@ -337,6 +339,15 @@ class Type(
             ('/tree/field[@name="amount_cmp"]', 'tree_invisible',
                 ~Eval('comparison', False)),
             ]
+
+    @classmethod
+    def copy(cls, types, default=None):
+        if default is None:
+            default = {}
+        else:
+            default = default.copy()
+        default.setdefault('template', None)
+        return super().copy(types, default=default)
 
     @classmethod
     def delete(cls, types):
@@ -414,6 +425,8 @@ class OpenType(Wizard):
 def AccountMixin(template=False):
 
     class Mixin:
+        __slots__ = ()
+        _order_name = 'rec_name'
         name = fields.Char('Name', required=True, select=True)
         code = fields.Char('Code', select=True)
 
@@ -448,7 +461,7 @@ def AccountMixin(template=False):
                 'invisible': ~Eval('type'),
                 },
             depends=['type'],
-            help="Display only the balance in the general ledger report")
+            help="Display only the balance in the general ledger report.")
 
         deferral = fields.Function(fields.Boolean(
                 "Deferral",
@@ -521,6 +534,11 @@ def AccountMixin(template=False):
                 (cls._rec_name,) + tuple(clause[1:]),
                 ]
 
+        @staticmethod
+        def order_rec_name(tables):
+            table, _ = tables[None]
+            return [table.code, table.name]
+
     if not template:
         for fname in dir(Mixin):
             field = getattr(Mixin, fname)
@@ -538,6 +556,8 @@ class AccountTemplate(
     __name__ = 'account.account.template'
     type = fields.Many2One(
         'account.account.type.template', "Type", ondelete="RESTRICT")
+    debit_type = fields.Many2One(
+        'account.account.type.template', "Debit Type", ondelete="RESTRICT")
     parent = fields.Many2One('account.account.template', 'Parent', select=True,
             ondelete="RESTRICT")
     childs = fields.One2Many('account.account.template', 'parent', 'Children')
@@ -585,8 +605,8 @@ class AccountTemplate(
         if not account or account.party_required != self.party_required:
             res['party_required'] = self.party_required
         if (not account
-                or account.general_ledger_balance !=
-                self.general_ledger_balance):
+                or account.general_ledger_balance
+                != self.general_ledger_balance):
             res['general_ledger_balance'] = self.general_ledger_balance
         if not account or account.template != self:
             res['template'] = self.id
@@ -627,6 +647,11 @@ class AccountTemplate(
                         vals['type'] = template2type.get(template.type.id)
                     else:
                         vals['type'] = None
+                    if template.debit_type:
+                        vals['debit_type'] = template2type.get(
+                            template.debit_type.id)
+                    else:
+                        vals['debit_type'] = None
                     values.append(vals)
                     created.append(template)
 
@@ -700,8 +725,8 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
     'Account'
     __name__ = 'account.account'
     _states = {
-        'readonly': (Bool(Eval('template', -1)) &
-            ~Eval('template_override', False)),
+        'readonly': (Bool(Eval('template', -1))
+            & ~Eval('template_override', False)),
         }
     company = fields.Many2One('company.company', 'Company', required=True,
             ondelete="RESTRICT")
@@ -731,6 +756,17 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
             ('company', '=', Eval('company')),
             ],
         depends=['company'])
+    debit_type = fields.Many2One(
+        'account.account.type', "Debit Type", ondelete='RESTRICT',
+        states={
+            'readonly': _states['readonly'],
+            'invisible': ~Eval('type'),
+            },
+        domain=[
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company', 'type'],
+        help="The type used if not empty and debit > credit.")
     parent = fields.Many2One(
         'account.account', 'Parent', select=True,
         left="left", right="right", ondelete="RESTRICT", states=_states)
@@ -763,14 +799,14 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
             },
         depends=['type'])
     taxes = fields.Many2Many('account.account-account.tax',
-            'account', 'tax', 'Default Taxes',
-            domain=[
-                ('company', '=', Eval('company')),
-                ('parent', '=', None),
+        'account', 'tax', 'Default Taxes',
+        domain=[
+            ('company', '=', Eval('company')),
+            ('parent', '=', None),
             ],
-            help=('Default tax for manual encoding of move lines \n'
-                'for journal types: "expense" and "revenue"'),
-            depends=['company'])
+        help="Default tax for manual encoding of move lines\n"
+        'for journal types: "expense" and "revenue".',
+        depends=['company'])
     replaced_by = fields.Many2One(
         'account.account', "Replaced By",
         domain=[('company', '=', Eval('company', -1))],
@@ -1001,10 +1037,11 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
         return values
 
     __on_change_parent_fields = ['name', 'code', 'company', 'type',
-        'reconcile', 'deferral', 'party_required',
+        'debit_type', 'reconcile', 'deferral', 'party_required',
         'general_ledger_balance', 'taxes']
 
-    @fields.depends('parent', *__on_change_parent_fields)
+    @fields.depends('parent', *(__on_change_parent_fields
+            + ['_parent_parent.%s' % f for f in __on_change_parent_fields]))
     def on_change_parent(self):
         if not self.parent:
             return
@@ -1116,6 +1153,15 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
                             template_type = None
                         if current_type != template_type:
                             vals['type'] = template_type
+                        current_debit_type = (
+                            child.debit_type.id if child.debit_type else None)
+                        if child.template.debit_type:
+                            template_debit_type = template2type.get(
+                                child.template.debit_type.id)
+                        else:
+                            template_debit_type = None
+                        if current_debit_type != template_debit_type:
+                            vals['debit_type'] = template_debit_type
                         if vals:
                             values.append([child])
                             values.append(vals)
@@ -1287,8 +1333,8 @@ class OpenChartAccountStart(ModelView):
     'Open Chart of Accounts'
     __name__ = 'account.open_chart.start'
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
-            help='Leave empty for all open fiscal year')
-    posted = fields.Boolean('Posted Moves', help='Show posted moves only')
+            help='Leave empty for all open fiscal year.')
+    posted = fields.Boolean('Posted Moves', help="Only include posted moves.")
 
     @staticmethod
     def default_posted():
@@ -1330,6 +1376,7 @@ class GeneralLedgerAccount(ActivePeriodMixin, ModelSQL, ModelView):
     code = fields.Char('Code')
     company = fields.Many2One('company.company', 'Company')
     type = fields.Many2One('account.account.type', 'Type')
+    debit_type = fields.Many2One('account.account.type', 'Debit Type')
     start_debit = fields.Function(fields.Numeric('Start Debit',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']),
@@ -1567,7 +1614,7 @@ class GeneralLedgerAccountContext(ModelView):
             ],
         depends=['from_date'])
     company = fields.Many2One('company.company', 'Company', required=True)
-    posted = fields.Boolean('Posted Move', help='Show only posted move')
+    posted = fields.Boolean('Posted Move', help="Only included posted moves.")
 
     @classmethod
     def default_fiscalyear(cls):
@@ -1788,7 +1835,7 @@ class BalanceSheetContext(ModelView):
     __name__ = 'account.balance_sheet.context'
     date = fields.Date('Date', required=True)
     company = fields.Many2One('company.company', 'Company', required=True)
-    posted = fields.Boolean('Posted Move', help='Show only posted move')
+    posted = fields.Boolean('Posted Move', help="Only include posted moves.")
 
     @staticmethod
     def default_date():
@@ -1869,7 +1916,7 @@ class IncomeStatementContext(ModelView):
             ],
         depends=['from_date'])
     company = fields.Many2One('company.company', 'Company', required=True)
-    posted = fields.Boolean('Posted Move', help='Show only posted move')
+    posted = fields.Boolean('Posted Move', help="Only include posted moves.")
     comparison = fields.Boolean('Comparison')
     fiscalyear_cmp = fields.Many2One('account.fiscalyear', 'Fiscal Year',
         states={
@@ -1977,7 +2024,7 @@ class AgedBalanceContext(ModelView):
             ('month', 'Months'),
             ], "Unit", required=True)
     company = fields.Many2One('company.company', 'Company', required=True)
-    posted = fields.Boolean('Posted Move', help='Show only posted move')
+    posted = fields.Boolean('Posted Move', help="Only include posted moves.")
 
     @classmethod
     def default_type(cls):
@@ -2056,12 +2103,14 @@ class AgedBalance(ModelSQL, ModelView):
         reconciliation = Reconciliation.__table__()
         account = Account.__table__()
         type_ = Type.__table__()
+        debit_type = Type.__table__()
 
         company_id = context.get('company')
         date = context.get('date')
         with Transaction().set_context(date=None):
             line_query, _ = MoveLine.query_get(line)
         kind = cls.get_kind(type_)
+        debit_kind = cls.get_kind(debit_type)
         columns = [
             line.party.as_('id'),
             Literal(0).as_('create_uid'),
@@ -2097,11 +2146,13 @@ class AgedBalance(ModelSQL, ModelView):
         return line.join(move, condition=line.move == move.id
             ).join(account, condition=line.account == account.id
             ).join(type_, condition=account.type == type_.id
+            ).join(debit_type, 'LEFT',
+                condition=account.debit_type == debit_type.id
             ).join(reconciliation, 'LEFT',
                 condition=reconciliation.id == line.reconciliation
             ).select(*columns,
                 where=(line.party != Null)
-                & kind
+                & (kind | debit_kind)
                 & ((line.reconciliation == Null)
                     | (reconciliation.date > date))
                 & (move.date <= date)

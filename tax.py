@@ -23,14 +23,6 @@ from trytond.pool import Pool
 
 from .common import PeriodMixin, ActivePeriodMixin
 
-__all__ = ['TaxGroup', 'TaxCodeTemplate', 'TaxCode',
-    'TaxCodeLineTemplate', 'TaxCodeLine',
-    'OpenChartTaxCodeStart', 'OpenChartTaxCode',
-    'TaxTemplate', 'Tax', 'TaxLine', 'TaxRuleTemplate', 'TaxRule',
-    'TaxRuleLineTemplate', 'TaxRuleLine',
-    'OpenTaxCode',
-    'TestTax', 'TestTaxView', 'TestTaxViewResult']
-
 KINDS = [
     ('sale', 'Sale'),
     ('purchase', 'Purchase'),
@@ -429,14 +421,14 @@ class OpenChartTaxCodeStart(ModelView):
         ('periods', 'By Periods'),
         ], 'Method', required=True)
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
-        help='Leave empty for all open fiscal year',
+        help='Leave empty for all open fiscal year.',
         states={
             'invisible': Eval('method') != 'fiscalyear',
             'required': Eval('method') == 'fiscalyear',
             },
         depends=['method'])
     periods = fields.Many2Many('account.period', None, None, 'Periods',
-        help='Leave empty for all periods of all open fiscal year',
+        help='Leave empty for all periods of all open fiscal year.',
         states={
             'invisible': Eval('method') != 'periods',
             'required': Eval('method') == 'periods',
@@ -514,13 +506,23 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         domain=[
             ('type.statement', '=', 'balance'),
             ('closed', '!=', True),
-            ])
+            ],
+        states={
+            'invisible': Eval('type') == 'none',
+            'required': Eval('type') != 'none',
+            },
+        depends=['type'])
     credit_note_account = fields.Many2One(
         'account.account.template', 'Credit Note Account',
         domain=[
             ('type.statement', '=', 'balance'),
             ('closed', '!=', True),
-            ])
+            ],
+        states={
+            'invisible': Eval('type') == 'none',
+            'required': Eval('type') != 'none',
+            },
+        depends=['type'])
     account = fields.Many2One('account.account.template', 'Account Template',
             domain=[('parent', '=', None)], required=True)
     legal_notice = fields.Text("Legal Notice")
@@ -643,7 +645,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
         }
     name = fields.Char('Name', required=True, states=_states)
     description = fields.Char('Description', required=True, translate=True,
-            help="The name that will be used in reports", states=_states)
+            help="The name that will be used in reports.", states=_states)
     group = fields.Many2One('account.tax.group', 'Group',
         states={
             'invisible': Bool(Eval('parent')),
@@ -656,7 +658,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
             'required': Eval('type') == 'fixed',
             'invisible': Eval('type') != 'fixed',
             'readonly': _states['readonly'],
-            }, help='In company\'s currency',
+            }, help='In company\'s currency.',
         depends=['type'])
     rate = fields.Numeric('Rate', digits=(14, 10),
         states={
@@ -676,7 +678,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
             },
         depends=['parent'],
         help=('If checked then the unit price for further tax computation will'
-            ' be modified by this tax'))
+            ' be modified by this tax.'))
     parent = fields.Many2One('account.tax', 'Parent', ondelete='CASCADE',
         states=_states)
     childs = fields.One2Many('account.tax', 'parent', 'Children')
@@ -790,7 +792,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
 
         columns = []
         amount = tax_line.amount
-        if backend.name() == 'sqlite':
+        if backend.name == 'sqlite':
             amount = TaxLine.amount.sql_cast(tax_line.amount)
         for name, clause in [
                 ('invoice_base_amount',
@@ -804,7 +806,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
                 ]:
             if name not in names:
                 continue
-            if backend.name() == 'postgresql':  # FIXME
+            if backend.name == 'postgresql':  # FIXME
                 columns.append(Sum(amount, filter_=clause).as_(name))
             else:
                 columns.append(Sum(Case([clause, amount])).as_(name))
@@ -888,21 +890,18 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
             for tax in group_taxes:
                 start_date = tax.start_date or datetime.date.min
                 end_date = tax.end_date or datetime.date.max
+                values = []
                 if not (start_date <= date <= end_date):
                     continue
                 if tax.type != 'none':
-                    value = tax._process_tax(price_unit)
-                    res.append(value)
-                    if tax.update_unit_price:
-                        unit_price_variation += value['amount']
+                    values.append(tax._process_tax(price_unit))
                 if len(tax.childs):
-                    # change to handle update_unit_price with child tax
-                    # see tryton issues 7862
-                    child_tax = cls._unit_compute(tax.childs, price_unit, date)
-                    if tax.update_unit_price:
-                        for cur_tax in child_tax:
-                            unit_price_variation += cur_tax['amount']
-                    res.extend(child_tax)
+                    values.extend(
+                        cls._unit_compute(tax.childs, price_unit, date))
+                if tax.update_unit_price:
+                    for value in values:
+                        unit_price_variation += value['amount']
+                res.extend(values)
             price_unit += unit_price_variation
         return res
 
@@ -1026,8 +1025,8 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
                         vals = child.template._get_tax_value(tax=child)
                         invoice_account_id = (child.invoice_account.id
                             if child.invoice_account else None)
-                        if (child.template.invoice_account and
-                                invoice_account_id != template2account.get(
+                        if (child.template.invoice_account
+                                and invoice_account_id != template2account.get(
                                         child.template.invoice_account.id)):
                             vals['invoice_account'] = template2account.get(
                                 child.template.invoice_account.id)
@@ -1036,8 +1035,9 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
                             vals['invoice_account'] = None
                         credit_note_account_id = (child.credit_note_account.id
                             if child.credit_note_account else None)
-                        if (child.template.credit_note_account and
-                                credit_note_account_id != template2account.get(
+                        if (child.template.credit_note_account
+                                and credit_note_account_id
+                                != template2account.get(
                                     child.template.credit_note_account.id)):
                             vals['credit_note_account'] = template2account.get(
                                 child.template.credit_note_account.id)
@@ -1059,7 +1059,7 @@ class _TaxKey(dict):
         self.update(kwargs)
 
     def _key(self):
-        return (self['account'], self['tax'])
+        return (self['account'], self['tax'], self['base'] >= 0)
 
     def __eq__(self, other):
         if isinstance(other, _TaxKey):
@@ -1074,6 +1074,7 @@ _TaxableLine = namedtuple('_TaxableLine', ('taxes', 'unit_price', 'quantity'))
 
 
 class TaxableMixin(object):
+    __slots__ = ()
 
     @property
     def taxable_lines(self):
@@ -1112,7 +1113,7 @@ class TaxableMixin(object):
         line['legal_notice'] = tax.legal_notice
         line['base'] = base
         line['amount'] = amount
-        line['tax'] = tax.id if tax else None
+        line['tax'] = tax.id
         line['account'] = getattr(tax, '%s_account' % type_).id
 
         return _TaxKey(**line)
@@ -1123,6 +1124,7 @@ class TaxableMixin(object):
         for taxline in taxes.values():
             taxline['amount'] = self.currency.round(taxline['amount'])
 
+    @fields.depends(methods=['_get_tax_context', '_round_taxes'])
     def _get_taxes(self):
         pool = Pool()
         Tax = pool.get('account.tax')
@@ -1139,6 +1141,8 @@ class TaxableMixin(object):
                     line.quantity, self.tax_date)
                 for tax in l_taxes:
                     taxline = self._compute_tax_line(**tax)
+                    # Base must always be rounded per line as there will be one
+                    # tax line per taxable_lines
                     if self.currency:
                         taxline['base'] = self.currency.round(taxline['base'])
                     if taxline not in taxes:
@@ -1165,7 +1169,7 @@ class TaxLine(ModelSQL, ModelView):
             ('base', "Base"),
             ], "Type", required=True)
     tax = fields.Many2One('account.tax', 'Tax', select=True,
-        ondelete='RESTRICT',
+        ondelete='RESTRICT', required=True,
         domain=[
             ('company', '=', Eval('company', -1)),
             ],
@@ -1179,13 +1183,12 @@ class TaxLine(ModelSQL, ModelView):
     def __register__(cls, module_name):
         pool = Pool()
         Tax = pool.get('account.tax')
-        TableHandler = backend.get('TableHandler')
         transaction = Transaction()
         table = cls.__table__()
         tax = Tax.__table__()
 
         migrate_type = False
-        if TableHandler.table_exist(cls._table):
+        if backend.TableHandler.table_exist(cls._table):
             table_h = cls.__table_handler__(module_name)
             migrate_type = not table_h.column_exist('type')
 
@@ -1217,7 +1220,7 @@ class TaxLine(ModelSQL, ModelView):
                         & (table.code.in_(
                                 [invoice_base_code, credit_note_base_code]))))
 
-    @fields.depends('move_line')
+    @fields.depends('move_line', '_parent_move_line.currency_digits')
     def on_change_with_currency_digits(self, name=None):
         if self.move_line:
             return self.move_line.currency_digits
@@ -1428,8 +1431,8 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
                     ('group.kind', 'in', ['sale', 'both']),
-                    If(Eval('_parent_rule', {}).get('kind', 'both') ==
-                        'purchase',
+                    If(Eval('_parent_rule', {}).get('kind', 'both')
+                        == 'purchase',
                         ('group.kind', 'in', ['purchase', 'both']),
                         ('group.kind', 'in', ['sale', 'purchase', 'both']))),
                 ],
@@ -1449,8 +1452,8 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
                     ('group.kind', 'in', ['sale', 'both']),
-                    If(Eval('_parent_rule', {}).get('kind', 'both') ==
-                        'purchase',
+                    If(Eval('_parent_rule', {}).get('kind', 'both')
+                        == 'purchase',
                         ('group.kind', 'in', ['purchase', 'both']),
                         ('group.kind', 'in', ['sale', 'purchase', 'both']))),
                 ],
@@ -1542,8 +1545,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
                     ('group.kind', 'in', ['sale', 'both']),
-                    If(Eval('_parent_rule', {}).get('kind', 'both') ==
-                        'purchase',
+                    If(Eval('_parent_rule', {}).get('kind', 'both')
+                        == 'purchase',
                         ('group.kind', 'in', ['purchase', 'both']),
                         ('group.kind', 'in', ['sale', 'purchase', 'both']))),
                 ],
@@ -1563,8 +1566,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
                     ('group.kind', 'in', ['sale', 'both']),
-                    If(Eval('_parent_rule', {}).get('kind', 'both') ==
-                        'purchase',
+                    If(Eval('_parent_rule', {}).get('kind', 'both')
+                        == 'purchase',
                         ('group.kind', 'in', ['purchase', 'both']),
                         ('group.kind', 'in', ['sale', 'purchase', 'both']))),
                 ],
@@ -1642,8 +1645,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
                     vals['rule'] = template2rule[line.template.rule.id]
                 if line.origin_tax:
                     if line.template.origin_tax:
-                        if (line.origin_tax.id !=
-                                template2tax[line.template.origin_tax.id]):
+                        if (line.origin_tax.id
+                                != template2tax[line.template.origin_tax.id]):
                             vals['origin_tax'] = template2tax[
                                 line.template.origin_tax.id]
                     else:
@@ -1749,6 +1752,7 @@ class TestTaxView(ModelView, TaxableMixin):
         result = []
         if all([self.tax_date, self.unit_price, self.quantity, self.currency]):
             for taxline in self._get_taxes():
+                del taxline['manual']
                 result.append(Result(**taxline))
         self.result = result
         return self._changed_values.get('result', [])

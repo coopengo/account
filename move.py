@@ -2,7 +2,8 @@
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
 import datetime
-from itertools import groupby, combinations, chain
+import hashlib
+from itertools import groupby, combinations, chain, islice
 from operator import itemgetter
 from collections import defaultdict
 
@@ -26,16 +27,8 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.config import config
 
 from .exceptions import (PostError, MoveDatesError, CancelWarning,
-    ReconciliationError, DeleteDelegatedWarning, GroupLineError)
-
-__all__ = ['Move', 'Reconciliation', 'Line', 'WriteOff', 'OpenJournalAsk',
-    'OpenJournal', 'OpenAccount',
-    'ReconcileLinesWriteOff', 'ReconcileLines',
-    'UnreconcileLines',
-    'Reconcile', 'ReconcileShow',
-    'CancelMoves', 'CancelMovesDefault',
-    'GroupLines', 'GroupLinesStart',
-    'PrintGeneralJournalStart', 'PrintGeneralJournal', 'GeneralJournal']
+    ReconciliationError, DeleteDelegatedWarning, GroupLineError,
+    CancelDelegatedWarning)
 
 _MOVE_STATES = {
     'readonly': Eval('state') == 'posted',
@@ -53,14 +46,18 @@ class Move(ModelSQL, ModelView):
     _rec_name = 'number'
     number = fields.Char('Number', required=True, readonly=True)
     post_number = fields.Char('Post Number', readonly=True,
-        help='Also known as Folio Number')
+        help='Also known as Folio Number.')
     company = fields.Many2One('company.company', 'Company', required=True,
         states=_MOVE_STATES, depends=_MOVE_DEPENDS)
     period = fields.Many2One('account.period', 'Period', required=True,
         domain=[
             ('company', '=', Eval('company', -1)),
+            If(Eval('state') == 'draft',
+                ('state', '=', 'open'),
+                ()),
             ],
-        states=_MOVE_STATES, depends=_MOVE_DEPENDS + ['company'], select=True)
+        states=_MOVE_STATES, depends=_MOVE_DEPENDS + ['company', 'state'],
+        select=True)
     journal = fields.Many2One('account.journal', 'Journal', required=True,
             states=_MOVE_STATES, depends=_MOVE_DEPENDS)
     date = fields.Date('Effective Date', required=True, select=True,
@@ -79,10 +76,10 @@ class Move(ModelSQL, ModelView):
             ('account.company', '=', Eval('company', -1)),
             ],
         states=_MOVE_STATES, depends=_MOVE_DEPENDS + ['company'],
-            context={
-                'journal': Eval('journal'),
-                'period': Eval('period'),
-                'date': Eval('date'),
+        context={
+            'journal': Eval('journal'),
+            'period': Eval('period'),
+            'date': Eval('date'),
             })
 
     @classmethod
@@ -156,20 +153,30 @@ class Move(ModelSQL, ModelView):
         pool = Pool()
         Period = pool.get('account.period')
         Date = pool.get('ir.date')
+        today = Date.today()
         period_id = cls.default_period()
         if period_id:
             period = Period(period_id)
-            return period.start_date
-        return Date.today()
+            if today < period.start_date or today > period.end_date:
+                return period.start_date
+        return today
 
     @fields.depends('period', 'journal', 'date')
     def on_change_with_date(self):
-        Line = Pool().get('account.move.line')
+        pool = Pool()
+        Line = pool.get('account.move.line')
+        Date = pool.get('ir.date')
+        today = Date.today()
         date = self.date
         if date:
             if self.period and not (
                     self.period.start_date <= date <= self.period.end_date):
-                date = self.period.start_date
+                if (today >= self.period.start_date
+                        and today <= self.period.end_date):
+                    date = today
+                else:
+                    date = self.period.start_date
+                self.on_change_date()
             return date
         lines = Line.search([
                 ('journal', '=', self.journal),
@@ -178,8 +185,22 @@ class Move(ModelSQL, ModelView):
         if lines:
             date = lines[0].date
         elif self.period:
-            date = self.period.start_date
+            if (today >= self.period.start_date
+                    and today <= self.period.end_date):
+                date = today
+            else:
+                date = self.period.start_date
         return date
+
+    @fields.depends('date', 'lines')
+    def on_change_date(self):
+        for line in (self.lines or []):
+            line.date = self.date
+
+    @fields.depends(methods=['on_change_with_date', 'on_change_date'])
+    def on_change_period(self):
+        self.date = self.on_change_with_date()
+        self.on_change_date()
 
     @classmethod
     def _get_origin(cls):
@@ -413,7 +434,8 @@ class Move(ModelSQL, ModelView):
                 move.post_number = Sequence.get_id(
                     move.period.post_move_sequence_used.id)
 
-            keyfunc = lambda l: (l.party, l.account)
+            def keyfunc(l):
+                return l.party, l.account
             to_reconcile = [l for l in move.lines
                 if ((l.debit == l.credit == Decimal('0'))
                     and l.account.reconcile)]
@@ -430,14 +452,13 @@ class Reconciliation(ModelSQL, ModelView):
     lines = fields.One2Many('account.move.line', 'reconciliation',
             'Lines')
     date = fields.Date('Date', required=True, select=True,
-        help='Highest date of the reconciled lines')
+        help='Highest date of the reconciled lines.')
     delegate_to = fields.Many2One(
         'account.move.line', "Delegate To", ondelete="RESTRICT", select=True,
         help="The line to which the reconciliation status is delegated.")
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
         cursor = Transaction().connection.cursor()
         table = cls.__table_handler__(module_name)
         sql_table = cls.__table__()
@@ -453,7 +474,7 @@ class Reconciliation(ModelSQL, ModelView):
 
         # Migration from 3.8: new date field
         if (not date_exist
-                and TableHandler.table_exist(Line._table)
+                and backend.TableHandler.table_exist(Line._table)
                 and Line.__table_handler__().column_exist('move')):
             cursor.execute(*sql_table.update(
                     [sql_table.date],
@@ -557,12 +578,12 @@ class Line(ModelSQL, ModelView):
 
     debit = fields.Numeric('Debit', digits=(16, Eval('currency_digits', 2)),
         required=True, states=_states,
-        depends=['currency_digits', 'credit', 'tax_lines', 'journal'] +
-        _depends)
+        depends=['currency_digits', 'credit', 'tax_lines', 'journal']
+        + _depends)
     credit = fields.Numeric('Credit', digits=(16, Eval('currency_digits', 2)),
         required=True, states=_states,
-        depends=['currency_digits', 'debit', 'tax_lines', 'journal'] +
-        _depends)
+        depends=['currency_digits', 'debit', 'tax_lines', 'journal']
+        + _depends)
     account = fields.Many2One('account.account', 'Account', required=True,
         domain=[
             ('type', '!=', None),
@@ -609,14 +630,14 @@ class Line(ModelSQL, ModelView):
         searcher='search_move_field')
     amount_second_currency = fields.Numeric('Amount Second Currency',
         digits=(16, Eval('second_currency_digits', 2)),
-        help='The amount expressed in a second currency',
+        help='The amount expressed in a second currency.',
         states={
             'required': Bool(Eval('second_currency')),
             'readonly': _states['readonly'],
             },
         depends=['second_currency_digits', 'second_currency'] + _depends)
     second_currency = fields.Many2One('currency.currency', 'Second Currency',
-            help='The second currency',
+            help='The second currency.',
         domain=[
             If(~Eval('second_currency_required'),
                 (),
@@ -1001,8 +1022,7 @@ class Line(ModelSQL, ModelView):
         where = cls.get_query_get_where_clause(table, where)
         # Use LEFT JOIN to allow database optimization
         # if no joined table is used in the where clause.
-        return ((table.state != 'draft')
-            & table.move.in_(move
+        return (table.move.in_(move
                 .join(period, 'LEFT', condition=move.period == period.id)
                 .join(fiscalyear, 'LEFT',
                     condition=period.fiscalyear == fiscalyear.id)
@@ -1046,7 +1066,7 @@ class Line(ModelSQL, ModelView):
             journal_period, = journal_periods
             if journal_period.state == 'close':
                 raise AccessError(
-                    gettext('account.msg_modify_line_closed_period',
+                    gettext('account.msg_modify_line_closed_journal_period',
                         journal_period=journal_period.rec_name))
         else:
             JournalPeriod.create([{
@@ -1155,6 +1175,7 @@ class Line(ModelSQL, ModelView):
             default = default.copy()
         default.setdefault('move', None)
         default.setdefault('reconciliation', None)
+        default.setdefault('reconciliations_delegated', [])
         return super(Line, cls).copy(lines, default=default)
 
     @classmethod
@@ -1353,8 +1374,8 @@ class OpenJournal(Wizard):
 
     def default_ask(self, fields):
         JournalPeriod = Pool().get('account.journal.period')
-        if (Transaction().context.get('active_model', '') ==
-                'account.journal.period'
+        if (Transaction().context.get('active_model', '')
+                == 'account.journal.period'
                 and Transaction().context.get('active_id')):
             journal_period = JournalPeriod(Transaction().context['active_id'])
             return {
@@ -1366,8 +1387,8 @@ class OpenJournal(Wizard):
     def do_open_(self, action):
         JournalPeriod = Pool().get('account.journal.period')
 
-        if (Transaction().context.get('active_model', '') ==
-                'account.journal.period'
+        if (Transaction().context.get('active_model', '')
+                == 'account.journal.period'
                 and Transaction().context.get('active_id')):
             journal_period = JournalPeriod(Transaction().context['active_id'])
             journal = journal_period.journal
@@ -1523,13 +1544,19 @@ class UnreconcileLines(Wizard):
     def transition_unreconcile(self):
         pool = Pool()
         Line = pool.get('account.move.line')
-        Reconciliation = pool.get('account.move.reconciliation')
 
         lines = Line.browse(Transaction().context['active_ids'])
+        self.make_unreconciliation(lines)
+        return 'end'
+
+    @classmethod
+    def make_unreconciliation(cls, lines):
+        pool = Pool()
+        Reconciliation = pool.get('account.move.reconciliation')
+
         reconciliations = [x.reconciliation for x in lines if x.reconciliation]
         if reconciliations:
             Reconciliation.delete(reconciliations)
-        return 'end'
 
 
 class Reconcile(Wizard):
@@ -1540,7 +1567,7 @@ class Reconcile(Wizard):
     show = StateView('account.reconcile.show',
         'account.reconcile_show_view_form', [
             Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Skip', 'next_', 'tryton-forward'),
+            Button('Skip', 'next_', 'tryton-forward', validate=False),
             Button('Reconcile', 'reconcile', 'tryton-ok', default=True),
             ])
     reconcile = StateTransition()
@@ -1586,7 +1613,7 @@ class Reconcile(Wizard):
                     )))
         return [a for a, in cursor.fetchall()]
 
-    def get_parties(self, account):
+    def get_parties(self, account, _balanced=False):
         'Return a list party to reconcile for the account'
         pool = Pool()
         Line = pool.get('account.move.line')
@@ -1600,18 +1627,22 @@ class Reconcile(Wizard):
             return list({l.party for l in lines if l.account == account})
 
         balance = line.debit - line.credit
+        if _balanced:
+            having = Sum(balance) == 0
+        else:
+            having = ((
+                    Sum(Case((balance > 0, 1), else_=0)) > 0)
+                & (Sum(Case((balance < 0, 1), else_=0)) > 0)
+                | Case((account.type.receivable, Sum(balance) < 0),
+                    else_=False)
+                | Case((account.type.payable, Sum(balance) > 0),
+                    else_=False)
+                )
         cursor.execute(*line.select(line.party,
                 where=(line.reconciliation == Null)
                 & (line.account == account.id),
                 group_by=line.party,
-                having=((
-                        Sum(Case((balance > 0, 1), else_=0)) > 0)
-                    & (Sum(Case((balance < 0, 1), else_=0)) > 0)
-                    | Case((account.type.receivable, Sum(balance) < 0),
-                        else_=False)
-                    | Case((account.type.payable, Sum(balance) > 0),
-                        else_=False)
-                    )))
+                having=having))
         return [p for p, in cursor.fetchall()]
 
     def _next_account(self):
@@ -1795,9 +1826,31 @@ class CancelMoves(Wizard):
         pool = Pool()
         Move = pool.get('account.move')
         Line = pool.get('account.move.line')
+        Warning = pool.get('res.user.warning')
+        Unreconcile = pool.get('account.move.unreconcile_lines', type='wizard')
 
         moves = Move.browse(Transaction().context['active_ids'])
+        moves_w_delegation = {
+            m: [ml for ml in m.lines
+                if ml.reconciliation and ml.reconciliation.delegate_to]
+            for m in moves}
+        if any(dml for dml in moves_w_delegation.values()):
+            names = ', '.join(m.rec_name for m in
+                islice(moves_w_delegation.keys(), None, 5))
+            if len(moves_w_delegation) > 5:
+                names += '...'
+            key = '%s.cancel_delegated' % hashlib.md5(
+                str(list(moves_w_delegation)).encode('utf8')).hexdigest()
+            if Warning.check(key):
+                raise CancelDelegatedWarning(
+                    key, gettext(
+                        'account.msg_cancel_line_delegated', moves=names))
+
         for move in moves:
+            if moves_w_delegation.get(move):
+                # Skip further warnings
+                with Transaction().set_user(0):
+                    Unreconcile.make_unreconciliation(moves_w_delegation[move])
             default = self.default_cancel(move)
             cancel_move = move.cancel(default=default)
             to_reconcile = defaultdict(list)
@@ -1823,16 +1876,27 @@ class GroupLines(Wizard):
             Button("Cancel", 'end', 'tryton-cancel'),
             Button("Group", 'group', 'tryton-ok', default=True),
             ])
-    group = StateTransition()
+    group = StateAction('account.act_move_form_grouping')
 
-    def transition_group(self):
+    def do_group(self, action):
         pool = Pool()
         Line = pool.get('account.move.line')
 
         lines = Line.browse(Transaction().context['active_ids'])
-        grouping = self.grouping(lines)
+        move, balance_line = self._group_lines(lines)
+        action['res_id'] = [move.id]
+        return action, {}
 
-        move, balance_line = self.get_move(lines, grouping)
+    def _group_lines(self, lines, date=None):
+        move, balance_line = self.group_lines(lines, self.start.journal, date)
+        move.description = self.start.description
+        return move, balance_line
+
+    @classmethod
+    def group_lines(cls, lines, journal, date=None):
+        grouping = cls.grouping(lines)
+
+        move, balance_line = cls.get_move(lines, grouping, journal, date)
         move.save()
 
         to_reconcile = defaultdict(list)
@@ -1840,13 +1904,14 @@ class GroupLines(Wizard):
             if line.account.reconcile:
                 to_reconcile[line.account].append(line)
 
-        balance_line.move = move
-        balance_line.save()
+        if balance_line:
+            balance_line.move = move
+            balance_line.save()
 
         for lines in to_reconcile.values():
             Line.reconcile(lines, delegate_to=balance_line)
 
-        return 'end'
+        return move, balance_line
 
     @classmethod
     def grouping(cls, lines):
@@ -1892,7 +1957,8 @@ class GroupLines(Wizard):
     def allow_grouping(cls, account):
         return account.type.payable or account.type.receivable
 
-    def get_move(self, lines, grouping, date=None):
+    @classmethod
+    def get_move(cls, lines, grouping, journal, date=None):
         pool = Pool()
         Date = pool.get('ir.date')
         Move = pool.get('account.move')
@@ -1906,8 +1972,7 @@ class GroupLines(Wizard):
         move = Move()
         move.date = date
         move.period = period
-        move.journal = self.start.journal
-        move.description = self.start.description
+        move.journal = journal
 
         accounts = {a: 0 for a in grouping['accounts']}
         amount_second_currency = 0
@@ -1915,16 +1980,16 @@ class GroupLines(Wizard):
 
         counterpart_lines = []
         for line in lines:
-            if maturity_dates[line.account]:
+            if maturity_dates[line.account] and line.maturity_date:
                 maturity_dates[line.account] = min(
                     maturity_dates[line.account], line.maturity_date)
-            else:
+            elif line.maturity_date:
                 maturity_dates[line.account] = line.maturity_date
-            line = self._counterpart_line(line)
-            accounts[line.account] += line.debit - line.credit
-            if line.amount_second_currency:
-                amount_second_currency += line.amount_second_currency
-            counterpart_lines.append(line)
+            cline = cls._counterpart_line(line)
+            accounts[cline.account] += cline.debit - cline.credit
+            if cline.amount_second_currency:
+                amount_second_currency += cline.amount_second_currency
+            counterpart_lines.append(cline)
         move.lines = counterpart_lines
 
         balance_line = None
@@ -1954,10 +2019,11 @@ class GroupLines(Wizard):
                 balance_line.second_currency = grouping['second_currency']
                 balance_line.amount_second_currency = (
                     -amount_second_currency)
-        balance_line.maturity_date = maturity_dates[balance_line.account]
+            balance_line.maturity_date = maturity_dates[balance_line.account]
         return move, balance_line
 
-    def _counterpart_line(self, line):
+    @classmethod
+    def _counterpart_line(cls, line):
         pool = Pool()
         Line = pool.get('account.move.line')
 
@@ -1988,7 +2054,7 @@ class PrintGeneralJournalStart(ModelView):
     from_date = fields.Date('From Date', required=True)
     to_date = fields.Date('To Date', required=True)
     company = fields.Many2One('company.company', 'Company', required=True)
-    posted = fields.Boolean('Posted Move', help='Show only posted move')
+    posted = fields.Boolean('Posted Move', help="Only include posted moves.")
 
     @staticmethod
     def default_from_date():

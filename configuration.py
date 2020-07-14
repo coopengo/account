@@ -9,8 +9,6 @@ from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
 from trytond.tools.multivalue import migrate_property
 
-__all__ = ['Configuration', 'ConfigurationDefaultAccount',
-    'ConfigurationTaxRounding', 'DefaultTaxRule']
 tax_roundings = [
     ('document', 'Per Document'),
     ('line', 'Per Line'),
@@ -40,13 +38,15 @@ class Configuration(
             domain=[
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ('kind', 'in', ['sale', 'both']),
-                ]))
+                ],
+            help="Default customer tax rule for new parties."))
     default_supplier_tax_rule = fields.MultiValue(fields.Many2One(
             'account.tax.rule', "Default Supplier Tax Rule",
             domain=[
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ('kind', 'in', ['purchase', 'both']),
-                ]))
+                ],
+            help="Default supplier tax rule for new parties."))
     tax_rounding = fields.MultiValue(fields.Selection(
             tax_roundings, "Tax Rounding"))
 
@@ -105,6 +105,25 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
         migrate_property(
             'party.party', field_names, cls, value_names,
             fields=fields)
+
+
+class DefaultTaxRule(ModelSQL, CompanyValueMixin):
+    "Account Configuration Default Tax Rule"
+    __name__ = 'account.configuration.default_tax_rule'
+    default_customer_tax_rule = fields.Many2One(
+        'account.tax.rule', "Default Customer Tax Rule",
+        domain=[
+            ('company', '=', Eval('company', -1)),
+            ('kind', 'in', ['sale', 'both']),
+            ],
+        depends=['company'])
+    default_supplier_tax_rule = fields.Many2One(
+        'account.tax.rule', "Default Supplier Tax Rule",
+        domain=[
+            ('company', '=', Eval('company', -1)),
+            ('kind', 'in', ['purchase', 'both']),
+            ],
+        depends=['company'])
 
 
 class DefaultTaxRule(ModelSQL, CompanyValueMixin):
