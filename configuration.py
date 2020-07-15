@@ -89,8 +89,7 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        exist = TableHandler.table_exist(cls._table)
+        exist = backend.TableHandler.table_exist(cls._table)
         super(ConfigurationDefaultAccount, cls).__register__(module_name)
         if not exist:
             cls._migrate_property([], [], [])
@@ -126,25 +125,6 @@ class DefaultTaxRule(ModelSQL, CompanyValueMixin):
         depends=['company'])
 
 
-class DefaultTaxRule(ModelSQL, CompanyValueMixin):
-    "Account Configuration Default Tax Rule"
-    __name__ = 'account.configuration.default_tax_rule'
-    default_customer_tax_rule = fields.Many2One(
-        'account.tax.rule', "Default Customer Tax Rule",
-        domain=[
-            ('company', '=', Eval('company', -1)),
-            ('kind', 'in', ['sale', 'both']),
-            ],
-        depends=['company'])
-    default_supplier_tax_rule = fields.Many2One(
-        'account.tax.rule', "Default Supplier Tax Rule",
-        domain=[
-            ('company', '=', Eval('company', -1)),
-            ('kind', 'in', ['purchase', 'both']),
-            ],
-        depends=['company'])
-
-
 class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     'Account Configuration Tax Rounding'
     __name__ = 'account.configuration.tax_rounding'
@@ -156,9 +136,8 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     def __register__(cls, module_name):
         sql_table = cls.__table__()
         cursor = Transaction().connection.cursor()
-        TableHandler = backend.get('TableHandler')
 
-        exist = TableHandler.table_exist(cls._table)
+        exist = backend.TableHandler.table_exist(cls._table)
         super(ConfigurationTaxRounding, cls).__register__(module_name)
 
         table = cls.__table_handler__(module_name)
