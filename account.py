@@ -803,10 +803,11 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
     def __register__(cls, module_name):
         super().__register__(module_name)
 
-        # Drop the required constraint on 'kind'
-        table_h = cls.__table_handler__(module_name)
-        if table_h.column_exist('kind'):
-            table_h.not_null_action('kind', 'remove')
+        # JMO: keep the data so that migration is possible
+        # table_h = cls.__table_handler__(module_name)
+
+        # Migration from 5.0: remove kind
+        # table_h.drop_column('kind')
 
     @classmethod
     def validate(cls, accounts):
