@@ -6,10 +6,9 @@ msgctxt "field:account.account,active:"
 msgid "Active"
 msgstr "Attivo"
 
-#, fuzzy
 msgctxt "field:account.account,amount_second_currency:"
 msgid "Amount Second Currency"
-msgstr "Importo seconda valuta"
+msgstr "Importo della valuta secondaria"
 
 msgctxt "field:account.account,balance:"
 msgid "Balance"
@@ -31,14 +30,6 @@ msgctxt "field:account.account,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.account,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.account,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.account,credit:"
 msgid "Credit"
 msgstr "AVERE"
@@ -53,6 +44,11 @@ msgstr "Posizioni Valuta"
 
 msgctxt "field:account.account,debit:"
 msgid "Debit"
+msgstr "DARE"
+
+#, fuzzy
+msgctxt "field:account.account,debit_type:"
+msgid "Debit Type"
 msgstr "DARE"
 
 msgctxt "field:account.account,deferral:"
@@ -71,10 +67,6 @@ msgstr "Data fine"
 msgctxt "field:account.account,general_ledger_balance:"
 msgid "General Ledger Balance"
 msgstr "Saldo Mastro"
-
-msgctxt "field:account.account,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.account,left:"
 msgid "Left"
@@ -96,10 +88,6 @@ msgctxt "field:account.account,party_required:"
 msgid "Party Required"
 msgstr "Indicazione controparte obbligatoria"
 
-msgctxt "field:account.account,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.account,reconcile:"
 msgid "Reconcile"
 msgstr "Riconciliazione"
@@ -116,10 +104,9 @@ msgctxt "field:account.account,second_currency:"
 msgid "Secondary Currency"
 msgstr "Valuta secondaria"
 
-#, fuzzy
 msgctxt "field:account.account,second_currency_digits:"
 msgid "Second Currency Digits"
-msgstr "Posizioni seconda valuta"
+msgstr "Posizioni valuta secondaria"
 
 #, fuzzy
 msgctxt "field:account.account,start_date:"
@@ -142,66 +129,25 @@ msgctxt "field:account.account,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.account,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.account-account.tax,account:"
 msgid "Account"
 msgstr "Conto"
-
-msgctxt "field:account.account-account.tax,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.account-account.tax,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-msgctxt "field:account.account-account.tax,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.account-account.tax,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.account-account.tax,tax:"
 msgid "Tax"
 msgstr "Imposta"
 
-msgctxt "field:account.account-account.tax,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account-account.tax,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.account.deferral,account:"
 msgid "Account"
 msgstr "Conto"
 
-#, fuzzy
 msgctxt "field:account.account.deferral,amount_second_currency:"
 msgid "Amount Second Currency"
-msgstr "Importo seconda valuta"
+msgstr "Importo della valuta secondaria"
 
 msgctxt "field:account.account.deferral,balance:"
 msgid "Balance"
 msgstr "Saldo"
-
-msgctxt "field:account.account.deferral,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.account.deferral,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
 
 msgctxt "field:account.account.deferral,credit:"
 msgid "Credit"
@@ -224,31 +170,14 @@ msgctxt "field:account.account.deferral,fiscalyear:"
 msgid "Fiscal Year"
 msgstr "Esercizio"
 
-msgctxt "field:account.account.deferral,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.account.deferral,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 #, fuzzy
 msgctxt "field:account.account.deferral,second_currency:"
 msgid "Second Currency"
 msgstr "Seconda valuta"
 
-#, fuzzy
 msgctxt "field:account.account.deferral,second_currency_digits:"
 msgid "Second Currency Digits"
-msgstr "Posizioni seconda valuta"
-
-msgctxt "field:account.account.deferral,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account.deferral,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
+msgstr "Posizioni valuta secondaria"
 
 msgctxt "field:account.account.template,childs:"
 msgid "Children"
@@ -262,13 +191,10 @@ msgctxt "field:account.account.template,code:"
 msgid "Code"
 msgstr "Codice"
 
-msgctxt "field:account.account.template,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.account.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
+#, fuzzy
+msgctxt "field:account.account.template,debit_type:"
+msgid "Debit Type"
+msgstr "DARE"
 
 msgctxt "field:account.account.template,deferral:"
 msgid "Deferral"
@@ -283,10 +209,6 @@ msgctxt "field:account.account.template,general_ledger_balance:"
 msgid "General Ledger Balance"
 msgstr "Saldo Mastro"
 
-msgctxt "field:account.account.template,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.account.template,name:"
 msgid "Name"
 msgstr "Nome"
@@ -298,10 +220,6 @@ msgstr "Padre"
 msgctxt "field:account.account.template,party_required:"
 msgid "Party Required"
 msgstr "Indicazione controparte obbligatoria"
-
-msgctxt "field:account.account.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.account.template,reconcile:"
 msgid "Reconcile"
@@ -324,46 +242,14 @@ msgctxt "field:account.account.template,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.account.template,write_date:"
-msgid "Write Date"
-msgstr "Data di Scrittura"
-
-msgctxt "field:account.account.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.account.template-account.tax.template,account:"
 msgid "Account Template"
 msgstr "Modello contabilità"
-
-msgctxt "field:account.account.template-account.tax.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.account.template-account.tax.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-msgctxt "field:account.account.template-account.tax.template,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.account.template-account.tax.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:account.account.template-account.tax.template,tax:"
 msgid "Tax Template"
 msgstr "Modello Imposta"
-
-msgctxt "field:account.account.template-account.tax.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account.template-account.tax.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.account.type,amount:"
 msgid "Amount"
@@ -385,14 +271,6 @@ msgctxt "field:account.account.type,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.account.type,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.account.type,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
 msgctxt "field:account.account.type,currency_digits:"
 msgid "Currency Digits"
 msgstr "Posizioni Valuta"
@@ -400,10 +278,6 @@ msgstr "Posizioni Valuta"
 msgctxt "field:account.account.type,expense:"
 msgid "Expense"
 msgstr "Spesa"
-
-msgctxt "field:account.account.type,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.account.type,name:"
 msgid "Name"
@@ -417,10 +291,6 @@ msgctxt "field:account.account.type,payable:"
 msgid "Payable"
 msgstr "Pagabile"
 
-msgctxt "field:account.account.type,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.account.type,receivable:"
 msgid "Receivable"
 msgstr "Da ricevere"
@@ -428,10 +298,6 @@ msgstr "Da ricevere"
 msgctxt "field:account.account.type,revenue:"
 msgid "Revenue"
 msgstr "Ricavi"
-
-msgctxt "field:account.account.type,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
 
 msgctxt "field:account.account.type,statement:"
 msgid "Statement"
@@ -450,14 +316,6 @@ msgctxt "field:account.account.type,template_override:"
 msgid "Override Template"
 msgstr "Ridefinizione del modello"
 
-msgctxt "field:account.account.type,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account.type,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.account.type.template,assets:"
 msgid "Assets"
 msgstr "Asset"
@@ -466,21 +324,9 @@ msgctxt "field:account.account.type.template,childs:"
 msgid "Children"
 msgstr "Figlio"
 
-msgctxt "field:account.account.type.template,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.account.type.template,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
 msgctxt "field:account.account.type.template,expense:"
 msgid "Expense"
 msgstr "Spesa"
-
-msgctxt "field:account.account.type.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.account.type.template,name:"
 msgid "Name"
@@ -494,10 +340,6 @@ msgctxt "field:account.account.type.template,payable:"
 msgid "Payable"
 msgstr "Pagabile"
 
-msgctxt "field:account.account.type.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.account.type.template,receivable:"
 msgid "Receivable"
 msgstr "Da ricevere"
@@ -505,10 +347,6 @@ msgstr "Da ricevere"
 msgctxt "field:account.account.type.template,revenue:"
 msgid "Revenue"
 msgstr "Ricavi"
-
-msgctxt "field:account.account.type.template,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
 
 msgctxt "field:account.account.type.template,statement:"
 msgid "Statement"
@@ -518,14 +356,6 @@ msgctxt "field:account.account.type.template,stock:"
 msgid "Stock"
 msgstr "Magazzino"
 
-msgctxt "field:account.account.type.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.account.type.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.aged_balance,balance:"
 msgid "Balance"
 msgstr "Saldo"
@@ -534,29 +364,13 @@ msgctxt "field:account.aged_balance,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.aged_balance,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.aged_balance,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.aged_balance,currency_digits:"
 msgid "Currency Digits"
 msgstr "Posizioni Valuta"
 
-msgctxt "field:account.aged_balance,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.aged_balance,party:"
 msgid "Party"
 msgstr "Controparte"
-
-msgctxt "field:account.aged_balance,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.aged_balance,term0:"
 msgid "Now"
@@ -574,14 +388,6 @@ msgctxt "field:account.aged_balance,term3:"
 msgid "Third Term"
 msgstr ""
 
-msgctxt "field:account.aged_balance,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.aged_balance,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.aged_balance.context,company:"
 msgid "Company"
 msgstr "Azienda"
@@ -589,10 +395,6 @@ msgstr "Azienda"
 msgctxt "field:account.aged_balance.context,date:"
 msgid "Date"
 msgstr "Data"
-
-msgctxt "field:account.aged_balance.context,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.aged_balance.context,posted:"
 msgid "Posted Move"
@@ -637,11 +439,6 @@ msgid "Date"
 msgstr "Data"
 
 #, fuzzy
-msgctxt "field:account.balance_sheet.comparision.context,id:"
-msgid "ID"
-msgstr "ID"
-
-#, fuzzy
 msgctxt "field:account.balance_sheet.comparision.context,posted:"
 msgid "Posted Move"
 msgstr "Movimento registrato"
@@ -654,21 +451,9 @@ msgctxt "field:account.balance_sheet.context,date:"
 msgid "Date"
 msgstr "Data"
 
-msgctxt "field:account.balance_sheet.context,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.balance_sheet.context,posted:"
 msgid "Posted Move"
 msgstr "Movimento registrato"
-
-msgctxt "field:account.configuration,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.configuration,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.configuration,default_account_payable:"
 msgid "Default Account Payable"
@@ -678,37 +463,23 @@ msgctxt "field:account.configuration,default_account_receivable:"
 msgid "Default Account Receivable"
 msgstr "Conto di credito predefinito"
 
-msgctxt "field:account.configuration,id:"
-msgid "ID"
-msgstr "ID"
+#, fuzzy
+msgctxt "field:account.configuration,default_customer_tax_rule:"
+msgid "Default Customer Tax Rule"
+msgstr "Regola Imposta cliente"
 
-msgctxt "field:account.configuration,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
+#, fuzzy
+msgctxt "field:account.configuration,default_supplier_tax_rule:"
+msgid "Default Supplier Tax Rule"
+msgstr "Regola Imposta Fornitore"
 
 msgctxt "field:account.configuration,tax_rounding:"
 msgid "Tax Rounding"
 msgstr ""
 
-msgctxt "field:account.configuration,write_date:"
-msgid "Write Date"
-msgstr "Data di Scrittura"
-
-msgctxt "field:account.configuration,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.configuration.default_account,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.configuration.default_account,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.configuration.default_account,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 #, fuzzy
 msgctxt "field:account.configuration.default_account,default_account_payable:"
@@ -722,21 +493,21 @@ msgid "Default Account Receivable"
 msgstr "Conto di credito predefinito"
 
 #, fuzzy
-msgctxt "field:account.configuration.default_account,id:"
-msgid "ID"
-msgstr "ID"
+msgctxt "field:account.configuration.default_tax_rule,company:"
+msgid "Company"
+msgstr "Azienda"
 
-msgctxt "field:account.configuration.default_account,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
+#, fuzzy
+msgctxt ""
+"field:account.configuration.default_tax_rule,default_customer_tax_rule:"
+msgid "Default Customer Tax Rule"
+msgstr "Regola Imposta cliente"
 
-msgctxt "field:account.configuration.default_account,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.configuration.default_account,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
+#, fuzzy
+msgctxt ""
+"field:account.configuration.default_tax_rule,default_supplier_tax_rule:"
+msgid "Default Supplier Tax Rule"
+msgstr "Regola Imposta Fornitore"
 
 msgctxt "field:account.configuration.tax_rounding,company:"
 msgid "Company"
@@ -746,34 +517,10 @@ msgctxt "field:account.configuration.tax_rounding,configuration:"
 msgid "Configuration"
 msgstr "Configurazione"
 
-msgctxt "field:account.configuration.tax_rounding,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.configuration.tax_rounding,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-msgctxt "field:account.configuration.tax_rounding,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.configuration.tax_rounding,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 #, fuzzy
 msgctxt "field:account.configuration.tax_rounding,tax_rounding:"
 msgid "Method"
 msgstr "Metodo"
-
-msgctxt "field:account.configuration.tax_rounding,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.configuration.tax_rounding,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.create_chart.account,account_template:"
 msgid "Account Template"
@@ -782,10 +529,6 @@ msgstr "Modello contabilità"
 msgctxt "field:account.create_chart.account,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.create_chart.account,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.create_chart.properties,account_payable:"
 msgid "Default Payable Account"
@@ -799,25 +542,9 @@ msgctxt "field:account.create_chart.properties,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.create_chart.properties,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.create_chart.start,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.fiscalyear,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.fiscalyear,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.fiscalyear,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
 
 msgctxt "field:account.fiscalyear,end_date:"
 msgid "Ending Date"
@@ -827,10 +554,6 @@ msgstr "Data Fine"
 msgctxt "field:account.fiscalyear,icon:"
 msgid "Icon"
 msgstr "Icona"
-
-msgctxt "field:account.fiscalyear,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.fiscalyear,name:"
 msgid "Name"
@@ -844,10 +567,6 @@ msgctxt "field:account.fiscalyear,post_move_sequence:"
 msgid "Post Move Sequence"
 msgstr "Registra sequenza movimento"
 
-msgctxt "field:account.fiscalyear,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.fiscalyear,start_date:"
 msgid "Starting Date"
 msgstr "Data inizio"
@@ -855,14 +574,6 @@ msgstr "Data inizio"
 msgctxt "field:account.fiscalyear,state:"
 msgid "State"
 msgstr "Stato"
-
-msgctxt "field:account.fiscalyear,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.fiscalyear,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,company:"
 msgid "Company"
@@ -880,10 +591,6 @@ msgctxt "field:account.fiscalyear.balance_non_deferral.start,fiscalyear:"
 msgid "Fiscal Year"
 msgstr "Esercizio"
 
-msgctxt "field:account.fiscalyear.balance_non_deferral.start,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,journal:"
 msgid "Journal"
 msgstr "Registro"
@@ -891,6 +598,20 @@ msgstr "Registro"
 msgctxt "field:account.fiscalyear.balance_non_deferral.start,period:"
 msgid "Period"
 msgstr "Periodo"
+
+#, fuzzy
+msgctxt "field:account.fiscalyear.create_periods.start,end_day:"
+msgid "End Day"
+msgstr "Data fine"
+
+#, fuzzy
+msgctxt "field:account.fiscalyear.create_periods.start,frequency:"
+msgid "Frequency"
+msgstr "Sequenza"
+
+msgctxt "field:account.fiscalyear.create_periods.start,interval:"
+msgid "Interval"
+msgstr ""
 
 #, fuzzy
 msgctxt "field:account.fiscalyear.renew.start,company:"
@@ -902,12 +623,6 @@ msgctxt "field:account.fiscalyear.renew.start,end_date:"
 msgid "End Date"
 msgstr "Data fine"
 
-#, fuzzy
-msgctxt "field:account.fiscalyear.renew.start,id:"
-msgid "ID"
-msgstr "ID"
-
-#, fuzzy
 msgctxt "field:account.fiscalyear.renew.start,name:"
 msgid "Name"
 msgstr "Nome"
@@ -937,14 +652,6 @@ msgctxt "field:account.general_ledger.account,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.general_ledger.account,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.general_ledger.account,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
 msgctxt "field:account.general_ledger.account,credit:"
 msgid "Credit"
 msgstr "AVERE"
@@ -955,6 +662,11 @@ msgstr "Posizioni Valuta"
 
 msgctxt "field:account.general_ledger.account,debit:"
 msgid "Debit"
+msgstr "DARE"
+
+#, fuzzy
+msgctxt "field:account.general_ledger.account,debit_type:"
+msgid "Debit Type"
 msgstr "DARE"
 
 msgctxt "field:account.general_ledger.account,end_balance:"
@@ -978,10 +690,6 @@ msgctxt "field:account.general_ledger.account,general_ledger_balance:"
 msgid "General Ledger Balance"
 msgstr "Saldo Mastro"
 
-msgctxt "field:account.general_ledger.account,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.general_ledger.account,lines:"
 msgid "Lines"
 msgstr "Righe"
@@ -989,10 +697,6 @@ msgstr "Righe"
 msgctxt "field:account.general_ledger.account,name:"
 msgid "Name"
 msgstr "Nome"
-
-msgctxt "field:account.general_ledger.account,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.general_ledger.account,start_balance:"
 msgid "Start Balance"
@@ -1016,14 +720,6 @@ msgctxt "field:account.general_ledger.account,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.general_ledger.account,write_date:"
-msgid "Write Date"
-msgstr "Data di Scrittura"
-
-msgctxt "field:account.general_ledger.account,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.general_ledger.account.context,company:"
 msgid "Company"
 msgstr "Azienda"
@@ -1039,10 +735,6 @@ msgstr "Esercizio"
 msgctxt "field:account.general_ledger.account.context,from_date:"
 msgid "From Date"
 msgstr "Dalla data"
-
-msgctxt "field:account.general_ledger.account.context,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.general_ledger.account.context,posted:"
 msgid "Posted Move"
@@ -1068,14 +760,6 @@ msgctxt "field:account.general_ledger.line,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.general_ledger.line,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.general_ledger.line,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.general_ledger.line,credit:"
 msgid "Credit"
 msgstr "AVERE"
@@ -1095,10 +779,6 @@ msgstr "DARE"
 msgctxt "field:account.general_ledger.line,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-msgctxt "field:account.general_ledger.line,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.general_ledger.line,move:"
 msgid "Move"
@@ -1120,21 +800,9 @@ msgctxt "field:account.general_ledger.line,party_required:"
 msgid "Party Required"
 msgstr "Indicazione controparte obbligatoria"
 
-msgctxt "field:account.general_ledger.line,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.general_ledger.line,state:"
 msgid "State"
 msgstr "Stato"
-
-msgctxt "field:account.general_ledger.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.general_ledger.line,write_uid:"
-msgid "Write User"
-msgstr "Scrivente"
 
 msgctxt "field:account.general_ledger.line.context,company:"
 msgid "Company"
@@ -1151,10 +819,6 @@ msgstr "Esercizio"
 msgctxt "field:account.general_ledger.line.context,from_date:"
 msgid "From Date"
 msgstr "Dalla data"
-
-msgctxt "field:account.general_ledger.line.context,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.general_ledger.line.context,party_cumulate:"
 msgid "Cumulate per Party"
@@ -1204,10 +868,6 @@ msgctxt "field:account.income_statement.context,from_date_cmp:"
 msgid "From Date"
 msgstr "Dalla data"
 
-msgctxt "field:account.income_statement.context,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.income_statement.context,posted:"
 msgid "Posted Move"
 msgstr "Movimento registrato"
@@ -1228,10 +888,6 @@ msgctxt "field:account.income_statement.context,to_date_cmp:"
 msgid "To Date"
 msgstr "A data"
 
-msgctxt "field:account.journal,active:"
-msgid "Active"
-msgstr "Attivo"
-
 msgctxt "field:account.journal,balance:"
 msgid "Balance"
 msgstr "Saldo"
@@ -1239,14 +895,6 @@ msgstr "Saldo"
 msgctxt "field:account.journal,code:"
 msgid "Code"
 msgstr "Codice"
-
-msgctxt "field:account.journal,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.journal,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.journal,credit:"
 msgid "Credit"
@@ -1260,17 +908,9 @@ msgctxt "field:account.journal,debit:"
 msgid "Debit"
 msgstr "DARE"
 
-msgctxt "field:account.journal,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.journal,name:"
 msgid "Name"
 msgstr "Nome"
-
-msgctxt "field:account.journal,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.journal,sequence:"
 msgid "Sequence"
@@ -1285,45 +925,17 @@ msgctxt "field:account.journal,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.journal,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.journal,write_uid:"
-msgid "Write User"
-msgstr "Scrivente"
-
 msgctxt "field:account.journal.open_cash.context,end_date:"
 msgid "End Date"
 msgstr "Data fine"
-
-msgctxt "field:account.journal.open_cash.context,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.journal.open_cash.context,start_date:"
 msgid "Start Date"
 msgstr "Data inizio"
 
-msgctxt "field:account.journal.period,active:"
-msgid "Active"
-msgstr "Attivo"
-
-msgctxt "field:account.journal.period,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.journal.period,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.journal.period,icon:"
 msgid "Icon"
 msgstr "Icona"
-
-msgctxt "field:account.journal.period,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.journal.period,journal:"
 msgid "Journal"
@@ -1333,71 +945,26 @@ msgctxt "field:account.journal.period,period:"
 msgid "Period"
 msgstr "Periodo"
 
-msgctxt "field:account.journal.period,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.journal.period,state:"
 msgid "State"
 msgstr "Stato"
-
-msgctxt "field:account.journal.period,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.journal.period,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.journal.sequence,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.journal.sequence,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.journal.sequence,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.journal.sequence,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.journal.sequence,journal:"
 msgid "Journal"
 msgstr "Rivista"
-
-msgctxt "field:account.journal.sequence,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:account.journal.sequence,sequence:"
 msgid "Sequence"
 msgstr "Sequenza"
 
-msgctxt "field:account.journal.sequence,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.journal.sequence,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.move,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.move,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.move,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
 
 msgctxt "field:account.move,date:"
 msgid "Effective Date"
@@ -1406,10 +973,6 @@ msgstr "Data Registrazione"
 msgctxt "field:account.move,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-msgctxt "field:account.move,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move,journal:"
 msgid "Journal"
@@ -1439,29 +1002,13 @@ msgctxt "field:account.move,post_number:"
 msgid "Post Number"
 msgstr "Registra numero"
 
-msgctxt "field:account.move,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.move,state:"
 msgid "State"
 msgstr "Stato"
 
-msgctxt "field:account.move,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.move.cancel.default,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-msgctxt "field:account.move.cancel.default,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move.line,account:"
 msgid "Account"
@@ -1481,15 +1028,7 @@ msgstr "Importo valuta posizioni"
 
 msgctxt "field:account.move.line,amount_second_currency:"
 msgid "Amount Second Currency"
-msgstr "Importo seconda valuta"
-
-msgctxt "field:account.move.line,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.move.line,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
+msgstr "Importo della valuta secondaria"
 
 msgctxt "field:account.move.line,credit:"
 msgid "Credit"
@@ -1511,10 +1050,6 @@ msgctxt "field:account.move.line,description:"
 msgid "Description"
 msgstr "Descrizione"
 
-msgctxt "field:account.move.line,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.move.line,journal:"
 msgid "Journal"
 msgstr "Registro"
@@ -1533,7 +1068,7 @@ msgstr "Descrizione Movimento"
 
 msgctxt "field:account.move.line,move_origin:"
 msgid "Move Origin"
-msgstr "Sposta origine:"
+msgstr "Sposta origine"
 
 msgctxt "field:account.move.line,move_state:"
 msgid "Move State"
@@ -1554,10 +1089,6 @@ msgstr "Indicazione controparte obbligatoria"
 msgctxt "field:account.move.line,period:"
 msgid "Period"
 msgstr "Periodo"
-
-msgctxt "field:account.move.line,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.move.line,reconciliation:"
 msgid "Reconciliation"
@@ -1587,23 +1118,10 @@ msgctxt "field:account.move.line,tax_lines:"
 msgid "Tax Lines"
 msgstr "Righe Imposta"
 
-msgctxt "field:account.move.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.line,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 #, fuzzy
 msgctxt "field:account.move.line.group.start,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-#, fuzzy
-msgctxt "field:account.move.line.group.start,id:"
-msgid "ID"
-msgstr "ID"
 
 #, fuzzy
 msgctxt "field:account.move.line.group.start,journal:"
@@ -1618,21 +1136,9 @@ msgctxt "field:account.move.line.template,amount:"
 msgid "Amount"
 msgstr "Importo"
 
-msgctxt "field:account.move.line.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.move.line.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.move.line.template,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-msgctxt "field:account.move.line.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move.line.template,move:"
 msgid "Move"
@@ -1650,25 +1156,9 @@ msgctxt "field:account.move.line.template,party_required:"
 msgid "Party Required"
 msgstr "Indicazione controparte obbligatoria"
 
-msgctxt "field:account.move.line.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.move.line.template,taxes:"
 msgid "Taxes"
 msgstr "Imposte"
-
-msgctxt "field:account.move.line.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.line.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
-msgctxt "field:account.move.open_journal.ask,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move.open_journal.ask,journal:"
 msgid "Journal"
@@ -1686,10 +1176,6 @@ msgctxt "field:account.move.print_general_journal.start,from_date:"
 msgid "From Date"
 msgstr "Data Inizio"
 
-msgctxt "field:account.move.print_general_journal.start,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.move.print_general_journal.start,posted:"
 msgid "Posted Move"
 msgstr "Movimento registrato"
@@ -1698,22 +1184,9 @@ msgctxt "field:account.move.print_general_journal.start,to_date:"
 msgid "To Date"
 msgstr "a data"
 
-#, fuzzy
-msgctxt "field:account.move.reconcile.write_off,active:"
-msgid "Active"
-msgstr "Attivo"
-
 msgctxt "field:account.move.reconcile.write_off,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.move.reconcile.write_off,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.move.reconcile.write_off,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.move.reconcile.write_off,credit_account:"
 msgid "Credit Account"
@@ -1723,31 +1196,13 @@ msgctxt "field:account.move.reconcile.write_off,debit_account:"
 msgid "Debit Account"
 msgstr "Conto di Debito"
 
-#, fuzzy
-msgctxt "field:account.move.reconcile.write_off,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.move.reconcile.write_off,journal:"
 msgid "Journal"
 msgstr "Rivista"
 
-#, fuzzy
 msgctxt "field:account.move.reconcile.write_off,name:"
 msgid "Name"
 msgstr "Nome"
-
-msgctxt "field:account.move.reconcile.write_off,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.move.reconcile.write_off,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.reconcile.write_off,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.move.reconcile_lines.writeoff,amount:"
 msgid "Amount"
@@ -1770,22 +1225,10 @@ msgctxt "field:account.move.reconcile_lines.writeoff,description:"
 msgid "Description"
 msgstr "Descrizione"
 
-msgctxt "field:account.move.reconcile_lines.writeoff,id:"
-msgid "ID"
-msgstr "ID"
-
 #, fuzzy
 msgctxt "field:account.move.reconcile_lines.writeoff,writeoff:"
 msgid "Write Off"
 msgstr "Svalutazione"
-
-msgctxt "field:account.move.reconciliation,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.move.reconciliation,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.move.reconciliation,date:"
 msgid "Date"
@@ -1795,10 +1238,6 @@ msgctxt "field:account.move.reconciliation,delegate_to:"
 msgid "Delegate To"
 msgstr ""
 
-msgctxt "field:account.move.reconciliation,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.move.reconciliation,lines:"
 msgid "Lines"
 msgstr "Righe"
@@ -1807,33 +1246,9 @@ msgctxt "field:account.move.reconciliation,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.move.reconciliation,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.move.reconciliation,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.reconciliation,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
-msgctxt "field:account.move.template,active:"
-msgid "Active"
-msgstr "Attivo"
-
 msgctxt "field:account.move.template,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.move.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.move.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.move.template,date:"
 msgid "Date"
@@ -1842,10 +1257,6 @@ msgstr "Data"
 msgctxt "field:account.move.template,description:"
 msgid "Description"
 msgstr "Descrizione"
-
-msgctxt "field:account.move.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move.template,journal:"
 msgid "Journal"
@@ -1863,26 +1274,6 @@ msgctxt "field:account.move.template,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.move.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.move.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
-msgctxt "field:account.move.template.create.keywords,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.move.template.create.template,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.move.template.create.template,period:"
 msgid "Period"
 msgstr "Periodo"
@@ -1891,21 +1282,9 @@ msgctxt "field:account.move.template.create.template,template:"
 msgid "Template"
 msgstr "Modello"
 
-msgctxt "field:account.move.template.keyword,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.move.template.keyword,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.move.template.keyword,digits:"
 msgid "Digits"
 msgstr "Posizioni"
-
-msgctxt "field:account.move.template.keyword,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.move.template.keyword,move:"
 msgid "Move"
@@ -1915,17 +1294,9 @@ msgctxt "field:account.move.template.keyword,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.move.template.keyword,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.move.template.keyword,required:"
 msgid "Required"
 msgstr "Obbligatorio"
-
-msgctxt "field:account.move.template.keyword,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
 
 msgctxt "field:account.move.template.keyword,string:"
 msgid "String"
@@ -1935,21 +1306,9 @@ msgctxt "field:account.move.template.keyword,type_:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.move.template.keyword,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.move.template.keyword,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.open_chart.start,fiscalyear:"
 msgid "Fiscal Year"
 msgstr "Esercizio"
-
-msgctxt "field:account.open_chart.start,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.open_chart.start,posted:"
 msgid "Posted Moves"
@@ -1958,14 +1317,6 @@ msgstr "Movimenti registrati"
 msgctxt "field:account.period,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.period,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.period,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.period,end_date:"
 msgid "Ending Date"
@@ -1980,11 +1331,6 @@ msgctxt "field:account.period,icon:"
 msgid "Icon"
 msgstr "Icona"
 
-#, fuzzy
-msgctxt "field:account.period,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.period,name:"
 msgid "Name"
 msgstr "Nome"
@@ -1992,10 +1338,6 @@ msgstr "Nome"
 msgctxt "field:account.period,post_move_sequence:"
 msgid "Post Move Sequence"
 msgstr "Registra sequenza movimento"
-
-msgctxt "field:account.period,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.period,start_date:"
 msgid "Starting Date"
@@ -2009,14 +1351,6 @@ msgstr "Stato"
 msgctxt "field:account.period,type:"
 msgid "Type"
 msgstr "Tipo"
-
-msgctxt "field:account.period,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.period,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 msgctxt "field:account.reconcile.show,account:"
 msgid "Account"
@@ -2040,11 +1374,6 @@ msgctxt "field:account.reconcile.show,description:"
 msgid "Description"
 msgstr "Descrizione"
 
-#, fuzzy
-msgctxt "field:account.reconcile.show,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.reconcile.show,lines:"
 msgid "Lines"
 msgstr "Righe"
@@ -2067,10 +1396,6 @@ msgctxt "field:account.reconcile.show,write_off_amount:"
 msgid "Amount"
 msgstr "Importo"
 
-msgctxt "field:account.tax,active:"
-msgid "Active"
-msgstr "Attivo"
-
 msgctxt "field:account.tax,amount:"
 msgid "Amount"
 msgstr "Importo"
@@ -2083,14 +1408,6 @@ msgstr "Figlio"
 msgctxt "field:account.tax,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.tax,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
 
 msgctxt "field:account.tax,credit_base_amount:"
 msgid "Credit Base Amount"
@@ -2121,10 +1438,6 @@ msgctxt "field:account.tax,group:"
 msgid "Group"
 msgstr "Gruppo"
 
-msgctxt "field:account.tax,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax,invoice_account:"
 msgid "Invoice Account"
 msgstr "Conto Fattura"
@@ -2153,14 +1466,6 @@ msgctxt "field:account.tax,rate:"
 msgid "Rate"
 msgstr "Aliquota"
 
-msgctxt "field:account.tax,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.tax,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
-
 msgctxt "field:account.tax,start_date:"
 msgid "Starting Date"
 msgstr "Data Iniziale"
@@ -2182,14 +1487,6 @@ msgstr "Tipo"
 msgctxt "field:account.tax,update_unit_price:"
 msgid "Update Unit Price"
 msgstr ""
-
-msgctxt "field:account.tax,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
 
 #, fuzzy
 msgctxt "field:account.tax.code,active:"
@@ -2214,14 +1511,6 @@ msgctxt "field:account.tax.code,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.tax.code,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.code,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
 msgctxt "field:account.tax.code,currency_digits:"
 msgid "Currency Digits"
 msgstr "Posizioni Valuta"
@@ -2236,11 +1525,6 @@ msgctxt "field:account.tax.code,end_date:"
 msgid "End Date"
 msgstr "Data fine"
 
-#, fuzzy
-msgctxt "field:account.tax.code,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.code,lines:"
 msgid "Lines"
 msgstr "Linee"
@@ -2252,10 +1536,6 @@ msgstr "Nome"
 msgctxt "field:account.tax.code,parent:"
 msgid "Parent"
 msgstr "Padre"
-
-msgctxt "field:account.tax.code,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:account.tax.code,start_date:"
@@ -2271,14 +1551,6 @@ msgctxt "field:account.tax.code,template_override:"
 msgid "Override Template"
 msgstr "Ridefinizione del modello"
 
-msgctxt "field:account.tax.code,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.code,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 #, fuzzy
 msgctxt "field:account.tax.code.line,amount:"
 msgid "Amount"
@@ -2289,26 +1561,9 @@ msgctxt "field:account.tax.code.line,code:"
 msgid "Code"
 msgstr "Codice"
 
-msgctxt "field:account.tax.code.line,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.code.line,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.code.line,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.code.line,operator:"
 msgid "Operator"
 msgstr "Operatore"
-
-msgctxt "field:account.tax.code.line,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:account.tax.code.line,tax:"
@@ -2329,14 +1584,6 @@ msgctxt "field:account.tax.code.line,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.tax.code.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.code.line,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 #, fuzzy
 msgctxt "field:account.tax.code.line.template,amount:"
 msgid "Amount"
@@ -2347,26 +1594,9 @@ msgctxt "field:account.tax.code.line.template,code:"
 msgid "Code"
 msgstr "Codice"
 
-msgctxt "field:account.tax.code.line.template,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.code.line.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.code.line.template,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.code.line.template,operator:"
 msgid "Operator"
 msgstr "Operatore"
-
-msgctxt "field:account.tax.code.line.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:account.tax.code.line.template,tax:"
@@ -2378,22 +1608,9 @@ msgctxt "field:account.tax.code.line.template,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.tax.code.line.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.code.line.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.tax.code.open_chart.start,fiscalyear:"
 msgid "Fiscal Year"
 msgstr "Esercizio"
-
-#, fuzzy
-msgctxt "field:account.tax.code.open_chart.start,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.code.open_chart.start,method:"
 msgid "Method"
@@ -2416,14 +1633,6 @@ msgctxt "field:account.tax.code.template,code:"
 msgid "Code"
 msgstr "Codice"
 
-msgctxt "field:account.tax.code.template,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.code.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.tax.code.template,description:"
 msgid "Description"
 msgstr "Descrizione"
@@ -2432,11 +1641,6 @@ msgstr "Descrizione"
 msgctxt "field:account.tax.code.template,end_date:"
 msgid "End Date"
 msgstr "Data fine"
-
-#, fuzzy
-msgctxt "field:account.tax.code.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.code.template,lines:"
 msgid "Lines"
@@ -2450,39 +1654,14 @@ msgctxt "field:account.tax.code.template,parent:"
 msgid "Parent"
 msgstr "Padre"
 
-msgctxt "field:account.tax.code.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 #, fuzzy
 msgctxt "field:account.tax.code.template,start_date:"
 msgid "Start Date"
 msgstr "Data inizio"
 
-msgctxt "field:account.tax.code.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.code.template,write_uid:"
-msgid "Write User"
-msgstr "Scrivente"
-
 msgctxt "field:account.tax.group,code:"
 msgid "Code"
 msgstr "Codice"
-
-msgctxt "field:account.tax.group,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.group,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.group,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.group,kind:"
 msgid "Kind"
@@ -2492,18 +1671,6 @@ msgctxt "field:account.tax.group,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.tax.group,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.tax.group,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.group,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.tax.line,amount:"
 msgid "Amount"
 msgstr "Importo"
@@ -2512,30 +1679,13 @@ msgctxt "field:account.tax.line,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:account.tax.line,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.tax.line,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.tax.line,currency_digits:"
 msgid "Currency Digits"
 msgstr "Posizioni Valuta"
 
-#, fuzzy
-msgctxt "field:account.tax.line,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.line,move_line:"
 msgid "Move Line"
 msgstr "Riga Movimento"
-
-msgctxt "field:account.tax.line,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.tax.line,tax:"
 msgid "Tax"
@@ -2546,38 +1696,13 @@ msgctxt "field:account.tax.line,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.tax.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.line,write_uid:"
-msgid "Write User"
-msgstr "Utente Scrittura"
-
 msgctxt "field:account.tax.line.template,amount:"
 msgid "Amount"
 msgstr "Importo"
 
-msgctxt "field:account.tax.line.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.line.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.line.template,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.line.template,line:"
 msgid "Line"
 msgstr "Riga"
-
-msgctxt "field:account.tax.line.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 msgctxt "field:account.tax.line.template,tax:"
 msgid "Tax"
@@ -2588,30 +1713,9 @@ msgctxt "field:account.tax.line.template,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:account.tax.line.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.line.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.tax.rule,company:"
 msgid "Company"
 msgstr "Azienda"
-
-msgctxt "field:account.tax.rule,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.rule,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.rule,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.rule,kind:"
 msgid "Kind"
@@ -2625,10 +1729,6 @@ msgctxt "field:account.tax.rule,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.tax.rule,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.tax.rule,template:"
 msgid "Template"
 msgstr "Modello"
@@ -2638,29 +1738,9 @@ msgctxt "field:account.tax.rule,template_override:"
 msgid "Override Template"
 msgstr "Ridefinizione del modello"
 
-msgctxt "field:account.tax.rule,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.rule,write_uid:"
-msgid "Write User"
-msgstr "Scrivente"
-
-msgctxt "field:account.tax.rule.line,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.rule.line,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 msgctxt "field:account.tax.rule.line,group:"
 msgid "Tax Group"
 msgstr "Gruppo Imposta"
-
-msgctxt "field:account.tax.rule.line,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.rule.line,keep_origin:"
 msgid "Keep Origin"
@@ -2670,17 +1750,9 @@ msgctxt "field:account.tax.rule.line,origin_tax:"
 msgid "Original Tax"
 msgstr "Imposta Origine"
 
-msgctxt "field:account.tax.rule.line,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.tax.rule.line,rule:"
 msgid "Rule"
 msgstr "Regola"
-
-msgctxt "field:account.tax.rule.line,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
 
 msgctxt "field:account.tax.rule.line,tax:"
 msgid "Substitution Tax"
@@ -2695,29 +1767,9 @@ msgctxt "field:account.tax.rule.line,template_override:"
 msgid "Override Template"
 msgstr "Ridefinizione del modello"
 
-msgctxt "field:account.tax.rule.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.rule.line,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
-msgctxt "field:account.tax.rule.line.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.rule.line.template,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
 msgctxt "field:account.tax.rule.line.template,group:"
 msgid "Tax Group"
 msgstr "Gruppo imposta"
-
-msgctxt "field:account.tax.rule.line.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.rule.line.template,keep_origin:"
 msgid "Keep Origin"
@@ -2727,46 +1779,17 @@ msgctxt "field:account.tax.rule.line.template,origin_tax:"
 msgid "Original Tax"
 msgstr "Imposta Origine"
 
-msgctxt "field:account.tax.rule.line.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
 msgctxt "field:account.tax.rule.line.template,rule:"
 msgid "Rule"
 msgstr "Regola"
-
-msgctxt "field:account.tax.rule.line.template,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
 
 msgctxt "field:account.tax.rule.line.template,tax:"
 msgid "Substitution Tax"
 msgstr "Imposta in sostituzione"
 
-msgctxt "field:account.tax.rule.line.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.rule.line.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.tax.rule.template,account:"
 msgid "Account Template"
 msgstr "Modello contabilità"
-
-msgctxt "field:account.tax.rule.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.rule.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
-#, fuzzy
-msgctxt "field:account.tax.rule.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.rule.template,kind:"
 msgid "Kind"
@@ -2780,26 +1803,9 @@ msgctxt "field:account.tax.rule.template,name:"
 msgid "Name"
 msgstr "Nome"
 
-msgctxt "field:account.tax.rule.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.tax.rule.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.rule.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "field:account.tax.template,account:"
 msgid "Account Template"
 msgstr "Modello contabilità"
-
-#, fuzzy
-msgctxt "field:account.tax.template,active:"
-msgid "Active"
-msgstr "Attivo"
 
 msgctxt "field:account.tax.template,amount:"
 msgid "Amount"
@@ -2809,14 +1815,6 @@ msgstr "Importo"
 msgctxt "field:account.tax.template,childs:"
 msgid "Children"
 msgstr "Figlio"
-
-msgctxt "field:account.tax.template,create_date:"
-msgid "Create Date"
-msgstr "Creazione Data"
-
-msgctxt "field:account.tax.template,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
 
 msgctxt "field:account.tax.template,credit_note_account:"
 msgid "Credit Note Account"
@@ -2834,11 +1832,6 @@ msgstr "Data Fine"
 msgctxt "field:account.tax.template,group:"
 msgid "Group"
 msgstr "Gruppo"
-
-#, fuzzy
-msgctxt "field:account.tax.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.template,invoice_account:"
 msgid "Invoice Account"
@@ -2860,14 +1853,6 @@ msgctxt "field:account.tax.template,rate:"
 msgid "Rate"
 msgstr "Aliquota"
 
-msgctxt "field:account.tax.template,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
-
-msgctxt "field:account.tax.template,sequence:"
-msgid "Sequence"
-msgstr "Sequenza"
-
 msgctxt "field:account.tax.template,start_date:"
 msgid "Starting Date"
 msgstr "Data Iniziale"
@@ -2880,23 +1865,10 @@ msgctxt "field:account.tax.template,update_unit_price:"
 msgid "Update Unit Price"
 msgstr ""
 
-msgctxt "field:account.tax.template,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.tax.template,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 #, fuzzy
 msgctxt "field:account.tax.test,currency:"
 msgid "Currency"
 msgstr "Valuta"
-
-#, fuzzy
-msgctxt "field:account.tax.test,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:account.tax.test,quantity:"
 msgid "Quantity"
@@ -2939,11 +1911,6 @@ msgctxt "field:account.tax.test.result,description:"
 msgid "Description"
 msgstr "Descrizione"
 
-#, fuzzy
-msgctxt "field:account.tax.test.result,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:account.tax.test.result,legal_notice:"
 msgid "Legal Notice"
 msgstr ""
@@ -2956,15 +1923,6 @@ msgstr "Imposta"
 msgctxt "field:account.update_chart.start,account:"
 msgid "Root Account"
 msgstr "Conto Root"
-
-msgctxt "field:account.update_chart.start,id:"
-msgid "ID"
-msgstr "ID"
-
-#, fuzzy
-msgctxt "field:account.update_chart.succeed,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:party.party,account_payable:"
 msgid "Account Payable"
@@ -3019,51 +1977,31 @@ msgctxt "field:party.party.account,company:"
 msgid "Company"
 msgstr "Azienda"
 
-msgctxt "field:party.party.account,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:party.party.account,create_uid:"
-msgid "Create User"
-msgstr "Creato da"
-
 #, fuzzy
 msgctxt "field:party.party.account,customer_tax_rule:"
 msgid "Customer Tax Rule"
 msgstr "Regola Imposta cliente"
 
-#, fuzzy
-msgctxt "field:party.party.account,id:"
-msgid "ID"
-msgstr "ID"
-
 msgctxt "field:party.party.account,party:"
 msgid "Party"
 msgstr "Controparte"
-
-msgctxt "field:party.party.account,rec_name:"
-msgid "Record Name"
-msgstr "Nome del record"
 
 #, fuzzy
 msgctxt "field:party.party.account,supplier_tax_rule:"
 msgid "Supplier Tax Rule"
 msgstr "Regola Imposta Fornitore"
 
-msgctxt "field:party.party.account,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:party.party.account,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
 msgctxt "help:account.account,closed:"
 msgid "Check to prevent posting move on the account."
 msgstr ""
 
+msgctxt "help:account.account,debit_type:"
+msgid "The type used if not empty and debit > credit."
+msgstr ""
+
+#, fuzzy
 msgctxt "help:account.account,general_ledger_balance:"
-msgid "Display only the balance in the general ledger report"
+msgid "Display only the balance in the general ledger report."
 msgstr "Indica solo il saldo nel libro Mastro"
 
 #, fuzzy
@@ -3077,10 +2015,11 @@ msgid ""
 "to have this secondary currency."
 msgstr "Forza tutti i movimenti di questo conto"
 
+#, fuzzy
 msgctxt "help:account.account,taxes:"
 msgid ""
-"Default tax for manual encoding of move lines \n"
-"for journal types: \"expense\" and \"revenue\""
+"Default tax for manual encoding of move lines\n"
+"for journal types: \"expense\" and \"revenue\"."
 msgstr "Imposte predefinite per completamento manuale di movimenti contabili"
 
 msgctxt "help:account.account,template_override:"
@@ -3091,8 +2030,9 @@ msgctxt "help:account.account.template,closed:"
 msgid "Check to prevent posting move on the account."
 msgstr ""
 
+#, fuzzy
 msgctxt "help:account.account.template,general_ledger_balance:"
-msgid "Display only the balance in the general ledger report"
+msgid "Display only the balance in the general ledger report."
 msgstr "Indica solo il saldo nel libro Mastro"
 
 #, fuzzy
@@ -3106,18 +2046,36 @@ msgstr ""
 
 #, fuzzy
 msgctxt "help:account.aged_balance.context,posted:"
-msgid "Show only posted move"
+msgid "Only include posted moves."
 msgstr "Mostra solo movimento registrato"
 
 #, fuzzy
 msgctxt "help:account.balance_sheet.comparision.context,posted:"
-msgid "Show only posted move"
+msgid "Only include posted moves."
 msgstr "Mostra solo movimento registrato"
 
 #, fuzzy
 msgctxt "help:account.balance_sheet.context,posted:"
-msgid "Show only posted move"
+msgid "Only include posted moves."
 msgstr "Mostra solo movimento registrato"
+
+msgctxt "help:account.configuration,default_customer_tax_rule:"
+msgid "Default customer tax rule for new parties."
+msgstr ""
+
+msgctxt "help:account.configuration,default_supplier_tax_rule:"
+msgid "Default supplier tax rule for new parties."
+msgstr ""
+
+msgctxt "help:account.fiscalyear.create_periods.start,end_day:"
+msgid ""
+"The day of the month on which periods end.\n"
+"Months with fewer days will end on the last day."
+msgstr ""
+
+msgctxt "help:account.fiscalyear.create_periods.start,interval:"
+msgid "The length of each period, in months."
+msgstr ""
 
 msgctxt "help:account.fiscalyear.renew.start,previous_fiscalyear:"
 msgid "Used as reference for fiscalyear configuration."
@@ -3129,33 +2087,26 @@ msgstr ""
 
 #, fuzzy
 msgctxt "help:account.general_ledger.account.context,posted:"
-msgid "Show only posted move"
+msgid "Only included posted moves."
 msgstr "Mostra solo movimento registrato"
 
 #, fuzzy
 msgctxt "help:account.general_ledger.line.context,posted:"
-msgid "Show only posted move"
+msgid "Only included posted moves."
 msgstr "Mostra solo movimento registrato"
 
 #, fuzzy
 msgctxt "help:account.income_statement.context,posted:"
-msgid "Show only posted move"
+msgid "Only include posted moves."
 msgstr "Mostra solo movimento registrato"
 
-msgctxt "help:account.journal,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
-
-msgctxt "help:account.journal.period,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
-
+#, fuzzy
 msgctxt "help:account.move,post_number:"
-msgid "Also known as Folio Number"
+msgid "Also known as Folio Number."
 msgstr "Definita anche numero di Folio"
 
 msgctxt "help:account.move.line,amount_second_currency:"
-msgid "The amount expressed in a second currency"
+msgid "The amount expressed in a second currency."
 msgstr ""
 
 msgctxt "help:account.move.line,maturity_date:"
@@ -3164,9 +2115,10 @@ msgid ""
 "You can put the limit date for the payment."
 msgstr ""
 
+#, fuzzy
 msgctxt "help:account.move.line,second_currency:"
-msgid "The second currency"
-msgstr ""
+msgid "The second currency."
+msgstr "Seconda valuta"
 
 msgctxt "help:account.move.line.template,amount:"
 msgid "A python expression that will be evaluated with the keywords."
@@ -3182,25 +2134,18 @@ msgctxt "help:account.move.line.template,party:"
 msgid "The name of the 'Party' keyword."
 msgstr ""
 
+#, fuzzy
 msgctxt "help:account.move.print_general_journal.start,posted:"
-msgid "Show only posted move"
+msgid "Only include posted moves."
 msgstr "Mostra solo movimento registrato"
 
-msgctxt "help:account.move.reconcile.write_off,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
-
 msgctxt "help:account.move.reconciliation,date:"
-msgid "Highest date of the reconciled lines"
+msgid "Highest date of the reconciled lines."
 msgstr ""
 
 msgctxt "help:account.move.reconciliation,delegate_to:"
 msgid "The line to which the reconciliation status is delegated."
 msgstr ""
-
-msgctxt "help:account.move.template,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
 
 #, fuzzy
 msgctxt "help:account.move.template,date:"
@@ -3213,24 +2158,24 @@ msgid "Keyword values substitutions are identified by braces ('{' and '}')."
 msgstr ""
 "Le sostituzioni di valori di keyword sono identificate da graffe ('{'e'}')"
 
+#, fuzzy
 msgctxt "help:account.open_chart.start,fiscalyear:"
-msgid "Leave empty for all open fiscal year"
+msgid "Leave empty for all open fiscal year."
 msgstr "Lasciare vuoto per tutto l'esercizio aperto"
 
+#, fuzzy
 msgctxt "help:account.open_chart.start,posted:"
-msgid "Show posted moves only"
-msgstr "Mostra solo movimenti registrati"
+msgid "Only include posted moves."
+msgstr "Mostra solo movimento registrato"
 
-msgctxt "help:account.tax,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
-
+#, fuzzy
 msgctxt "help:account.tax,amount:"
-msgid "In company's currency"
+msgid "In company's currency."
 msgstr "In moneta di conto"
 
+#, fuzzy
 msgctxt "help:account.tax,description:"
-msgid "The name that will be used in reports"
+msgid "The name that will be used in reports."
 msgstr "Il nome che verrà usato nei rapporti"
 
 msgctxt "help:account.tax,template_override:"
@@ -3240,7 +2185,7 @@ msgstr ""
 msgctxt "help:account.tax,update_unit_price:"
 msgid ""
 "If checked then the unit price for further tax computation will be modified "
-"by this tax"
+"by this tax."
 msgstr ""
 
 msgctxt "help:account.tax.code,template_override:"
@@ -3251,12 +2196,14 @@ msgctxt "help:account.tax.code.line,template_override:"
 msgid "Check to override template definition"
 msgstr ""
 
+#, fuzzy
 msgctxt "help:account.tax.code.open_chart.start,fiscalyear:"
-msgid "Leave empty for all open fiscal year"
+msgid "Leave empty for all open fiscal year."
 msgstr "Lasciare vuoto per tutto l'esercizio aperto"
 
+#, fuzzy
 msgctxt "help:account.tax.code.open_chart.start,periods:"
-msgid "Leave empty for all periods of all open fiscal year"
+msgid "Leave empty for all periods of all open fiscal year."
 msgstr "Lasciare vuoto per tutti i periodi di tutto l'esercizio aperto"
 
 msgctxt "help:account.tax.line.template,amount:"
@@ -3293,10 +2240,6 @@ msgid ""
 msgstr ""
 "Se l'imposta iniziale è valorizzata, la regola verrà applicata solo per "
 "questo modello di imposta"
-
-msgctxt "help:account.tax.template,active:"
-msgid "Uncheck to exclude from future use."
-msgstr "Deselezionare per escludere dall'uso futuro."
 
 msgctxt "help:party.party,customer_tax_rule:"
 msgid "Apply this rule on taxes when party is customer."
@@ -3359,6 +2302,11 @@ msgctxt "model:account.configuration.default_account,name:"
 msgid "Account Configuration Default Account"
 msgstr ""
 
+#, fuzzy
+msgctxt "model:account.configuration.default_tax_rule,name:"
+msgid "Account Configuration Default Tax Rule"
+msgstr "Configurazione Conto"
+
 msgctxt "model:account.configuration.tax_rounding,name:"
 msgid "Account Configuration Tax Rounding"
 msgstr ""
@@ -3382,6 +2330,11 @@ msgstr "Esercizio"
 msgctxt "model:account.fiscalyear.balance_non_deferral.start,name:"
 msgid "Balance Non-Deferral"
 msgstr "Saldo - non differito"
+
+#, fuzzy
+msgctxt "model:account.fiscalyear.create_periods.start,name:"
+msgid "Create Periods Start"
+msgstr "Create Monthly Periods"
 
 msgctxt "model:account.fiscalyear.renew.start,name:"
 msgid "Renew Fiscal Year Start"
@@ -3588,7 +2541,7 @@ msgstr "Aggiorna prospetto"
 
 msgctxt "model:ir.action,name:act_account_balance_sheet"
 msgid "Accounts"
-msgstr "Accounts"
+msgstr "Conti"
 
 msgctxt "model:ir.action,name:act_account_balance_sheet_tree"
 msgid "Balance Sheet"
@@ -3596,7 +2549,7 @@ msgstr "Stato Patrimoniale"
 
 msgctxt "model:ir.action,name:act_account_general_ledger"
 msgid "Accounts"
-msgstr "Accounts"
+msgstr "Conti"
 
 #, fuzzy
 msgctxt "model:ir.action,name:act_account_income_statement_tree"
@@ -3654,6 +2607,11 @@ msgid "Account Configuration"
 msgstr "Configurazione Conto"
 
 #, fuzzy
+msgctxt "model:ir.action,name:act_create_periods"
+msgid "Create Periods"
+msgstr "Create Monthly Periods"
+
+#, fuzzy
 msgctxt "model:ir.action,name:act_fiscalyear_form"
 msgid "Fiscal Years"
 msgstr "Fiscal Years"
@@ -3704,6 +2662,11 @@ msgstr "Journals - Periods"
 msgctxt "model:ir.action,name:act_move_form"
 msgid "Account Moves"
 msgstr "Account Moves"
+
+#, fuzzy
+msgctxt "model:ir.action,name:act_move_form_grouping"
+msgid "Grouped Account Move"
+msgstr "Movimento contabile"
 
 #, fuzzy
 msgctxt "model:ir.action,name:act_move_from_template"
@@ -3896,6 +2859,12 @@ msgctxt "model:ir.message,text:msg_account_invalid_type_second_currency"
 msgid ""
 "To set a second currency for account \"%(account)s\", it must not have a "
 "type \"payable\", \"revenue\", \"receivable\" nor \"expense\"."
+msgstr ""
+
+msgctxt "model:ir.message,text:msg_cancel_line_delegated"
+msgid ""
+"The moves \"%(moves)s\" contain grouped lines, cancelling them will ungroup "
+"the lines."
 msgstr ""
 
 msgctxt "model:ir.message,text:msg_change_fiscalyear_post_move_sequence"
@@ -4198,12 +3167,9 @@ msgctxt "model:ir.model.button,string:fiscalyear_close_button"
 msgid "Close"
 msgstr "Close"
 
-msgctxt "model:ir.model.button,string:fiscalyear_create_period_3_button"
-msgid "Create 3 Monthly Periods"
-msgstr "Create 3 Monthly Periods"
-
-msgctxt "model:ir.model.button,string:fiscalyear_create_period_button"
-msgid "Create Monthly Periods"
+#, fuzzy
+msgctxt "model:ir.model.button,string:fiscalyear_create_periods_button"
+msgid "Create Periods"
 msgstr "Create Monthly Periods"
 
 msgctxt "model:ir.model.button,string:fiscalyear_lock_button"
@@ -4568,7 +3534,7 @@ msgstr "Saldo"
 
 msgctxt "report:account.aged_balance:"
 msgid "Company:"
-msgstr "Azienda"
+msgstr "Azienda:"
 
 #, fuzzy
 msgctxt "report:account.aged_balance:"
@@ -4618,7 +3584,7 @@ msgstr "Codice"
 
 msgctxt "report:account.general_ledger:"
 msgid "Company:"
-msgstr "Azienda"
+msgstr "Azienda:"
 
 msgctxt "report:account.general_ledger:"
 msgid "Credit"
@@ -4703,7 +3669,7 @@ msgstr "Conto"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Company:"
-msgstr "Azienda"
+msgstr "Azienda:"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Credit"
@@ -4740,7 +3706,7 @@ msgstr "Registrazione:"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Origin:"
-msgstr "Origine"
+msgstr "Origine:"
 
 msgctxt "report:account.move.general_journal:"
 msgid "Posted"
@@ -4774,7 +3740,7 @@ msgstr "Conto"
 
 msgctxt "report:account.trial_balance:"
 msgid "Company:"
-msgstr "Azienda"
+msgstr "Azienda:"
 
 msgctxt "report:account.trial_balance:"
 msgid "Credit"
@@ -4906,6 +3872,20 @@ msgstr "Bloccato"
 msgctxt "selection:account.fiscalyear,state:"
 msgid "Open"
 msgstr "Apertura"
+
+#, fuzzy
+msgctxt "selection:account.fiscalyear.create_periods.start,frequency:"
+msgid "Monthly"
+msgstr "Mesi"
+
+#, fuzzy
+msgctxt "selection:account.fiscalyear.create_periods.start,frequency:"
+msgid "Other"
+msgstr "Altre Info"
+
+msgctxt "selection:account.fiscalyear.create_periods.start,frequency:"
+msgid "Quarterly"
+msgstr ""
 
 #, fuzzy
 msgctxt "selection:account.general_ledger.line,state:"
@@ -5196,6 +4176,15 @@ msgstr ""
 "E' ora possibile creare un piano dei conti per l'azienda scegliendo un "
 "modello di piano dei conti"
 
+msgctxt "view:account.fiscalyear.create_periods.start:"
+msgid "every"
+msgstr ""
+
+#, fuzzy
+msgctxt "view:account.fiscalyear.create_periods.start:"
+msgid "months"
+msgstr "Mesi"
+
 msgctxt "view:account.fiscalyear:"
 msgid "Periods"
 msgstr "Periodi"
@@ -5242,10 +4231,6 @@ msgstr "Chiudi"
 msgctxt "view:account.journal.period:"
 msgid "Re-Open"
 msgstr "Re-Open"
-
-msgctxt "view:account.journal:"
-msgid "General Information"
-msgstr "Informazioni generali"
 
 msgctxt "view:account.move.line.template:"
 msgid "Other Info"
@@ -5323,7 +4308,7 @@ msgstr "OK"
 
 msgctxt "wizard_button:account.create_chart,start,end:"
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 #, fuzzy
 msgctxt "wizard_button:account.fiscalyear.balance_non_deferral,start,balance:"
@@ -5331,6 +4316,16 @@ msgid "OK"
 msgstr "OK"
 
 msgctxt "wizard_button:account.fiscalyear.balance_non_deferral,start,end:"
+msgid "Cancel"
+msgstr "Annulla"
+
+#, fuzzy
+msgctxt ""
+"wizard_button:account.fiscalyear.create_periods,start,create_periods:"
+msgid "Create"
+msgstr "Creazione"
+
+msgctxt "wizard_button:account.fiscalyear.create_periods,start,end:"
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -5351,7 +4346,6 @@ msgctxt "wizard_button:account.move.cancel,default,end:"
 msgid "Cancel"
 msgstr "Annulla"
 
-#, fuzzy
 msgctxt "wizard_button:account.move.line.group,start,end:"
 msgid "Cancel"
 msgstr "Annulla"
@@ -5363,7 +4357,7 @@ msgstr "Gruppo"
 
 msgctxt "wizard_button:account.move.open_journal,ask,end:"
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 msgctxt "wizard_button:account.move.open_journal,ask,open_:"
 msgid "Open"
@@ -5371,7 +4365,7 @@ msgstr "Apertura"
 
 msgctxt "wizard_button:account.move.print_general_journal,start,end:"
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 #, fuzzy
 msgctxt "wizard_button:account.move.print_general_journal,start,print_:"
@@ -5380,7 +4374,7 @@ msgstr "Stampa"
 
 msgctxt "wizard_button:account.move.reconcile_lines,writeoff,end:"
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 msgctxt "wizard_button:account.move.reconcile_lines,writeoff,reconcile:"
 msgid "Reconcile"
@@ -5424,7 +4418,7 @@ msgstr "Riconciliazione"
 
 msgctxt "wizard_button:account.tax.code.open_chart,start,end:"
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 msgctxt "wizard_button:account.tax.code.open_chart,start,open_:"
 msgid "Open"
@@ -5446,190 +4440,3 @@ msgstr "Aggiorna"
 msgctxt "wizard_button:account.update_chart,succeed,end:"
 msgid "OK"
 msgstr "OK"
-
-msgctxt "field:account.balance_sheet.context,date_cmp:"
-msgid "Date"
-msgstr "Data"
-
-msgctxt "field:account.fiscalyear,close_lines:"
-msgid "Close Lines"
-msgstr "Chiusura Righe"
-
-msgctxt "field:account.fiscalyear-account.move.line,create_date:"
-msgid "Create Date"
-msgstr "Creato il"
-
-msgctxt "field:account.fiscalyear-account.move.line,create_uid:"
-msgid "Create User"
-msgstr "Creazione Utente"
-
-msgctxt "field:account.fiscalyear-account.move.line,fiscalyear:"
-msgid "Fiscal Year"
-msgstr "Esercizio"
-
-msgctxt "field:account.fiscalyear-account.move.line,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:account.fiscalyear-account.move.line,line:"
-msgid "Line"
-msgstr "Riga"
-
-msgctxt "field:account.fiscalyear-account.move.line,write_date:"
-msgid "Write Date"
-msgstr "Modificato il"
-
-msgctxt "field:account.fiscalyear-account.move.line,write_uid:"
-msgid "Write User"
-msgstr "Modificato da"
-
-msgctxt "field:account.tax,credit_note_base_code:"
-msgid "Credit Note Base Code"
-msgstr "Codice Imponibile Nota di Credito"
-
-msgctxt "field:account.tax,credit_note_base_sign:"
-msgid "Credit Note Base Sign"
-msgstr "Segno Imponibile Nota di Credito"
-
-msgctxt "field:account.tax,credit_note_tax_code:"
-msgid "Credit Note Tax Code"
-msgstr "Codice Imposta Nota di Credito"
-
-msgctxt "field:account.tax,credit_note_tax_sign:"
-msgid "Credit Note Tax Sign"
-msgstr "Segno Imposta Nota di Credito"
-
-msgctxt "field:account.tax,invoice_base_code:"
-msgid "Invoice Base Code"
-msgstr "Codice Imponibile Fattura"
-
-msgctxt "field:account.tax,invoice_base_sign:"
-msgid "Invoice Base Sign"
-msgstr "Segno Imponibile Fattura"
-
-msgctxt "field:account.tax,invoice_tax_code:"
-msgid "Invoice Tax Code"
-msgstr "Codice Imposta Fattura"
-
-msgctxt "field:account.tax,invoice_tax_sign:"
-msgid "Invoice Tax Sign"
-msgstr "Segno Imposta Fattura"
-
-msgctxt "field:account.tax.code,sum:"
-msgid "Sum"
-msgstr "Somma"
-
-msgctxt "field:account.tax.line,code:"
-msgid "Code"
-msgstr "Codice"
-
-msgctxt "field:account.tax.line.template,code:"
-msgid "Code"
-msgstr "Codice"
-
-msgctxt "field:account.tax.template,credit_note_base_code:"
-msgid "Credit Note Base Code"
-msgstr "Codice Imponibile Nota di Credito"
-
-msgctxt "field:account.tax.template,credit_note_base_sign:"
-msgid "Credit Note Base Sign"
-msgstr "Segno Imponibile Nota di Credito"
-
-msgctxt "field:account.tax.template,credit_note_tax_code:"
-msgid "Credit Note Tax Code"
-msgstr "Codice Imposta Nota di Credito"
-
-msgctxt "field:account.tax.template,credit_note_tax_sign:"
-msgid "Credit Note Tax Sign"
-msgstr "Segno Imposta Nota di Credito"
-
-msgctxt "field:account.tax.template,invoice_base_code:"
-msgid "Invoice Base Code"
-msgstr "Codice Imponibile Fattura"
-
-msgctxt "field:account.tax.template,invoice_base_sign:"
-msgid "Invoice Base Sign"
-msgstr "Segno Imponibile Fattura"
-
-msgctxt "field:account.tax.template,invoice_tax_code:"
-msgid "Invoice Tax Code"
-msgstr "Codice Imposta Fattura"
-
-msgctxt "field:account.tax.template,invoice_tax_sign:"
-msgid "Invoice Tax Sign"
-msgstr "Segno Imposta Fattura"
-
-msgctxt "model:account.fiscalyear-account.move.line,name:"
-msgid "Fiscal Year - Move Line"
-msgstr "Esercizio - movimento"
-
-msgctxt "model:ir.action,name:act_account_list2"
-msgid "Accounts"
-msgstr "Conti"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Are you sure to lock the fiscal year?"
-msgstr "Are you sure to lock the fiscal year?"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Close"
-msgstr "Chiudi"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Create 3 Months Periods"
-msgstr "Creazione di periodi trimestrali"
-
-msgctxt "view:account.fiscalyear:"
-msgid "Create Monthly Periods"
-msgstr "Creazione periodi mensili"
-
-msgctxt "view:account.move:"
-msgid "Post"
-msgstr "Registra"
-
-msgctxt "view:account.period:"
-msgid "Close"
-msgstr "Chiudi"
-
-#, fuzzy
-msgctxt "view:account.tax.code.template:"
-msgid "Children"
-msgstr "Figlio"
-
-msgctxt "view:account.tax.code.template:"
-msgid "Description"
-msgstr "Descrizione"
-
-#, fuzzy
-msgctxt "view:account.tax.code:"
-msgid "Children"
-msgstr "Figlio"
-
-#, fuzzy
-msgctxt "view:account.tax.code:"
-msgid "Description"
-msgstr "Descrizione"
-
-msgctxt "view:account.tax.template:"
-msgid "Code"
-msgstr "Codice"
-
-msgctxt "view:account.tax.template:"
-msgid "Credit Note"
-msgstr "Nota di Credito"
-
-msgctxt "view:account.tax.template:"
-msgid "Invoice"
-msgstr "Fattura"
-
-msgctxt "view:account.tax:"
-msgid "Code"
-msgstr "Codice"
-
-msgctxt "view:account.tax:"
-msgid "Credit Note"
-msgstr "Nota di Credito"
-
-msgctxt "view:account.tax:"
-msgid "Invoice"
-msgstr "Fattura"

@@ -9,8 +9,6 @@ from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
 from trytond.tools.multivalue import migrate_property
 
-__all__ = ['Configuration', 'ConfigurationDefaultAccount',
-    'ConfigurationTaxRounding', 'DefaultTaxRule']
 tax_roundings = [
     ('document', 'Per Document'),
     ('line', 'Per Line'),
@@ -40,13 +38,15 @@ class Configuration(
             domain=[
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ('kind', 'in', ['sale', 'both']),
-                ]))
+                ],
+            help="Default customer tax rule for new parties."))
     default_supplier_tax_rule = fields.MultiValue(fields.Many2One(
             'account.tax.rule', "Default Supplier Tax Rule",
             domain=[
                 ('company', '=', Eval('context', {}).get('company', -1)),
                 ('kind', 'in', ['purchase', 'both']),
-                ]))
+                ],
+            help="Default supplier tax rule for new parties."))
     tax_rounding = fields.MultiValue(fields.Selection(
             tax_roundings, "Tax Rounding"))
 
@@ -89,8 +89,7 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        exist = TableHandler.table_exist(cls._table)
+        exist = backend.TableHandler.table_exist(cls._table)
         super(ConfigurationDefaultAccount, cls).__register__(module_name)
         if not exist:
             cls._migrate_property([], [], [])
@@ -137,9 +136,8 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     def __register__(cls, module_name):
         sql_table = cls.__table__()
         cursor = Transaction().connection.cursor()
-        TableHandler = backend.get('TableHandler')
 
-        exist = TableHandler.table_exist(cls._table)
+        exist = backend.TableHandler.table_exist(cls._table)
         super(ConfigurationTaxRounding, cls).__register__(module_name)
 
         table = cls.__table_handler__(module_name)

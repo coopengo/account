@@ -2,7 +2,7 @@
 <!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
 this repository contains the full copyright notices and license terms. -->
 <tryton>
-    <data group="1">
+    <data grouped="1">
         <record model="ir.message" id="msg_no_period_date">
             <field name="text">To continue, you must create a period for the date "%(date)s".</field>
         </record>
@@ -189,6 +189,9 @@ You may need to cancel its move "%(move)s".</field>
         </record>
         <record model="ir.message" id="msg_group_line_maximum_account">
             <field name="text">You cannot group lines from more than 2 different accounts.</field>
+        </record>
+        <record model="ir.message" id="msg_cancel_line_delegated">
+            <field name="text">The moves "%(moves)s" contain grouped lines, cancelling them will ungroup the lines.</field>
         </record>
     </data>
 </tryton>

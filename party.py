@@ -9,7 +9,7 @@ from sql.conditionals import Coalesce
 from trytond import backend
 from trytond.i18n import gettext
 from trytond.model import ModelSQL, fields
-from trytond.pyson import Eval
+from trytond.pyson import Eval, If
 from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 from trytond.tools import reduce_ids, grouped_slice
@@ -20,7 +20,6 @@ from trytond.modules.party.exceptions import EraseError
 
 from .exceptions import AccountMissing
 
-__all__ = ['Party', 'PartyAccount', 'PartyReplace', 'PartyErase']
 account_names = [
     'account_payable', 'account_receivable',
     'customer_tax_rule', 'supplier_tax_rule']
@@ -32,6 +31,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
     account_payable = fields.MultiValue(fields.Many2One(
             'account.account', "Account Payable",
             domain=[
+                ('closed', '!=', True),
                 ('type.payable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
@@ -42,6 +42,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
     account_receivable = fields.MultiValue(fields.Many2One(
             'account.account', "Account Receivable",
             domain=[
+                ('closed', '!=', True),
                 ('type.receivable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
@@ -265,6 +266,15 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
         if account:
             return account.current()
 
+    @classmethod
+    def view_attributes(cls):
+        return [
+            ('/tree/field[@name="receivable_today"]',
+                'visual', If(Eval('receivable_today', 0) > 0, 'danger', '')),
+            ('/tree/field[@name="payable_today"]',
+                'visual', If(Eval('payable_today', 0) < 0, 'warning', '')),
+            ]
+
 
 class PartyAccount(ModelSQL, CompanyValueMixin):
     "Party Account"
@@ -304,8 +314,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
 
     @classmethod
     def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        exist = TableHandler.table_exist(cls._table)
+        exist = backend.TableHandler.table_exist(cls._table)
 
         super(PartyAccount, cls).__register__(module_name)
 
