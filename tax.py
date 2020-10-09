@@ -1055,7 +1055,9 @@ class _TaxKey(dict):
         self.update(kwargs)
 
     def _key(self):
-        return (self['account'], self['tax'])
+        # JMO : backport https://bugs.tryton.org/issue8759
+        # to be able to fix https://support.coopengo.com/issues/11322
+        return (self['account'], self['tax'], self['base'] >= 0)
 
     def __eq__(self, other):
         if isinstance(other, _TaxKey):
