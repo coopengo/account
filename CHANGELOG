@@ -1,3 +1,5 @@
+* Compute General Ledger timespan on either dates or periods
+
 Version 5.0.6 - 2019-05-16
 * Bug fixes (see mercurial logs for details)
 
