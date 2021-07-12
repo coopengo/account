@@ -1285,26 +1285,25 @@ class AccountParty(ActivePeriodMixin, ModelSQL):
         Account = pool.get('account.account')
         line = Line.__table__()
         account = Account.__table__()
-
-        account_party = line.select(
-                Min(line.id).as_('id'), line.account, line.party,
-                where=line.party != Null,
-                group_by=(line.account, line.party))
-
         columns = []
+        group_by = []
         for fname, field in cls._fields.items():
             if not hasattr(field, 'set'):
-                if fname in {'id', 'account', 'party'}:
-                    column = Column(account_party, fname)
+                if fname == 'id':
+                    column = Min(line.id)
+                elif fname in {'account', 'party'}:
+                    column = Column(line, fname)
                 else:
                     column = Column(account, fname)
                 columns.append(column.as_(fname))
+                if fname != 'id':
+                    group_by.append(column)
         return (
-            account_party.join(
-                account, condition=account_party.account == account.id)
+            line.join(account, condition=line.account == account.id)
             .select(
                 *columns,
-                where=account.party_required))
+                where=(line.party != Null) & account.party_required,
+                group_by=group_by))
 
     @classmethod
     def get_balance(cls, records, name):
