@@ -84,8 +84,6 @@ class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
     "Account Configuration Default Account"
     __name__ = 'account.configuration.default_account'
 
-    configuration = fields.Many2One('account.configuration', 'Configuration',
-        ondelete='CASCADE', select=True)
     default_account_receivable = fields.Many2One(
         'account.account', "Default Account Receivable",
         domain=[
