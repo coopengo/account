@@ -10,7 +10,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.action.act_window"
             id="act_configuration_form">
-            <field name="name">Account Configuration</field>
+            <field name="name">Configuration</field>
             <field name="res_model">account.configuration</field>
         </record>
         <record model="ir.action.act_window.view"
@@ -19,10 +19,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="configuration_view_form"/>
             <field name="act_window" ref="act_configuration_form"/>
         </record>
-        <menuitem parent="menu_account_configuration"
+        <menuitem
+            parent="menu_account_configuration"
             action="act_configuration_form"
+            sequence="0"
             id="menuitem_account_configuration"
-            sequence="0" icon="tryton-list"/>
+            icon="tryton-list"/>
 
         <record model="ir.model.access" id="access_account_configuration">
             <field name="model"

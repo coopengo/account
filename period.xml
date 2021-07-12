@@ -36,25 +36,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="period_view_form"/>
             <field name="act_window" ref="act_period_form"/>
         </record>
-        <menuitem parent="menu_fiscalyear_form"
-            action="act_period_form" id="menu_period_form"
-            sequence="20"/>
+        <menuitem
+            parent="menu_fiscalyear_configuration"
+            action="act_period_form"
+            sequence="20"
+            id="menu_period_form"/>
 
-        <record model="ir.model.access" id="access_period">
-            <field name="model" search="[('model', '=', 'account.period')]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="False"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_delete" eval="False"/>
-        </record>
-        <record model="ir.model.access" id="access_period_account_admin">
-            <field name="model" search="[('model', '=', 'account.period')]"/>
-            <field name="group" ref="group_account_admin"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_delete" eval="True"/>
-        </record>
         <record model="ir.model.button" id="period_close_button">
             <field name="name">close</field>
             <field name="string">Close</field>
@@ -95,19 +82,22 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_period_form_close"/>
         </record>
 
-        <menuitem parent="menu_processing" sequence="30"
-            action="act_period_form_close" id="menu_close_period"/>
+        <menuitem
+            parent="menu_processing"
+            action="act_period_form_close"
+            sequence="30"
+            id="menu_close_period"/>
 
-        <record model="ir.rule.group" id="rule_group_period">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_period_companies">
+            <field name="name">User in companies</field>
             <field name="model" search="[('model', '=', 'account.period')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_period1">
+        <record model="ir.rule" id="rule_period_companies">
             <field name="domain"
-                eval="[('company', '=', Eval('user', {}).get('company', None))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_period"/>
+            <field name="rule_group" ref="rule_group_period_companies"/>
         </record>
     </data>
 </tryton>

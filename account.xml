@@ -8,6 +8,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="res.group" id="group_account_admin">
             <field name="name">Account Administration</field>
+            <field name="parent" ref="group_account"/>
         </record>
         <record model="res.user-res.group" id="user_admin_group_account">
             <field name="user" ref="res.user_admin"/>
@@ -35,7 +36,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="path">icons/tryton-account-block.svg</field>
         </record>
 
-        <menuitem name="Financial" id="menu_account" sequence="2" icon="tryton-account"/>
+        <menuitem
+            name="Financial"
+            id="menu_account"
+            sequence="60"
+            icon="tryton-account"/>
         <record model="ir.ui.menu-res.group" id="menu_account_group_account">
             <field name="menu" ref="menu_account"/>
             <field name="group" ref="group_account"/>
@@ -45,25 +50,48 @@ this repository contains the full copyright notices and license terms. -->
             <field name="group" ref="group_account_admin"/>
         </record>
 
-        <menuitem name="Configuration" parent="menu_account" id="menu_account_configuration" sequence="10" icon="tryton-settings"/>
+        <menuitem
+            name="Configuration"
+            parent="menu_account"
+            sequence="0"
+            id="menu_account_configuration"
+            icon="tryton-settings"/>
         <record model="ir.ui.menu-res.group"
             id="menu_account_configuration_group_account_admin">
             <field name="menu" ref="menu_account_configuration"/>
             <field name="group" ref="group_account_admin"/>
         </record>
 
-        <menuitem name="Templates" parent="menu_account_configuration"
-            id="menu_templates" sequence="5"/>
-        <menuitem name="General Account" parent="menu_account_configuration"
+        <menuitem
+            name="Templates"
+            parent="menu_account_configuration"
+            sequence="10"
+            id="menu_templates"/>
+        <menuitem
+            name="General Account"
+            parent="menu_account_configuration"
+            sequence="20"
             id="menu_general_account_configuration"/>
-        <menuitem name="Entries" parent="menu_account"
-            id="menu_entries" sequence="30"/>
-        <menuitem name="Charts" parent="menu_account"
-            id="menu_charts" sequence="40"/>
-        <menuitem name="Processing" parent="menu_account"
-            id="menu_processing" sequence="50"/>
-        <menuitem name="Reporting" parent="menu_account"
-            id="menu_reporting" sequence="60"/>
+        <menuitem
+            name="Entries"
+            parent="menu_account"
+            sequence="30"
+            id="menu_entries"/>
+        <menuitem
+            name="Charts"
+            parent="menu_account"
+            sequence="40"
+            id="menu_charts"/>
+        <menuitem
+            name="Processing"
+            parent="menu_account"
+            sequence="50"
+            id="menu_processing"/>
+        <menuitem
+            name="Reporting"
+            parent="menu_account"
+            sequence="100"
+            id="menu_reporting"/>
 
         <record model="ir.ui.view" id="account_type_template_view_form">
             <field name="model">account.account.type.template</field>
@@ -84,7 +112,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">account_type_template_tree</field>
         </record>
         <record model="ir.action.act_window" id="act_account_type_template_tree">
-            <field name="name">Account Type Templates</field>
+            <field name="name">Types</field>
             <field name="res_model">account.account.type.template</field>
             <field name="domain" eval="[('parent', '=', None)]" pyson="1"/>
         </record>
@@ -100,11 +128,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_type_template_view_form"/>
             <field name="act_window" ref="act_account_type_template_tree"/>
         </record>
-        <menuitem parent="menu_templates"
+        <menuitem
+            parent="menu_templates"
             action="act_account_type_template_tree"
-            id="menu_account_type_template_tree"
-            sequence="10"/>
-
+            sequence="10"
+            id="menu_account_type_template_tree"/>
 
         <record model="ir.ui.view" id="account_type_view_form">
             <field name="model">account.account.type</field>
@@ -140,8 +168,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_type_view_form"/>
             <field name="act_window" ref="act_account_type_tree"/>
         </record>
-        <menuitem parent="menu_general_account_configuration"
-            action="act_account_type_tree" id="menu_account_type_tree"/>
+        <menuitem
+            parent="menu_general_account_configuration"
+            action="act_account_type_tree"
+            sequence="10"
+            id="menu_account_type_tree"/>
 
         <record model="ir.action.act_window" id="act_account_type_list">
             <field name="name">Account Types</field>
@@ -157,9 +188,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_type_view_form"/>
             <field name="act_window" ref="act_account_type_list"/>
         </record>
-        <menuitem parent="menu_account_type_tree"
-            action="act_account_type_list" id="menu_account_type_list"
-            sequence="10"/>
+        <menuitem
+            parent="menu_account_type_tree"
+            action="act_account_type_list"
+            sequence="10"
+            id="menu_account_type_list"/>
 
         <record model="ir.model.access" id="access_account_type">
             <field name="model" search="[('model', '=', 'account.account.type')]"/>
@@ -177,17 +210,30 @@ this repository contains the full copyright notices and license terms. -->
             <field name="perm_delete" eval="True"/>
         </record>
 
-        <record model="ir.rule.group" id="rule_group_account_type">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_account_type_companies">
+            <field name="name">User in companies</field>
             <field name="model"
                 search="[('model', '=', 'account.account.type')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_account_type1">
+        <record model="ir.rule" id="rule_account_type_companies">
             <field name="domain"
-                eval="[('company', 'in', Eval('user', {}).get('companies', []))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_account_type"/>
+            <field name="rule_group" ref="rule_group_account_type_companies"/>
+        </record>
+
+        <record model="ir.action.report" id="report_account_type_statement">
+            <field name="name">Statement</field>
+            <field name="records">listed</field>
+            <field name="model">account.account.type</field>
+            <field name="report_name">account.account.type.statement</field>
+            <field name="report">account/type_statement.fodt</field>
+        </record>
+        <record model="ir.action.keyword" id="report_account_type_statement_keyword">
+            <field name="keyword">form_print</field>
+            <field name="model">account.account.type,-1</field>
+            <field name="action" ref="report_account_type_statement"/>
         </record>
 
         <record model="ir.ui.view" id="account_template_view_form">
@@ -209,7 +255,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">account_template_tree</field>
         </record>
         <record model="ir.action.act_window" id="act_account_template_tree">
-            <field name="name">Account Templates</field>
+            <field name="name">Accounts</field>
             <field name="res_model">account.account.template</field>
             <field name="domain" eval="[('parent', '=', None)]" pyson="1"/>
         </record>
@@ -223,9 +269,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_template_view_form"/>
             <field name="act_window" ref="act_account_template_tree"/>
         </record>
-        <menuitem parent="menu_templates"
-            action="act_account_template_tree" id="menu_account_template_tree"
-            sequence="20"/>
+        <menuitem
+            parent="menu_templates"
+            action="act_account_template_tree"
+            sequence="20"
+            id="menu_account_template_tree"/>
         <record model="ir.model.access" id="access_account_template">
             <field name="model" search="[('model', '=', 'account.account.template')]"/>
             <field name="perm_read" eval="True"/>
@@ -267,9 +315,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Create Chart of Accounts from Template</field>
             <field name="wiz_name">account.create_chart</field>
         </record>
-        <menuitem parent="menu_templates"
-            action="wizard_create_chart" id="menu_create_chart"
-            sequence="90"/>
+        <menuitem
+            parent="menu_templates"
+            action="wizard_create_chart"
+            sequence="90"
+            id="menu_create_chart"/>
         <record model="ir.module.config_wizard.item"
             id="config_wizard_item_chart_account">
             <field name="action" ref="wizard_create_chart"/>
@@ -291,9 +341,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Update Chart of Accounts from Template</field>
             <field name="wiz_name">account.update_chart</field>
         </record>
-        <menuitem parent="menu_templates"
-            action="wizard_update_chart" id="menu_update_chart"
-            sequence="100"/>
+        <menuitem
+            parent="menu_templates"
+            action="wizard_update_chart"
+            sequence="90"
+            id="menu_update_chart"/>
 
         <record model="ir.ui.view" id="account_view_form">
             <field name="model">account.account</field>
@@ -329,8 +381,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_view_form"/>
             <field name="act_window" ref="act_account_tree"/>
         </record>
-        <menuitem parent="menu_general_account_configuration"
-            action="act_account_tree" id="menu_account_tree"/>
+        <menuitem
+            parent="menu_general_account_configuration"
+            action="act_account_tree"
+            sequence="20"
+            id="menu_account_tree"/>
 
         <record model="ir.action.act_window" id="act_account_list">
             <field name="name">Accounts</field>
@@ -346,9 +401,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_view_form"/>
             <field name="act_window" ref="act_account_list"/>
         </record>
-        <menuitem parent="menu_account_tree"
-            action="act_account_list" id="menu_account_list"
-            sequence="10"/>
+        <menuitem
+            parent="menu_account_tree"
+            action="act_account_list"
+            sequence="10"
+            id="menu_account_list"/>
 
         <record model="ir.ui.view" id="account_view_list_balance_sheet">
             <field name="model">account.account</field>
@@ -364,7 +421,7 @@ this repository contains the full copyright notices and license terms. -->
                 eval="[('company', '=', Eval('company', -1))]"
                 pyson="1"/>
             <field name="domain"
-                eval="[['OR', ('type', 'child_of', Eval('active_id'), 'parent'), ('debit_type', 'child_of', Eval('active_id'), 'parent')], ('type', '!=', None)]"
+                eval="[['OR', ('type', 'child_of', Eval('active_id'), 'parent'), ('debit_type', 'child_of', Eval('active_id'), 'parent')], ('type', '!=', None), ('closed', '!=', True)]"
                 pyson="1"/>
         </record>
         <record model="ir.action.act_window.view" id="act_account_list2_view1">
@@ -408,8 +465,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Open Chart of Accounts</field>
             <field name="wiz_name">account.open_chart</field>
         </record>
-        <menuitem parent="menu_charts" action="act_open_chart"
-            icon="tryton-tree" id="menu_open_chart"/>
+        <menuitem
+            parent="menu_charts"
+            action="act_open_chart"
+            sequence="10"
+            id="menu_open_chart"
+            icon="tryton-tree"/>
 
         <record model="ir.model.access" id="access_account">
             <field name="model" search="[('model', '=', 'account.account')]"/>
@@ -427,16 +488,16 @@ this repository contains the full copyright notices and license terms. -->
             <field name="perm_delete" eval="True"/>
         </record>
 
-        <record model="ir.rule.group" id="rule_group_account">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_account_companies">
+            <field name="name">User in companies</field>
             <field name="model" search="[('model', '=', 'account.account')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_account1">
+        <record model="ir.rule" id="rule_account_companies">
             <field name="domain"
-                eval="[('company', 'in', Eval('user', {}).get('companies', []))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_account"/>
+            <field name="rule_group" ref="rule_group_account_companies"/>
         </record>
 
         <record model="ir.ui.view" id="open_chart_start_view_form">
@@ -447,6 +508,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="ir.action.report" id="report_general_ledger">
             <field name="name">General Ledger</field>
+            <field name="records">listed</field>
             <field name="model">account.general_ledger.account</field>
             <field name="report_name">account.general_ledger</field>
             <field name="report">account/general_ledger.fodt</field>
@@ -459,6 +521,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="ir.action.report" id="report_trial_balance">
             <field name="name">Trial Balance</field>
+            <field name="records">listed</field>
             <field name="model">account.general_ledger.account</field>
             <field name="report_name">account.trial_balance</field>
             <field name="report">account/trial_balance.fodt</field>
@@ -486,8 +549,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="general_ledger_account_view_list"/>
             <field name="act_window" ref="act_general_ledger_account_form"/>
         </record>
-        <menuitem parent="menu_reporting" action="act_general_ledger_account_form"
-            id="menu_general_ledger" name="General Ledger" sequence="10"/>
+        <menuitem
+            name="General Ledger"
+            parent="menu_reporting"
+            action="act_general_ledger_account_form"
+            sequence="10"
+            id="menu_general_ledger"/>
 
         <record model="ir.action.act_window" id="act_account_general_ledger">
             <field name="name">Accounts</field>
@@ -524,17 +591,99 @@ this repository contains the full copyright notices and license terms. -->
             <field name="perm_delete" eval="False"/>
         </record>
 
-        <record model="ir.rule.group" id="rule_group_general_ledger_account">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_general_ledger_account_companies">
+            <field name="name">User in companies</field>
             <field name="model"
                 search="[('model', '=', 'account.general_ledger.account')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_general_ledger_account1">
+        <record model="ir.rule" id="rule_general_ledger_account_companies">
             <field name="domain"
-                eval="[('company', 'in', Eval('user', {}).get('companies', []))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_general_ledger_account"/>
+            <field name="rule_group" ref="rule_group_general_ledger_account_companies"/>
+        </record>
+
+        <record model="ir.ui.view" id="general_ledger_account_party_view_list">
+            <field name="model">account.general_ledger.account.party</field>
+            <field name="inherit" ref="general_ledger_account_view_list"/>
+            <field name="name">general_ledger_account_party_list</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_general_ledger_account_party_form">
+            <field name="name">General Ledger - Account Parties</field>
+            <field name="res_model">account.general_ledger.account.party</field>
+            <field name="context_model">account.general_ledger.account.context</field>
+            <field
+                name="domain"
+                eval="[If(Eval('active_ids', []) == [Eval('active_id')], ('account', '=', Eval('active_id')), ('account', 'in', Eval('active_ids')))]"
+                pyson="1"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_general_ledger_account_party_form_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="general_ledger_account_party_view_list"/>
+            <field name="act_window" ref="act_general_ledger_account_party_form"/>
+        </record>
+        <record model="ir.action.keyword" id="act_general_ledger_account_party_form_keyword1">
+            <field name="keyword">tree_open</field>
+            <field name="model">account.general_ledger.account,-1</field>
+            <field name="action" ref="act_general_ledger_account_party_form"/>
+        </record>
+
+        <record model="ir.action.wizard" id="act_general_ledger_account_party_open">
+            <field name="name">Open General Ledger Account Parties</field>
+            <field name="wiz_name">account.general_ledger.account.party.open</field>
+        </record>
+        <record model="ir.action.keyword" id="act_general_ledger_account_party_open_keyword1">
+            <field name="keyword">tree_open</field>
+            <field name="model">account.general_ledger.account.party,-1</field>
+            <field name="action" ref="act_general_ledger_account_party_open"/>
+        </record>
+
+        <record model="ir.action.act_window" id="act_general_ledger_account_party_form_party">
+            <field name="name">Accounts</field>
+            <field name="res_model">account.general_ledger.account.party</field>
+            <field name="context_model">account.general_ledger.account.context</field>
+            <field name="domain" eval="[('party', 'in', Eval('active_ids'))]" pyson="1"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_general_ledger_account_party_form_party_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="general_ledger_account_party_view_list"/>
+            <field name="act_window" ref="act_general_ledger_account_party_form_party"/>
+        </record>
+        <record model="ir.action.keyword" id="act_general_ledger_account_party_form_party_relate_keyword1">
+            <field name="keyword">form_relate</field>
+            <field name="model">party.party,-1</field>
+            <field name="action" ref="act_general_ledger_account_party_form_party"/>
+        </record>
+
+        <record model="ir.model.access" id="access_general_ledger_account_party">
+            <field name="model" search="[('model', '=', 'account.general_ledger.account.party')]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+        <record model="ir.model.access" id="access_general_ledger_account_account_party">
+            <field name="model" search="[('model', '=', 'account.general_ledger.account.party')]"/>
+            <field name="group" ref="group_account"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+
+        <record model="ir.rule.group" id="rule_group_general_ledger_account_party_companies">
+            <field name="name">User in companies</field>
+            <field name="model" search="[('model', '=', 'account.general_ledger.account.party')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_general_ledger_account_party_companies">
+            <field
+                name="domain"
+                eval="[('company', 'in', Eval('companies', []))]"
+                pyson="1"/>
+            <field name="rule_group" ref="rule_group_general_ledger_account_party_companies"/>
         </record>
 
         <record model="ir.ui.view" id="general_ledger_line_view_list">
@@ -563,33 +712,17 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <!-- TODO relate from account -->
 
-        <record model="ir.model.access" id="access_general_ledger_line">
-            <field name="model" search="[('model', '=', 'account.general_ledger.line')]"/>
-            <field name="perm_read" eval="False"/>
-            <field name="perm_write" eval="False"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_delete" eval="False"/>
-        </record>
-        <record model="ir.model.access" id="access_general_ledger_line_account">
-            <field name="model" search="[('model', '=', 'account.general_ledger.line')]"/>
-            <field name="group" ref="group_account"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="False"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_delete" eval="False"/>
-        </record>
-
-        <record model="ir.rule.group" id="rule_group_general_ledger_line">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_general_ledger_line_companies">
+            <field name="name">User in companies</field>
             <field name="model"
                 search="[('model', '=', 'account.general_ledger.line')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_general_ledger_line1">
+        <record model="ir.rule" id="rule_general_ledger_line_companies">
             <field name="domain"
-                eval="[('company', 'in', Eval('user', {}).get('companies', []))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_general_ledger_line"/>
+            <field name="rule_group" ref="rule_group_general_ledger_line_companies"/>
         </record>
 
         <record model="ir.ui.view" id="general_ledger_account_context_view_form">
@@ -628,7 +761,10 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_account_balance_sheet_tree"/>
         </record>
 
-        <menuitem parent="menu_reporting" action="act_account_balance_sheet_tree"
+        <menuitem
+            parent="menu_reporting"
+            action="act_account_balance_sheet_tree"
+            sequence="20"
             id="menu_open_balance_sheet"/>
 
         <record model="ir.ui.view" id="balance_sheet_context_view_form">
@@ -666,7 +802,10 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_account_income_statement_tree"/>
         </record>
 
-        <menuitem parent="menu_reporting" action="act_account_income_statement_tree"
+        <menuitem
+            parent="menu_reporting"
+            action="act_account_income_statement_tree"
+            sequence="20"
             id="menu_open_income_statement"/>
 
         <record model="ir.ui.view" id="income_statement_context_view_form">
@@ -691,7 +830,10 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_aged_balance_list"/>
         </record>
 
-        <menuitem parent="menu_reporting" action="act_aged_balance_list"
+        <menuitem
+            parent="menu_reporting"
+            action="act_aged_balance_list"
+            sequence="50"
             id="menu_aged_balance"/>
 
         <record model="ir.model.access" id="access_aged_balance">
@@ -710,16 +852,16 @@ this repository contains the full copyright notices and license terms. -->
             <field name="perm_delete" eval="False"/>
         </record>
 
-        <record model="ir.rule.group" id="rule_group_aged_balance">
-            <field name="name">User in company</field>
+        <record model="ir.rule.group" id="rule_group_aged_balance_companies">
+            <field name="name">User in companies</field>
             <field name="model" search="[('model', '=', 'account.aged_balance')]"/>
             <field name="global_p" eval="True"/>
         </record>
-        <record model="ir.rule" id="rule_aged_balance1">
+        <record model="ir.rule" id="rule_aged_balance_companies">
             <field name="domain"
-                eval="[('company', 'in', Eval('user', {}).get('companies', []))]"
+                eval="[('company', 'in', Eval('companies', []))]"
                 pyson="1"/>
-            <field name="rule_group" ref="rule_group_aged_balance"/>
+            <field name="rule_group" ref="rule_group_aged_balance_companies"/>
         </record>
 
         <record model="ir.ui.view" id="aged_balance_context_view_form">

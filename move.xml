@@ -33,8 +33,24 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="move_view_form"/>
             <field name="act_window" ref="act_move_form"/>
         </record>
-        <menuitem parent="menu_entries" action="act_move_form"
+        <menuitem
+            parent="menu_entries"
+            action="act_move_form"
+            sequence="50"
             id="menu_move_form"/>
+
+        <record model="ir.rule.group" id="rule_group_move_companies">
+            <field name="name">User in companies</field>
+            <field name="model"
+                search="[('model', '=', 'account.move')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_move_companies">
+            <field name="domain"
+                eval="[('company', 'in', Eval('companies', []))]"
+                pyson="1"/>
+            <field name="rule_group" ref="rule_group_move_companies"/>
+        </record>
 
         <record model="ir.model.access" id="access_move">
             <field name="model" search="[('model', '=', 'account.move')]"/>
@@ -66,7 +82,6 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.sequence.type" id="sequence_type_account_move">
             <field name="name">Account Move</field>
-            <field name="code">account.move</field>
         </record>
         <record model="ir.sequence.type-res.group"
             id="sequence_type_account_move_group_admin">
@@ -103,6 +118,19 @@ this repository contains the full copyright notices and license terms. -->
             <field name="action" ref="act_move_reconciliation_lines"/>
         </record>
 
+        <record model="ir.rule.group" id="rule_group_move_reconciliation_companies">
+            <field name="name">User in companies</field>
+            <field name="model"
+                search="[('model', '=', 'account.move.reconciliation')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_move_reconciliation_companies">
+            <field name="domain"
+                eval="[('company', 'in', Eval('companies', []))]"
+                pyson="1"/>
+            <field name="rule_group" ref="rule_group_move_reconciliation_companies"/>
+        </record>
+
         <record model="ir.model.access" id="access_move_reconciliation">
             <field name="model" search="[('model', '=', 'account.move.reconciliation')]"/>
             <field name="perm_read" eval="False"/>
@@ -128,7 +156,6 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.sequence.type" id="sequence_type_account_move_reconciliation">
             <field name="name">Account Move Reconciliation</field>
-            <field name="code">account.move.reconciliation</field>
         </record>
         <record model="ir.sequence.type-res.group"
             id="sequence_type_account_move_reconciliation_group_admin">
@@ -143,7 +170,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="ir.sequence" id="sequence_account_move_reconciliation">
             <field name="name">Default Account Move Reconciliation</field>
-            <field name="code">account.move.reconciliation</field>
+            <field name="sequence_type" ref="sequence_type_account_move_reconciliation"/>
         </record>
 
         <record model="ir.ui.view" id="move_line_view_form">
@@ -211,7 +238,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Payable/Receivable Lines</field>
             <field name="res_model">account.move.line</field>
             <field name="domain"
-                eval="[['OR', ('account.type.receivable', '=', True), ('account.type.payable', '=', True)], If(Eval('active_ids', []) == [Eval('active_id')], ('party', '=', Eval('active_id')), ('party', 'in', Eval('active_ids')))]"
+                eval="[['OR', ('account.type.receivable', '=', True), ('account.type.payable', '=', True)], If(Eval('active_ids', []) == [Eval('active_id')], ('party', '=', Eval('active_id')), ('party', 'in', Eval('active_ids'))), ('company', '=', Eval('context', {}).get('company', -1))]"
                 pyson="1"/>
             <field name="search_value"
                 eval="[('reconciliation', '=', None)]" pyson="1"/>
@@ -272,23 +299,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="model">account.journal.period,-1</field>
             <field name="action" ref="act_open_journal"/>
         </record>
-        <menuitem parent="menu_entries" action="act_open_journal"
-            icon="tryton-list" id="menu_open_journal"/>
-        <record model="ir.model.access" id="access_move_line">
-            <field name="model" search="[('model', '=', 'account.move.line')]"/>
-            <field name="perm_read" eval="False"/>
-            <field name="perm_write" eval="False"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_delete" eval="False"/>
-        </record>
-        <record model="ir.model.access" id="access_move_line_account">
-            <field name="model" search="[('model', '=', 'account.move.line')]"/>
-            <field name="group" ref="group_account"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_delete" eval="True"/>
-        </record>
+        <menuitem
+            parent="menu_entries"
+            action="act_open_journal"
+            sequence="20"
+            id="menu_open_journal"
+            icon="tryton-list"/>
 
         <record model="ir.ui.view" id="reconcile_lines_writeoff_view_form">
             <field name="model">account.move.reconcile_lines.writeoff</field>
@@ -323,7 +339,10 @@ this repository contains the full copyright notices and license terms. -->
             <field name="wiz_name">account.reconcile</field>
             <field name="window" eval="True"/>
         </record>
-        <menuitem parent="menu_processing" action="act_reconcile"
+        <menuitem
+            parent="menu_processing"
+            action="act_reconcile"
+            sequence="20"
             id="menu_reconcile"/>
 
         <record model="ir.ui.view" id="reconcile_show_view_form">
@@ -372,9 +391,24 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="reconcile_writeoff_view_form"/>
             <field name="act_window" ref="act_reconcile_writeoff_form"/>
         </record>
-        <menuitem parent="menu_journal_configuration"
+        <menuitem
+            parent="menu_journal_configuration"
             action="act_reconcile_writeoff_form"
+            sequence="20"
             id="menu_reconcile_writeoff_form"/>
+
+        <record model="ir.rule.group" id="rule_group_reconcile_writeoff_companies">
+            <field name="name">User in companies</field>
+            <field name="model"
+                search="[('model', '=', 'account.move.reconcile.write_off')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_reconcile_writeoff_companies">
+            <field name="domain"
+                eval="[('company', 'in', Eval('companies', []))]"
+                pyson="1"/>
+            <field name="rule_group" ref="rule_group_reconcile_writeoff_companies"/>
+        </record>
 
         <record model="ir.model.access" id="access_reconcile_writeoff">
             <field name="model" search="[('model', '=', 'account.move.reconcile.write_off')]"/>
@@ -408,25 +442,18 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">move_line_group_start_form</field>
         </record>
 
-        <record model="ir.ui.view" id="print_general_journal_start_view_form">
-            <field name="model">account.move.print_general_journal.start</field>
-            <field name="type">form</field>
-            <field name="name">print_general_journal_start_form</field>
-        </record>
-
-        <record model="ir.action.wizard" id="wizard_print_general_journal">
-            <field name="name">Print General Journal</field>
-            <field name="wiz_name">account.move.print_general_journal</field>
-        </record>
-        <menuitem parent="menu_reporting" action="wizard_print_general_journal"
-            id="menu_print_general_journal" icon="tryton-print"/>
-
         <record model="ir.action.report" id="report_general_journal">
             <field name="name">General Journal</field>
             <field name="model">account.move</field>
             <field name="report_name">account.move.general_journal</field>
             <field name="report">account/general_journal.fodt</field>
         </record>
+        <record model="ir.action.keyword" id="report_general_journal_keyword">
+            <field name="keyword">form_print</field>
+            <field name="model">account.move,-1</field>
+            <field name="action" ref="report_general_journal"/>
+        </record>
+
         <record model="ir.action.act_window" id="act_move_form_grouping">
             <field name="name">Grouped Account Move</field>
             <field name="res_model">account.move</field>

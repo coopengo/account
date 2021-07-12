@@ -15,7 +15,7 @@ Imports::
     ...     create_chart, get_accounts
     >>> today = datetime.date.today()
 
-Install account::
+Activate modules::
 
     >>> config = activate_modules('account')
 
@@ -84,6 +84,8 @@ Create a moves::
 Print some reports::
 
     >>> GeneralLedgerAccount = Model.get('account.general_ledger.account')
+    >>> GeneralLedgerAccountParty = Model.get(
+    ...     'account.general_ledger.account.party')
     >>> gl_accounts = GeneralLedgerAccount.find([])
     >>> _ = [(l.balance, l.party_required) for gl in gl_accounts
     ...     for l in gl.lines]
@@ -100,8 +102,12 @@ Print some reports::
     ...     }
     >>> with config.set_context(context):
     ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('name', '=', revenue.name),
+    ...           ('account', '=', revenue.id),
     ...           ])
+    ...     glp_receivable, = GeneralLedgerAccountParty.find([
+    ...             ('account', '=', receivable.id),
+    ...             ('party', '=', party.id),
+    ...             ])
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -110,6 +116,14 @@ Print some reports::
     Decimal('0.00')
     >>> gl_revenue.end_balance
     Decimal('-10.00')
+    >>> glp_receivable.start_balance
+    Decimal('0.00')
+    >>> glp_receivable.credit
+    Decimal('10.00')
+    >>> glp_receivable.debit
+    Decimal('10.00')
+    >>> glp_receivable.end_balance
+    Decimal('0.00')
 
     >>> context = {
     ...     'company': company.id,
@@ -119,8 +133,12 @@ Print some reports::
     ...     }
     >>> with config.set_context(context):
     ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('name', '=', revenue.name),
+    ...           ('account', '=', revenue.id),
     ...           ])
+    ...     glp_receivable, = GeneralLedgerAccountParty.find([
+    ...             ('account', '=', receivable.id),
+    ...             ('party', '=', party.id),
+    ...             ])
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -129,6 +147,14 @@ Print some reports::
     Decimal('0.00')
     >>> gl_revenue.end_balance
     Decimal('-10.00')
+    >>> glp_receivable.start_balance
+    Decimal('0.00')
+    >>> glp_receivable.credit
+    Decimal('10.00')
+    >>> glp_receivable.debit
+    Decimal('10.00')
+    >>> glp_receivable.end_balance
+    Decimal('0.00')
 
     >>> context = {
     ...     'company': company.id,
@@ -137,7 +163,7 @@ Print some reports::
     ...     }
     >>> with config.set_context(context):
     ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('name', '=', revenue.name),
+    ...           ('account', '=', revenue.id),
     ...           ])
     >>> gl_revenue.start_balance
     Decimal('-10.00')
@@ -153,6 +179,10 @@ Print some reports::
     ...     'fiscalyear': fiscalyear.id,
     ...     })
     >>> _ = trial_balance.execute(gl_accounts)
+
+    >>> Type = Model.get('account.account.type')
+    >>> statement = Report('account.account.type.statement')
+    >>> _ = statement.execute(Type.find([]))
 
     >>> AgedBalance = Model.get('account.aged_balance')
     >>> context = {
@@ -170,8 +200,8 @@ Print some reports::
     >>> aged_balance = Report('account.aged_balance', context=context)
     >>> _ = aged_balance.execute(aged_balances)
 
-    >>> print_general_journal = Wizard('account.move.print_general_journal')
-    >>> print_general_journal.execute('print_')
+    >>> general_journal = Report('account.move.general_journal')
+    >>> _ = general_journal.execute(Move.find([]))
 
     >>> with config.set_context(
     ...         start_date=period.start_date,

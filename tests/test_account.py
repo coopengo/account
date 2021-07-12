@@ -13,8 +13,9 @@ from trytond.tests.test_tryton import doctest_checker
 from trytond.transaction import Transaction
 from trytond.exceptions import UserError
 
-from trytond.modules.company.tests import create_company, set_company
 from trytond.modules.account.tax import TaxableMixin
+from trytond.modules.company.tests import (
+    create_company, set_company, PartyCompanyCheckEraseMixin, CompanyTestMixin)
 from trytond.modules.currency.tests import create_currency
 
 
@@ -69,10 +70,12 @@ def create_chart(company, tax=False, chart='account.account_template_root_en'):
     create_chart.transition_create_account()
     receivable, = Account.search([
             ('type.receivable', '=', True),
+            ('party_required', '=', True),
             ('company', '=', company.id),
             ], limit=1)
     payable, = Account.search([
             ('type.payable', '=', True),
+            ('party_required', '=', True),
             ('company', '=', company.id),
             ], limit=1)
     create_chart.properties.company = company
@@ -84,6 +87,7 @@ def create_chart(company, tax=False, chart='account.account_template_root_en'):
 def get_fiscalyear(company, today=None, start_date=None, end_date=None):
     pool = Pool()
     Sequence = pool.get('ir.sequence')
+    SequenceType = pool.get('ir.sequence.type')
     FiscalYear = pool.get('account.fiscalyear')
 
     if not today:
@@ -93,9 +97,12 @@ def get_fiscalyear(company, today=None, start_date=None, end_date=None):
     if not end_date:
         end_date = today.replace(month=12, day=31)
 
+    sequence_type, = SequenceType.search([
+            ('name', '=', "Account Move"),
+            ], limit=1)
     sequence, = Sequence.create([{
                 'name': '%s' % today.year,
-                'code': 'account.move',
+                'sequence_type': sequence_type.id,
                 'company': company.id,
                 }])
     fiscalyear = FiscalYear(name='%s' % today.year, company=company)
@@ -119,8 +126,8 @@ def close_fiscalyear(fiscalyear):
 
     # Balance non-deferral
     journal_sequence, = Sequence.search([
-            ('code', '=', 'account.journal'),
-            ])
+            ('sequence_type.name', '=', "Account Journal"),
+            ], limit=1)
     journal_closing, = Journal.create([{
                 'name': 'Closing',
                 'code': 'CLO',
@@ -167,7 +174,8 @@ def close_fiscalyear(fiscalyear):
     FiscalYear.close([fiscalyear])
 
 
-class AccountTestCase(ModuleTestCase):
+class AccountTestCase(
+        PartyCompanyCheckEraseMixin, CompanyTestMixin, ModuleTestCase):
     'Test Account module'
     module = 'account'
 
@@ -1026,7 +1034,7 @@ class AccountTestCase(ModuleTestCase):
             taxable = self.Taxable(
                 currency=currency,
                 taxable_lines=[
-                    ([tax], Decimal('1.001'), 1),
+                    ([tax], Decimal('1.001'), 1, None),
                     ] * 100)
 
             taxes = taxable._get_taxes()
@@ -1062,7 +1070,7 @@ class AccountTestCase(ModuleTestCase):
             taxable = Taxable(
                 currency=currency,
                 taxable_lines=[
-                    ([tax], Decimal('1.001'), 1),
+                    ([tax], Decimal('1.001'), 1, None),
                     ] * 100)
 
             taxes = taxable._get_taxes()
@@ -1285,6 +1293,70 @@ class AccountTestCase(ModuleTestCase):
                                         }])],
                         }])
             self.assertListEqual(tax_rule.apply(tax, {}), [target_tax.id])
+
+    @with_transaction()
+    def test_tax_rule_start_date(self):
+        "Test tax rule start date"
+        pool = Pool()
+        TaxRule = pool.get('account.tax.rule')
+        Tax = pool.get('account.tax')
+        Date = pool.get('ir.date')
+
+        today = Date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        tomorrow = today + datetime.timedelta(days=1)
+        company = create_company()
+        with set_company(company):
+            create_chart(company, tax=True)
+            tax, = Tax.search([])
+            target_tax, = Tax.copy([tax])
+
+            tax_rule, = TaxRule.create([{
+                        'name': "Test",
+                        'kind': 'both',
+                        'lines': [('create', [{
+                                        'start_date': today,
+                                        'tax': target_tax.id,
+                                        }])],
+                        }])
+
+            self.assertListEqual(tax_rule.apply(tax, {}), [target_tax.id])
+            self.assertListEqual(
+                tax_rule.apply(tax, {'date': yesterday}), [tax.id])
+            self.assertListEqual(
+                tax_rule.apply(tax, {'date': tomorrow}), [target_tax.id])
+
+    @with_transaction()
+    def test_tax_rule_end_date(self):
+        "Test tax rule end date"
+        pool = Pool()
+        TaxRule = pool.get('account.tax.rule')
+        Tax = pool.get('account.tax')
+        Date = pool.get('ir.date')
+
+        today = Date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        tomorrow = today + datetime.timedelta(days=1)
+        company = create_company()
+        with set_company(company):
+            create_chart(company, tax=True)
+            tax, = Tax.search([])
+            target_tax, = Tax.copy([tax])
+
+            tax_rule, = TaxRule.create([{
+                        'name': "Test",
+                        'kind': 'both',
+                        'lines': [('create', [{
+                                        'end_date': today,
+                                        'tax': target_tax.id,
+                                        }])],
+                        }])
+
+            self.assertListEqual(tax_rule.apply(tax, {}), [target_tax.id])
+            self.assertListEqual(
+                tax_rule.apply(tax, {'date': yesterday}), [target_tax.id])
+            self.assertListEqual(
+                tax_rule.apply(tax, {'date': tomorrow}), [tax.id])
 
     @with_transaction()
     def test_tax_rule_keep_origin(self):
@@ -1542,6 +1614,34 @@ class AccountTestCase(ModuleTestCase):
                 for record in Model.search([]):
                     self.assertNotEqual(record.name, new_name)
 
+    @with_transaction()
+    def test_update_inactive(self):
+        "Test update chart of accounts with inactive account"
+        pool = Pool()
+        Account = pool.get('account.account')
+        UpdateChart = pool.get('account.update_chart', type='wizard')
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company, tax=True)
+            root, = Account.search([('parent', '=', None)])
+
+            cash, = Account.search([('name', '=', 'Main Cash')])
+            cash.template_override = True
+            cash.end_date = datetime.date.min
+            cash.save()
+            self.assertFalse(cash.active)
+
+            session_id, _, _ = UpdateChart.create()
+            update_chart = UpdateChart(session_id)
+            update_chart.start.account = root
+            update_chart.transition_update()
+
+            with Transaction().set_context(active_test=False):
+                self.assertEqual(
+                    Account.search([('name', '=', 'Main Cash')], count=True),
+                    1)
+
 
 def suite():
     suite = trytond.tests.test_tryton.suite()
@@ -1584,6 +1684,11 @@ def suite():
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     suite.addTests(doctest.DocFileSuite(
             'scenario_account_active.rst',
+            tearDown=doctest_teardown, encoding='utf-8',
+            checker=doctest_checker,
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+    suite.addTests(doctest.DocFileSuite(
+            'scenario_tax_code.rst',
             tearDown=doctest_teardown, encoding='utf-8',
             checker=doctest_checker,
             optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))

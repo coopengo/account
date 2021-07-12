@@ -9,7 +9,7 @@ from trytond.i18n import gettext
 from trytond.model import (
     ModelView, ModelSQL, Workflow, DeactivableMixin, fields, Unique)
 from trytond.model.exceptions import AccessError
-from trytond.pyson import Eval, Bool
+from trytond.pyson import Eval, Bool, Id
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import reduce_ids, grouped_slice, lstrip_wildcard
@@ -40,7 +40,8 @@ class Journal(
     sequence = fields.MultiValue(fields.Many2One(
             'ir.sequence', "Sequence",
             domain=[
-                ('code', '=', 'account.journal'),
+                ('sequence_type', '=',
+                    Id('account', 'sequence_type_account_journal')),
                 ('company', 'in', [
                         Eval('context', {}).get('company', -1), None]),
                 ],
@@ -137,7 +138,7 @@ class Journal(
                     where=where & red_sql,
                     group_by=move.journal)
             cursor.execute(*query)
-            for journal_id, debit, credit in cursor.fetchall():
+            for journal_id, debit, credit in cursor:
                 # SQLite uses float for SUM
                 if not isinstance(debit, Decimal):
                     debit = Decimal(str(debit))
@@ -154,11 +155,16 @@ class JournalSequence(ModelSQL, CompanyValueMixin):
     "Journal Sequence"
     __name__ = 'account.journal.sequence'
     journal = fields.Many2One(
-        'account.journal', "Journal", ondelete='CASCADE', select=True)
+        'account.journal', "Journal", ondelete='CASCADE', select=True,
+        context={
+            'company': Eval('company', -1),
+            },
+        depends=['company'])
     sequence = fields.Many2One(
         'ir.sequence', "Sequence",
         domain=[
-            ('code', '=', 'account.journal'),
+            ('sequence_type', '=',
+                Id('account', 'sequence_type_account_journal')),
             ('company', 'in', [Eval('company', -1), None]),
             ],
         depends=['company'])

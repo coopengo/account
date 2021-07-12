@@ -135,6 +135,8 @@ class TaxCode(ActivePeriodMixin, tree(), ModelSQL, ModelView):
         'account.tax.code', 'Parent', select=True, states=_states)
     lines = fields.One2Many('account.tax.code.line', 'code', "Lines")
     childs = fields.One2Many('account.tax.code', 'parent', 'Children')
+    currency = fields.Function(fields.Many2One('currency.currency',
+        'Currency'), 'on_change_with_currency')
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
         'on_change_with_currency_digits')
     amount = fields.Function(fields.Numeric(
@@ -170,9 +172,14 @@ class TaxCode(ActivePeriodMixin, tree(), ModelSQL, ModelView):
         return False
 
     @fields.depends('company')
-    def on_change_with_currency_digits(self, name=None):
+    def on_change_with_currency(self, name=None):
         if self.company:
-            return self.company.currency.digits
+            return self.company.currency.id
+
+    @fields.depends('currency')
+    def on_change_with_currency_digits(self, name=None):
+        if self.currency:
+            return self.currency.digits
         return 2
 
     @classmethod
@@ -292,6 +299,11 @@ class TaxCodeLineTemplate(ModelSQL, ModelView):
             ('credit', "Credit"),
             ], "Type", required=True)
 
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('code')
+
     def _get_tax_code_line_value(self, line=None):
         value = {}
         for name in ['operator', 'amount', 'type']:
@@ -365,6 +377,11 @@ class TaxCodeLine(ModelSQL, ModelView):
     del _states
 
     @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('code')
+
+    @classmethod
     def default_operator(cls):
         return '+'
 
@@ -383,9 +400,27 @@ class TaxCodeLine(ModelSQL, ModelView):
             ('type', '=', self.amount),
             ]
         if self.type == 'invoice':
-            domain.append(('amount', '>', 0))
+            domain.append(['OR',
+                    [('amount', '>', 0), ['OR',
+                            ('move_line.debit', '>', 0),
+                            ('move_line.credit', '>', 0),
+                            ]],
+                    [('amount', '<', 0), ['OR',
+                            ('move_line.debit', '<', 0),
+                            ('move_line.credit', '<', 0),
+                            ]],
+                    ])
         elif self.type == 'credit':
-            domain.append(('amount', '<', 0))
+            domain.append(['OR',
+                    [('amount', '<', 0), ['OR',
+                            ('move_line.debit', '>', 0),
+                            ('move_line.credit', '>', 0),
+                            ]],
+                    [('amount', '>', 0), ['OR',
+                            ('move_line.debit', '<', 0),
+                            ('move_line.credit', '<', 0),
+                            ]],
+                    ])
         return domain
 
     @classmethod
@@ -475,7 +510,12 @@ class TaxTemplate(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     __name__ = 'account.tax.template'
     name = fields.Char('Name', required=True)
     description = fields.Char('Description', required=True)
-    group = fields.Many2One('account.tax.group', 'Group')
+    group = fields.Many2One(
+        'account.tax.group', 'Group',
+        states={
+            'invisible': Bool(Eval('parent')),
+            },
+        depends=['parent'])
     start_date = fields.Date('Starting Date')
     end_date = fields.Date('Ending Date')
     amount = fields.Numeric('Amount', digits=(16, 8),
@@ -682,11 +722,8 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     parent = fields.Many2One('account.tax', 'Parent', ondelete='CASCADE',
         states=_states)
     childs = fields.One2Many('account.tax', 'parent', 'Children')
-    company = fields.Many2One('company.company', 'Company', required=True,
-        domain=[
-            ('id', If(Eval('context', {}).contains('company'), '=', '!='),
-                Eval('context', {}).get('company', -1)),
-            ], select=True)
+    company = fields.Many2One(
+        'company.company', "Company", required=True, select=True)
     invoice_account = fields.Many2One('account.account', 'Invoice Account',
         domain=[
             ('company', '=', Eval('company')),
@@ -792,17 +829,29 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
 
         columns = []
         amount = tax_line.amount
+        debit = move_line.debit
+        credit = move_line.credit
         if backend.name == 'sqlite':
             amount = TaxLine.amount.sql_cast(tax_line.amount)
+            debit = MoveLine.debit.sql_cast(debit)
+            credit = MoveLine.credit.sql_cast(credit)
+        is_invoice = (
+            ((amount > 0) & ((debit > 0) | (credit > 0)))
+            | ((amount < 0) & ((debit < 0) | (credit < 0)))
+            )
+        is_credit = (
+            ((amount < 0) & ((debit > 0) | (credit > 0)))
+            | ((amount > 0) & ((debit < 0) | (credit < 0)))
+            )
         for name, clause in [
                 ('invoice_base_amount',
-                    (amount > 0) & (tax_line.type == 'base')),
+                    is_invoice & (tax_line.type == 'base')),
                 ('invoice_tax_amount',
-                    (amount > 0) & (tax_line.type == 'tax')),
+                    is_invoice & (tax_line.type == 'tax')),
                 ('credit_base_amount',
-                    (amount < 0) & (tax_line.type == 'base')),
+                    is_credit & (tax_line.type == 'base')),
                 ('credit_tax_amount',
-                    (amount < 0) & (tax_line.type == 'tax')),
+                    is_credit & (tax_line.type == 'tax')),
                 ]:
             if name not in names:
                 continue
@@ -1070,7 +1119,8 @@ class _TaxKey(dict):
         return hash(self._key())
 
 
-_TaxableLine = namedtuple('_TaxableLine', ('taxes', 'unit_price', 'quantity'))
+_TaxableLine = namedtuple(
+    '_TaxableLine', ('taxes', 'unit_price', 'quantity', 'tax_date'))
 
 
 class TaxableMixin(object):
@@ -1082,13 +1132,9 @@ class TaxableMixin(object):
             - the first element is the taxes applicable
             - the second element is the line unit price
             - the third element is the line quantity
+            - the forth element is the optional tax date
         """
         return []
-
-    @property
-    def currency(self):
-        "The currency used by the taxable object"
-        return None
 
     @property
     def tax_date(self):
@@ -1130,16 +1176,18 @@ class TaxableMixin(object):
         Tax = pool.get('account.tax')
         Configuration = pool.get('account.configuration')
 
-        config = Configuration(1)
-        tax_rounding = config.tax_rounding
         taxes = {}
         with Transaction().set_context(self._get_tax_context()):
+            config = Configuration(1)
+            tax_rounding = config.get_multivalue('tax_rounding')
             taxable_lines = [_TaxableLine(*params)
                 for params in self.taxable_lines]
             for line in taxable_lines:
-                l_taxes = Tax.compute(Tax.browse(line.taxes), line.unit_price,
-                    line.quantity, getattr(self, 'tax_date',
+                date = getattr(line, 'tax_date',
+                    getattr(self, 'tax_date',
                         pool.get('ir.date').today()))
+                l_taxes = Tax.compute(Tax.browse(line.taxes), line.unit_price,
+                    line.quantity, date)
                 for tax in l_taxes:
                     taxline = self._compute_tax_line(**tax)
                     # Base must always be rounded per line as there will be one
@@ -1179,6 +1227,11 @@ class TaxLine(ModelSQL, ModelView):
             required=True, select=True, ondelete='CASCADE')
     company = fields.Function(fields.Many2One('company.company', 'Company'),
         'on_change_with_company')
+
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('move_line')
 
     @classmethod
     def __register__(cls, module_name):
@@ -1340,11 +1393,8 @@ class TaxRule(ModelSQL, ModelView):
         }
     name = fields.Char('Name', required=True, states=_states)
     kind = fields.Selection(KINDS, 'Kind', required=True, states=_states)
-    company = fields.Many2One('company.company', 'Company', required=True,
-        select=True, domain=[
-            ('id', If(Eval('context', {}).contains('company'), '=', '!='),
-                Eval('context', {}).get('company', -1)),
-            ])
+    company = fields.Many2One(
+        'company.company', "Company", required=True, select=True)
     lines = fields.One2Many('account.tax.rule.line', 'rule', 'Lines')
     template = fields.Many2One('account.tax.rule.template', 'Template')
     template_override = fields.Boolean("Override Template",
@@ -1421,6 +1471,8 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
     __name__ = 'account.tax.rule.line.template'
     rule = fields.Many2One('account.tax.rule.template', 'Rule', required=True,
             ondelete='CASCADE')
+    start_date = fields.Date("Starting Date")
+    end_date = fields.Date("Ending Date")
     group = fields.Many2One('account.tax.group', 'Tax Group',
         ondelete='RESTRICT')
     origin_tax = fields.Many2One('account.tax.template', 'Original Tax',
@@ -1465,6 +1517,7 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(TaxRuleLineTemplate, cls).__setup__()
+        cls.__access__.add('rule')
         cls._order.insert(1, ('rule', 'ASC'))
 
     def _get_tax_rule_line_value(self, rule_line=None):
@@ -1472,6 +1525,10 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
         Set values for tax rule line creation.
         '''
         res = {}
+        if not rule_line or rule_line.start_date != self.start_date:
+            res['start_date'] = self.start_date
+        if not rule_line or rule_line.end_date != self.end_date:
+            res['end_date'] = self.end_date
         if not rule_line or rule_line.group != self.group:
             res['group'] = self.group.id if self.group else None
         if not rule_line or rule_line.sequence != self.sequence:
@@ -1535,6 +1592,8 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
         }
     rule = fields.Many2One('account.tax.rule', 'Rule', required=True,
             select=True, ondelete='CASCADE', states=_states)
+    start_date = fields.Date("Starting Date")
+    end_date = fields.Date("Ending Date")
     group = fields.Many2One('account.tax.group', 'Tax Group',
         ondelete='RESTRICT', states=_states)
     origin_tax = fields.Many2One('account.tax', 'Original Tax',
@@ -1588,6 +1647,7 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
     @classmethod
     def __setup__(cls):
         super(TaxRuleLine, cls).__setup__()
+        cls.__access__.add('rule')
         cls._order.insert(1, ('rule', 'ASC'))
 
     @classmethod
@@ -1600,9 +1660,19 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
         return super(TaxRuleLine, cls).copy(lines, default=default)
 
     def match(self, pattern):
+        pool = Pool()
+        Date = pool.get('ir.date')
+        with Transaction().set_context(company=self.rule.company.id):
+            today = Date.today()
+        pattern = pattern.copy()
         if 'group' in pattern and not self.group:
             if pattern['group']:
                 return False
+        date = pattern.pop('date', None) or today
+        if self.start_date and date < self.start_date:
+            return False
+        if self.end_date and date > self.end_date:
+            return False
         return super(TaxRuleLine, self).match(pattern)
 
     def get_taxes(self, origin_tax):
@@ -1678,13 +1748,13 @@ class OpenTaxCode(Wizard):
 
     def do_open_(self, action):
         pool = Pool()
-        TaxCode = pool.get('account.tax.code')
         Tax = pool.get('account.tax')
-        tax_code = TaxCode(Transaction().context['active_id'])
-        if tax_code.lines:
-            domain = ['OR'] + [l._line_domain for l in tax_code.lines]
+        if self.record.lines:
+            domain = ['OR'] + [l._line_domain for l in self.record.lines]
         else:
             domain = ('id', '=', None)
+        if self.record:
+            action['name'] += ' (%s)' % self.record.rec_name
         action['pyson_domain'] = PYSONEncoder().encode([
                 Tax._amount_domain(),
                 domain,
@@ -1701,10 +1771,11 @@ class TestTax(Wizard):
         [Button('Close', 'end', 'tryton-close', default=True)])
 
     def default_test(self, fields):
-        context = Transaction().context
         default = {}
-        if context['active_model'] == 'account.tax':
-            default['taxes'] = context['active_ids']
+        if (self.model
+                and self.model.__name__ == 'account.tax'
+                and self.records):
+            default['taxes'] = list(map(int, self.records))
         return default
 
 
@@ -1743,7 +1814,7 @@ class TestTaxView(ModelView, TaxableMixin):
 
     @property
     def taxable_lines(self):
-        return [(self.taxes, self.unit_price, self.quantity)]
+        return [(self.taxes, self.unit_price, self.quantity, self.tax_date)]
 
     @fields.depends(
         'tax_date', 'taxes', 'unit_price', 'quantity', 'currency', 'result')
