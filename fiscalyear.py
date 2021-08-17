@@ -7,7 +7,7 @@ from trytond.i18n import gettext
 from trytond.model import ModelView, ModelSQL, Workflow, fields
 from trytond.model.exceptions import AccessError
 from trytond.pool import Pool
-from trytond.pyson import Eval, If, PYSONEncoder
+from trytond.pyson import Eval, If, PYSONEncoder, Id
 from trytond.rpc import RPC
 from trytond.transaction import Transaction
 from trytond.wizard import (
@@ -43,22 +43,16 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
             ('close', 'Close'),
             ('locked', 'Locked'),
             ], 'State', readonly=True, required=True)
-    post_move_sequence = fields.Many2One('ir.sequence', 'Post Move Sequence',
-            required=True, domain=[('code', '=', 'account.move'),
-                ['OR',
-                    ('company', '=', Eval('company')),
-                    ('company', '=', None)
-                ]],
-            context={
-                'code': 'account.move',
-                'company': Eval('company'),
-            },
-            depends=['company'])
-    company = fields.Many2One('company.company', 'Company', required=True,
+    post_move_sequence = fields.Many2One(
+        'ir.sequence', "Post Move Sequence", required=True,
         domain=[
-            ('id', If(Eval('context', {}).contains('company'), '=', '!='),
-                Eval('context', {}).get('company', -1)),
-            ], select=True)
+            ('sequence_type', '=',
+                Id('account', 'sequence_type_account_move')),
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
+    company = fields.Many2One(
+        'company.company', "Company", required=True, select=True)
     icon = fields.Function(fields.Char("Icon"), 'get_icon')
 
     @classmethod
@@ -298,7 +292,7 @@ class FiscalYear(Workflow, ModelSQL, ModelView):
             Period.close(periods)
 
             with Transaction().set_context(fiscalyear=fiscalyear.id,
-                    date=None, cumulate=True):
+                    date=None, cumulate=True, journal=None):
                 accounts = Account.search([
                         ('company', '=', fiscalyear.company.id),
                         ])
@@ -352,7 +346,11 @@ class BalanceNonDeferralStart(ModelView):
     journal = fields.Many2One('account.journal', 'Journal', required=True,
         domain=[
             ('type', '=', 'situation'),
-            ])
+            ],
+        context={
+            'company': Eval('company', -1),
+            },
+        depends=['company'])
     period = fields.Many2One('account.period', 'Period', required=True,
         domain=[
             ('fiscalyear', '=', Eval('fiscalyear')),
@@ -520,10 +518,8 @@ class CreatePeriods(Wizard):
     create_periods = StateTransition()
 
     def transition_create_periods(self):
-        FiscalYear = Pool().get('account.fiscalyear')
-        fiscalyear = FiscalYear(Transaction().context['active_id'])
-        FiscalYear.create_period(
-            [fiscalyear], self.start.interval, self.start.end_day)
+        self.model.create_period(
+            [self.record], self.start.interval, self.start.end_day)
         return 'end'
 
 

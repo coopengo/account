@@ -4,7 +4,7 @@
 from trytond.i18n import gettext
 from trytond.model import ModelView, ModelSQL, Workflow, fields
 from trytond.model.exceptions import AccessError
-from trytond.pyson import Eval
+from trytond.pyson import Eval, Id
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.const import OPERATORS
@@ -37,7 +37,8 @@ class Period(Workflow, ModelSQL, ModelView):
             ], 'State', readonly=True, required=True)
     post_move_sequence = fields.Many2One('ir.sequence', 'Post Move Sequence',
         domain=[
-            ('code', '=', 'account.move'),
+            ('sequence_type', '=',
+                Id('account', 'sequence_type_account_move')),
             ['OR',
                 ('company', '=', None),
                 ('company', '=', Eval('company', -1)),
@@ -56,6 +57,7 @@ class Period(Workflow, ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(Period, cls).__setup__()
+        cls.__access__.add('fiscalyear')
         cls._order.insert(0, ('start_date', 'ASC'))
         cls._transitions |= set((
                 ('open', 'close'),
@@ -312,7 +314,7 @@ class Period(Workflow, ModelSQL, ModelView):
             raise ClosePeriodError(
                 gettext('account.msg_close_period_non_posted_moves',
                     period=unposted_move.period.rec_name,
-                    move=unposted_move.rec_name))
+                    moves=unposted_move.rec_name))
         journal_periods = JournalPeriod.search([
             ('period', 'in', [p.id for p in periods]),
             ])

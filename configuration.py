@@ -4,7 +4,7 @@ from trytond import backend
 from trytond.pool import Pool
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 from trytond.transaction import Transaction
-from trytond.pyson import Eval
+from trytond.pyson import Eval, Id
 from trytond.modules.company.model import (
     CompanyMultiValueMixin, CompanyValueMixin)
 from trytond.tools.multivalue import migrate_property
@@ -49,6 +49,15 @@ class Configuration(
             help="Default supplier tax rule for new parties."))
     tax_rounding = fields.MultiValue(fields.Selection(
             tax_roundings, "Tax Rounding"))
+    reconciliation_sequence = fields.MultiValue(fields.Many2One(
+            'ir.sequence', "Reconciliation Sequence", required=True,
+            domain=[
+                ('company', 'in',
+                    [Eval('context', {}).get('company', -1), None]),
+                ('sequence_type', '=',
+                    Id('account',
+                        'sequence_type_account_move_reconciliation')),
+                ]))
 
     @classmethod
     def multivalue_model(cls, field):
@@ -57,19 +66,24 @@ class Configuration(
             return pool.get('account.configuration.default_account')
         if field in {'default_customer_tax_rule', 'default_supplier_tax_rule'}:
             return pool.get('account.configuration.default_tax_rule')
+        if field == 'reconciliation_sequence':
+            return pool.get('account.configuration.sequence')
         return super(Configuration, cls).multivalue_model(field)
 
     @classmethod
     def default_tax_rounding(cls, **pattern):
         return cls.multivalue_model('tax_rounding').default_tax_rounding()
 
+    @classmethod
+    def default_reconciliation_sequence(cls, **pattern):
+        return cls.multivalue_model(
+            'reconciliation_sequence').default_reconciliation_sequence()
+
 
 class ConfigurationDefaultAccount(ModelSQL, CompanyValueMixin):
     "Account Configuration Default Account"
     __name__ = 'account.configuration.default_account'
 
-    configuration = fields.Many2One('account.configuration', 'Configuration',
-        ondelete='CASCADE', select=True)
     default_account_receivable = fields.Many2One(
         'account.account', "Default Account Receivable",
         domain=[
@@ -129,7 +143,11 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     'Account Configuration Tax Rounding'
     __name__ = 'account.configuration.tax_rounding'
     configuration = fields.Many2One('account.configuration', 'Configuration',
-        required=True, ondelete='CASCADE')
+        required=True, ondelete='CASCADE',
+        context={
+            'company': Eval('company', -1),
+            },
+        depends=['company'])
     tax_rounding = fields.Selection(tax_roundings, 'Method', required=True)
 
     @classmethod
@@ -162,3 +180,26 @@ class ConfigurationTaxRounding(ModelSQL, CompanyValueMixin):
     @classmethod
     def default_tax_rounding(cls):
         return 'document'
+
+
+class Sequence(ModelSQL, CompanyValueMixin):
+    "Account Configuration Sequence"
+    __name__ = 'account.configuration.sequence'
+    reconciliation_sequence = fields.Many2One(
+        'ir.sequence', "Reconciliation Sequence", required=True,
+        domain=[
+            ('company', 'in', [Eval('company', -1), None]),
+            ('sequence_type', '=',
+                Id('account', 'sequence_type_account_move_reconciliation')),
+            ],
+        depends=['company'])
+
+    @classmethod
+    def default_reconciliation_sequence(cls):
+        pool = Pool()
+        ModelData = pool.get('ir.model.data')
+        try:
+            return ModelData.get_id(
+                'account', 'sequence_account_move_reconciliation')
+        except KeyError:
+            return None

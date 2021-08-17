@@ -4,6 +4,7 @@
 from trytond.pool import Pool
 from . import account
 from . import configuration
+from . import company
 from . import fiscalyear
 from . import journal
 from . import move
@@ -17,6 +18,7 @@ def register():
     Pool.register(
         fiscalyear.FiscalYear,
         fiscalyear.BalanceNonDeferralStart,
+        company.Company,
         account.TypeTemplate,
         account.Type,
         account.AccountTemplate,
@@ -44,6 +46,7 @@ def register():
         configuration.Configuration,
         configuration.ConfigurationDefaultAccount,
         configuration.DefaultTaxRule,
+        configuration.Sequence,
         period.Period,
         journal.Journal,
         journal.JournalSequence,
@@ -59,7 +62,6 @@ def register():
         move.ReconcileShow,
         move.CancelMovesDefault,
         move.GroupLinesStart,
-        move.PrintGeneralJournalStart,
         tax.TaxGroup,
         tax.TaxCodeTemplate,
         tax.TaxCode,
@@ -100,7 +102,6 @@ def register():
         move.Reconcile,
         move.CancelMoves,
         move.GroupLines,
-        move.PrintGeneralJournal,
         move_template.CreateMove,
         tax.OpenChartTaxCode,
         tax.OpenTaxCode,
@@ -111,6 +112,7 @@ def register():
         fiscalyear.RenewFiscalYear,
         module='account', type_='wizard')
     Pool.register(
+        account.AccountTypeStatement,
         account.GeneralLedger,
         account.TrialBalance,
         account.AgedBalanceReport,

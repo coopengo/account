@@ -16,6 +16,7 @@ def create_fiscalyear(company=None, today=None, config=None):
     "Create a fiscal year for the company on today"
     FiscalYear = Model.get('account.fiscalyear', config=config)
     Sequence = Model.get('ir.sequence', config=config)
+    SequenceType = Model.get('ir.sequence.type', config=config)
 
     if not company:
         company = get_company()
@@ -28,7 +29,11 @@ def create_fiscalyear(company=None, today=None, config=None):
     fiscalyear.end_date = today + relativedelta(month=12, day=31)
     fiscalyear.company = company
 
-    post_move_sequence = Sequence(name=str(today.year), code='account.move',
+    sequence_type, = SequenceType.find(
+        [('name', '=', "Account Move")], limit=1)
+    post_move_sequence = Sequence(
+        name=str(today.year),
+        sequence_type=sequence_type,
         company=company)
     post_move_sequence.save()
     fiscalyear.post_move_sequence = post_move_sequence
@@ -60,8 +65,10 @@ def create_chart(
 
     accounts = get_accounts(company, config=config)
 
-    create_chart.form.account_receivable = accounts['receivable']
-    create_chart.form.account_payable = accounts['payable']
+    if accounts['receivable'].party_required:
+        create_chart.form.account_receivable = accounts['receivable']
+    if accounts['payable'].party_required:
+        create_chart.form.account_payable = accounts['payable']
     create_chart.execute('create_properties')
     return create_chart
 

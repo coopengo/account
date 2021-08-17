@@ -22,7 +22,12 @@ class MoveTemplate(DeactivableMixin, ModelSQL, ModelView):
     keywords = fields.One2Many('account.move.template.keyword', 'move',
         'Keywords')
     company = fields.Many2One('company.company', 'Company', required=True)
-    journal = fields.Many2One('account.journal', 'Journal', required=True)
+    journal = fields.Many2One(
+        'account.journal', 'Journal', required=True,
+        context={
+            'company': Eval('company', -1),
+            },
+        depends=['company'])
     date = fields.Char('Date', help='Leave empty for today.')
     description = fields.Char('Description',
         help="Keyword values substitutions are identified "
@@ -73,6 +78,11 @@ class MoveTemplateKeyword(sequence_ordered(), ModelSQL, ModelView):
             'invisible': Eval('type_') != 'numeric',
             'required': Eval('type_') == 'numeric',
             }, depends=['type_'])
+
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('move')
 
     @staticmethod
     def default_required():
@@ -173,6 +183,11 @@ class MoveLineTemplate(ModelSQL, ModelView):
         "by braces ('{' and '}').")
     taxes = fields.One2Many('account.tax.line.template', 'line', 'Taxes')
 
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('move')
+
     @fields.depends('account')
     def on_change_with_party_required(self, name=None):
         if self.account:
@@ -220,6 +235,11 @@ class TaxLineTemplate(ModelSQL, ModelView):
             ('company', '=', Eval('_parent_line', {}
                     ).get('_parent_move', {}).get('company', -1)),
             ])
+
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        cls.__access__.add('line')
 
     @classmethod
     def __register__(cls, module_name):
@@ -303,10 +323,9 @@ class CreateMove(Wizard):
 
     def transition_start(self):
         context = Transaction().context
-        model = context.get('active_model')
         action_id = context.get('action_id')
         period = context.get('period')
-        if model == 'account.move.line':
+        if self.model and self.model.__name__ == 'account.move.line':
             # Template id is used as action
             self.template.template = action_id
             self.template.period = period
@@ -315,8 +334,7 @@ class CreateMove(Wizard):
             return 'template'
 
     def transition_create_(self):
-        model = Transaction().context.get('active_model')
-        if model == 'account.move.line':
+        if self.model and self.model.__name__ == 'account.move.line':
             self.create_move()
             return 'end'
         else:
@@ -328,8 +346,7 @@ class CreateMove(Wizard):
         return action, {}
 
     def end(self):
-        model = Transaction().context.get('active_model')
-        if model == 'account.move.line':
+        if self.model and self.model.__name__ == 'account.move.line':
             return 'reload'
 
 

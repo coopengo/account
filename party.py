@@ -176,7 +176,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
                             & party_where
                             & today_where),
                         group_by=line.party))
-                for party, value in cursor.fetchall():
+                for party, value in cursor:
                     # SQLite uses float for SUM
                     if not isinstance(value, Decimal):
                         value = Decimal(str(value))
@@ -240,8 +240,9 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
         Configuration = pool.get('account.configuration')
         account = self.account_payable
         if not account:
-            config = Configuration(1)
-            account = config.get_multivalue('default_account_payable')
+            with Transaction().set_context(self._context):
+                config = Configuration(1)
+                account = config.get_multivalue('default_account_payable')
         # Allow empty values on on_change
         if not account and not Transaction().readonly:
             raise AccountMissing(
@@ -256,8 +257,9 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
         Configuration = pool.get('account.configuration')
         account = self.account_receivable
         if not account:
-            config = Configuration(1)
-            account = config.get_multivalue('default_account_receivable')
+            with Transaction().set_context(self._context):
+                config = Configuration(1)
+                account = config.get_multivalue('default_account_receivable')
         # Allow empty values on on_change
         if not account and not Transaction().readonly:
             raise AccountMissing(
@@ -268,7 +270,7 @@ class Party(CompanyMultiValueMixin, metaclass=PoolMeta):
 
     @classmethod
     def view_attributes(cls):
-        return [
+        return super().view_attributes() + [
             ('/tree/field[@name="receivable_today"]',
                 'visual', If(Eval('receivable_today', 0) > 0, 'danger', '')),
             ('/tree/field[@name="payable_today"]',
@@ -280,7 +282,11 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
     "Party Account"
     __name__ = 'party.party.account'
     party = fields.Many2One(
-        'party.party', "Party", ondelete='CASCADE', select=True)
+        'party.party', "Party", ondelete='CASCADE', select=True,
+        context={
+            'company': Eval('company', -1),
+            },
+        depends=['company'])
     account_payable = fields.Many2One(
         'account.account', "Account Payable",
         domain=[
@@ -288,7 +294,7 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
             ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
-        depends=['company'])
+        depends=['company'], ondelete='RESTRICT')
     account_receivable = fields.Many2One(
         'account.account', "Account Receivable",
         domain=[
@@ -296,21 +302,21 @@ class PartyAccount(ModelSQL, CompanyValueMixin):
             ('party_required', '=', True),
             ('company', '=', Eval('company', -1)),
             ],
-        depends=['company'])
+        depends=['company'], ondelete='RESTRICT')
     customer_tax_rule = fields.Many2One(
         'account.tax.rule', "Customer Tax Rule",
         domain=[
             ('company', '=', Eval('company', -1)),
             ('kind', 'in', ['sale', 'both']),
             ],
-        depends=['company'])
+        depends=['company'], ondelete='RESTRICT')
     supplier_tax_rule = fields.Many2One(
         'account.tax.rule', "Supplier Tax Rule",
         domain=[
             ('company', '=', Eval('company', -1)),
             ('kind', 'in', ['purchase', 'both']),
             ],
-        depends=['company'])
+        depends=['company'], ondelete='RESTRICT')
 
     @classmethod
     def __register__(cls, module_name):

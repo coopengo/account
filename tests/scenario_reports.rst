@@ -15,7 +15,7 @@ Imports::
     ...     create_chart, get_accounts
     >>> today = datetime.date.today()
 
-Install account::
+Activate modules::
 
     >>> config = activate_modules('account')
 
@@ -28,7 +28,7 @@ Create fiscal year::
 
     >>> fiscalyear = create_fiscalyear(company)
     >>> fiscalyear.click('create_period')
-    >>> period_1, period_3, period_5 = fiscalyear.periods[0:5:2]
+    >>> period = fiscalyear.periods[0]
 
 Create chart of accounts::
 
@@ -56,9 +56,9 @@ Create a moves::
     ...         ('code', '=', 'CASH'),
     ...         ])
     >>> move = Move()
-    >>> move.period = period_3
+    >>> move.period = period
     >>> move.journal = journal_revenue
-    >>> move.date = period_3.start_date
+    >>> move.date = period.start_date
     >>> line = move.lines.new()
     >>> line.account = revenue
     >>> line.credit = Decimal(10)
@@ -69,9 +69,9 @@ Create a moves::
     >>> move.save()
 
     >>> move = Move()
-    >>> move.period = period_5
+    >>> move.period = period
     >>> move.journal = journal_cash
-    >>> move.date = period_5.start_date
+    >>> move.date = period.start_date
     >>> line = move.lines.new()
     >>> line.account = cash
     >>> line.debit = Decimal(10)
@@ -128,8 +128,8 @@ Print some reports::
     >>> context = {
     ...     'company': company.id,
     ...     'fiscalyear': fiscalyear.id,
-    ...     'from_date': period_1.start_date,
-    ...     'to_date': period_3.end_date,
+    ...     'from_date': fiscalyear.periods[0].start_date,
+    ...     'to_date': fiscalyear.periods[1].end_date,
     ...     }
     >>> with config.set_context(context):
     ...     gl_revenue, = GeneralLedgerAccount.find([
@@ -150,70 +150,16 @@ Print some reports::
     >>> glp_receivable.start_balance
     Decimal('0.00')
     >>> glp_receivable.credit
-    Decimal('0.00')
+    Decimal('10.00')
     >>> glp_receivable.debit
     Decimal('10.00')
     >>> glp_receivable.end_balance
-    Decimal('10.00')
+    Decimal('0.00')
 
     >>> context = {
     ...     'company': company.id,
     ...     'fiscalyear': fiscalyear.id,
-    ...     'start_period': period_3.id,
-    ...     }
-    >>> with config.set_context(context):
-    ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('account', '=', revenue.id),
-    ...           ])
-    >>> gl_revenue.start_balance
-    Decimal('0.00')
-    >>> gl_revenue.credit
-    Decimal('10.00')
-    >>> gl_revenue.debit
-    Decimal('0.00')
-    >>> gl_revenue.end_balance
-    Decimal('-10.00')
-
-    >>> context = {
-    ...     'company': company.id,
-    ...     'fiscalyear': fiscalyear.id,
-    ...     'start_period': period_5.id,
-    ...     }
-    >>> with config.set_context(context):
-    ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('account', '=', revenue.id),
-    ...           ])
-    >>> gl_revenue.start_balance
-    Decimal('-10.00')
-    >>> gl_revenue.credit
-    Decimal('0.00')
-    >>> gl_revenue.debit
-    Decimal('0.00')
-    >>> gl_revenue.end_balance
-    Decimal('-10.00')
-
-    >>> context = {
-    ...     'company': company.id,
-    ...     'fiscalyear': fiscalyear.id,
-    ...     'from_date': period_3.start_date,
-    ...     }
-    >>> with config.set_context(context):
-    ...     gl_revenue, = GeneralLedgerAccount.find([
-    ...           ('account', '=', revenue.id),
-    ...           ])
-    >>> gl_revenue.start_balance
-    Decimal('0.00')
-    >>> gl_revenue.credit
-    Decimal('10.00')
-    >>> gl_revenue.debit
-    Decimal('0.00')
-    >>> gl_revenue.end_balance
-    Decimal('-10.00')
-
-    >>> context = {
-    ...     'company': company.id,
-    ...     'fiscalyear': fiscalyear.id,
-    ...     'from_date': period_5.start_date,
+    ...     'start_period': fiscalyear.periods[1].id,
     ...     }
     >>> with config.set_context(context):
     ...     gl_revenue, = GeneralLedgerAccount.find([
@@ -234,6 +180,10 @@ Print some reports::
     ...     })
     >>> _ = trial_balance.execute(gl_accounts)
 
+    >>> Type = Model.get('account.account.type')
+    >>> statement = Report('account.account.type.statement')
+    >>> _ = statement.execute(Type.find([]))
+
     >>> AgedBalance = Model.get('account.aged_balance')
     >>> context = {
     ...     'company': company.id,
@@ -250,12 +200,12 @@ Print some reports::
     >>> aged_balance = Report('account.aged_balance', context=context)
     >>> _ = aged_balance.execute(aged_balances)
 
-    >>> print_general_journal = Wizard('account.move.print_general_journal')
-    >>> print_general_journal.execute('print_')
+    >>> general_journal = Report('account.move.general_journal')
+    >>> _ = general_journal.execute(Move.find([]))
 
     >>> with config.set_context(
-    ...         start_date=period_5.start_date,
-    ...         end_date=period_5.end_date):
+    ...         start_date=period.start_date,
+    ...         end_date=period.end_date):
     ...     journal_cash = Journal(journal_cash.id)
     >>> journal_cash.credit
     Decimal('0.00')
