@@ -7,4 +7,5 @@ this repository contains the full copyright notices and license terms. -->
     <field name="debit" sum="Debit"/>
     <field name="credit" sum="Credit"/>
     <field name="end_balance" sum="End Balance"/>
+    <field name="line_count" tree_invisible="1"/>
 </tree>
