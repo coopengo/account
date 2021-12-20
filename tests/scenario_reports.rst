@@ -39,6 +39,15 @@ Create chart of accounts::
     >>> expense = accounts['expense']
     >>> cash = accounts['cash']
 
+Create a parent account::
+
+    >>> Account = Model.get('account.account')
+    >>> parent_revenue = Account(name="Revenue Parent", company=company.id,
+    ...     type=revenue.type, parent=revenue.parent)
+    >>> parent_revenue.save()
+    >>> revenue.parent = parent_revenue
+    >>> revenue.save()
+
 Create parties::
 
     >>> Party = Model.get('party.party')
@@ -101,6 +110,9 @@ Print some reports::
     ...     'fiscalyear': fiscalyear.id,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
@@ -108,6 +120,12 @@ Print some reports::
     ...             ('account', '=', receivable.id),
     ...             ('party', '=', party.id),
     ...             ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('0.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -132,6 +150,9 @@ Print some reports::
     ...     'to_date': period_3.end_date,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
@@ -139,6 +160,12 @@ Print some reports::
     ...             ('account', '=', receivable.id),
     ...             ('party', '=', party.id),
     ...             ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('0.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -162,9 +189,18 @@ Print some reports::
     ...     'start_period': period_3.id,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('0.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -180,9 +216,18 @@ Print some reports::
     ...     'start_period': period_5.id,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('-10.00')
     >>> gl_revenue.credit
@@ -198,9 +243,18 @@ Print some reports::
     ...     'from_date': period_3.start_date,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('0.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('0.00')
     >>> gl_revenue.credit
@@ -216,9 +270,18 @@ Print some reports::
     ...     'from_date': period_5.start_date,
     ...     }
     >>> with config.set_context(context):
+    ...     gl_parent_revenue, = GeneralLedgerAccount.find([
+    ...           ('account', '=', parent_revenue.id),
+    ...           ])
     ...     gl_revenue, = GeneralLedgerAccount.find([
     ...           ('account', '=', revenue.id),
     ...           ])
+    >>> gl_parent_revenue.start_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.end_balance
+    Decimal('-10.00')
+    >>> gl_parent_revenue.line_count
+    0
     >>> gl_revenue.start_balance
     Decimal('-10.00')
     >>> gl_revenue.credit
