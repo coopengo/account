@@ -797,8 +797,6 @@ msgctxt "field:account.general_ledger.account.context,to_date:"
 msgid "To Date"
 msgstr "Date de fin"
 
-<<<<<<< HEAD
-=======
 msgctxt "field:account.general_ledger.account.party,account:"
 msgid "Account"
 msgstr "Compte"
@@ -835,10 +833,6 @@ msgctxt "field:account.general_ledger.account.party,end_credit:"
 msgid "End Credit"
 msgstr "Crédit final"
 
-msgctxt "field:account.general_ledger.account.party,end_date:"
-msgid "End Date"
-msgstr "Date de fin"
-
 msgctxt "field:account.general_ledger.account.party,end_debit:"
 msgid "End Debit"
 msgstr "Débit final"
@@ -859,15 +853,10 @@ msgctxt "field:account.general_ledger.account.party,start_credit:"
 msgid "Start Credit"
 msgstr "Crédit de départ"
 
-msgctxt "field:account.general_ledger.account.party,start_date:"
-msgid "Start Date"
-msgstr "Date de début"
-
 msgctxt "field:account.general_ledger.account.party,start_debit:"
 msgid "Start Debit"
 msgstr "Débit de départ"
 
->>>>>>> c31bb3f (Add translations)
 msgctxt "field:account.general_ledger.line,account:"
 msgid "Account"
 msgstr "Compte"
