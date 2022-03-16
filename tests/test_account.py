@@ -1072,6 +1072,57 @@ class AccountTestCase(ModuleTestCase):
         self.assertEqual(tax['amount'], Decimal('20.02'))
 
     @with_transaction()
+    def test_taxable_mixin_tax_residual_rounding(self):
+        "Test TaxableMixin with rounding with residual amount"
+        pool = Pool()
+        Account = pool.get('account.account')
+        Tax = pool.get('account.tax')
+        Configuration = pool.get('account.configuration')
+        currency = create_currency('cur')
+
+        company = create_company()
+        with set_company(company):
+            create_chart(company)
+
+            tax_account, = Account.search([
+                    ('name', '=', 'Main Tax'),
+                    ])
+
+            tax1 = Tax()
+            tax1.name = tax1.description = "Tax 1"
+            tax1.type = 'percentage'
+            tax1.rate = Decimal('.1')
+            tax1.invoice_account = tax_account
+            tax1.credit_note_account = tax_account
+            tax1.save()
+            tax2 = Tax()
+            tax2.name = tax2.description = "Tax 2"
+            tax2.type = 'percentage'
+            tax2.rate = Decimal('.1')
+            tax2.invoice_account = tax_account
+            tax2.credit_note_account = tax_account
+            tax2.save()
+
+            config = Configuration(1)
+            config.tax_rounding = 'line'
+            config.save()
+
+            taxable = self.Taxable(
+                currency=currency,
+                taxable_lines=[
+                    ([tax1, tax2], Decimal('1.0417'), 1, None),
+                    ],
+                company=company)
+
+            taxes = taxable._get_taxes()
+
+        taxline_1, taxline_2 = taxes
+        self.assertEqual(taxline_1['base'], Decimal('1.04'))
+        self.assertEqual(taxline_1['amount'], Decimal('.11'))
+        self.assertEqual(taxline_2['base'], Decimal('1.04'))
+        self.assertEqual(taxline_2['amount'], Decimal('.10'))
+
+    @with_transaction()
     def test_tax_compute_with_children_update_unit_price(self):
         "Test tax compute with children taxes modifying unit_price"
         pool = Pool()

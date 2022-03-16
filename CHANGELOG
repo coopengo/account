@@ -1,3 +1,4 @@
+* Accrue and allocate rounding errors when there is multiple taxes
 * Show debit / credit columns in General Ledger when there are lines to show
 * Compute General Ledger timespan on either dates or periods
 
