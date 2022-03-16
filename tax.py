@@ -3,7 +3,7 @@
 import datetime
 from collections import namedtuple
 from decimal import Decimal
-from itertools import groupby
+from itertools import cycle, groupby
 
 from sql import Literal
 from sql.aggregate import Sum
@@ -1167,8 +1167,24 @@ class TaxableMixin(object):
     def _round_taxes(self, taxes):
         if not self.currency:
             return
+
+        residual_amount = 0
         for taxline in taxes.values():
-            taxline['amount'] = self.currency.round(taxline['amount'])
+            rounded_amount = self.currency.round(taxline['amount'])
+            residual_amount += rounded_amount - taxline['amount']
+            taxline['amount'] = rounded_amount
+
+        residual_amount = self.currency.round(residual_amount)
+        if abs(residual_amount) >= self.currency.rounding:
+            offset_amount = self.currency.rounding
+            if residual_amount < 0:
+                offset_amount *= -1
+
+            for tax in cycle(taxes.values()):
+                tax['amount'] -= offset_amount
+                residual_amount -= offset_amount
+                if abs(residual_amount) < self.currency.rounding:
+                    break
 
     @fields.depends(methods=['_get_tax_context', '_round_taxes'])
     def _get_taxes(self):
