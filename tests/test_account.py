@@ -1116,11 +1116,30 @@ class AccountTestCase(ModuleTestCase):
 
             taxes = taxable._get_taxes()
 
-        taxline_1, taxline_2 = taxes
-        self.assertEqual(taxline_1['base'], Decimal('1.04'))
-        self.assertEqual(taxline_1['amount'], Decimal('.11'))
-        self.assertEqual(taxline_2['base'], Decimal('1.04'))
-        self.assertEqual(taxline_2['amount'], Decimal('.10'))
+            taxline_1, taxline_2 = taxes
+            self.assertEqual(taxline_1['base'], Decimal('1.04'))
+            self.assertEqual(taxline_1['amount'], Decimal('.11'))
+            self.assertEqual(taxline_2['base'], Decimal('1.04'))
+            self.assertEqual(taxline_2['amount'], Decimal('.10'))
+
+            # -2.95 is the unit price of -3.54 with 20% tax included
+            taxable = self.Taxable(
+                currency=currency,
+                taxable_lines=[
+                    ([tax1], Decimal('30.00'), 1, None),
+                    ([tax1, tax2], Decimal('2.95'), 1, None),
+                    ],
+                company=company)
+
+            taxes = taxable._get_taxes()
+
+            taxline_1, taxline_2, taxline_3 = taxes
+            self.assertEqual(taxline_1['base'], Decimal('30.00'))
+            self.assertEqual(taxline_1['amount'], Decimal('3.00'))
+            self.assertEqual(taxline_2['base'], Decimal('-2.95'))
+            self.assertEqual(taxline_2['amount'], Decimal('-0.29'))
+            self.assertEqual(taxline_3['base'], Decimal('-2.95'))
+            self.assertEqual(taxline_3['amount'], Decimal('-0.30'))
 
     @with_transaction()
     def test_tax_compute_with_children_update_unit_price(self):

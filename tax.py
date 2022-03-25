@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import datetime
 from collections import namedtuple
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from itertools import cycle, groupby
 
 from sql import Literal
@@ -1128,7 +1128,8 @@ class TaxableMixin(object):
             residual_amount += rounded_amount - taxline['amount']
             taxline['amount'] = rounded_amount
 
-        residual_amount = self.currency.round(residual_amount)
+        residual_amount = self.currency.round(
+            residual_amount, rounding=ROUND_HALF_EVEN)
         if abs(residual_amount) >= self.currency.rounding:
             offset_amount = self.currency.rounding
             if residual_amount < 0:
@@ -1156,8 +1157,10 @@ class TaxableMixin(object):
                 l_taxes = Tax.compute(Tax.browse(line.taxes), line.unit_price,
                     line.quantity, getattr(self, 'tax_date',
                         pool.get('ir.date').today()))
+                taxes_to_round = []
                 for tax in l_taxes:
                     taxline = self._compute_tax_line(**tax)
+                    taxes_to_round.append(taxline)
                     # Base must always be rounded per line as there will be one
                     # tax line per taxable_lines
                     if self.currency:
@@ -1168,7 +1171,7 @@ class TaxableMixin(object):
                         taxes[taxline]['base'] += taxline['base']
                         taxes[taxline]['amount'] += taxline['amount']
                 if tax_rounding == 'line':
-                    self._round_taxes(taxes)
+                    self._round_taxes({tl: taxes[tl] for tl in taxes_to_round})
         if tax_rounding == 'document':
             self._round_taxes(taxes)
         return taxes
