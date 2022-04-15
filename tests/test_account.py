@@ -1110,7 +1110,7 @@ class AccountTestCase(ModuleTestCase):
             taxable = self.Taxable(
                 currency=currency,
                 taxable_lines=[
-                    ([tax1, tax2], Decimal('1.0417'), 1, None),
+                    ([tax1, tax2], Decimal('1.0417'), 1),
                     ])
 
             taxes = taxable._get_taxes()
@@ -1125,8 +1125,8 @@ class AccountTestCase(ModuleTestCase):
             taxable = self.Taxable(
                 currency=currency,
                 taxable_lines=[
-                    ([tax1], Decimal('30.00'), 1, None),
-                    ([tax1, tax2], Decimal('-2.95'), 1, None),
+                    ([tax1], Decimal('30.00'), 1),
+                    ([tax1, tax2], Decimal('-2.95'), 1),
                     ])
 
             taxes = taxable._get_taxes()
