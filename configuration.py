@@ -22,6 +22,7 @@ class Configuration(
     default_account_receivable = fields.MultiValue(fields.Many2One(
             'account.account', "Default Account Receivable",
             domain=[
+                ('closed', '!=', True),
                 ('type.receivable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
@@ -29,6 +30,7 @@ class Configuration(
     default_account_payable = fields.MultiValue(fields.Many2One(
             'account.account', "Default Account Payable",
             domain=[
+                ('closed', '!=', True),
                 ('type.payable', '=', True),
                 ('party_required', '=', True),
                 ('company', '=', Eval('context', {}).get('company', -1)),
