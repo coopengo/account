@@ -294,6 +294,7 @@ class Type(
         pool = Pool()
         Account = pool.get('account.account')
         GeneralLedger = pool.get('account.general_ledger.account')
+        context = Transaction().context
 
         res = {}
         for type_ in types:
@@ -306,10 +307,13 @@ class Type(
         for type_ in childs:
             type_sum[type_.id] = Decimal('0.0')
 
-        start_period_ids = GeneralLedger.get_period_ids('start_%s' % name)
-        end_period_ids = GeneralLedger.get_period_ids('end_%s' % name)
-        period_ids = list(
-            set(end_period_ids).difference(set(start_period_ids)))
+        if context.get('start_period') or context.get('end_period'):
+            start_period_ids = GeneralLedger.get_period_ids('start_%s' % name)
+            end_period_ids = GeneralLedger.get_period_ids('end_%s' % name)
+            period_ids = list(
+                set(end_period_ids).difference(set(start_period_ids)))
+        else:
+            period_ids = None
 
         with Transaction().set_context(periods=period_ids):
             accounts = Account.search([
@@ -400,6 +404,26 @@ class Type(
             childs = sum((c.childs for c in childs), ())
         if values:
             self.write(*values)
+
+        # Update parent
+        to_save = []
+        childs = [self]
+        while childs:
+            for child in childs:
+                if child.template:
+                    if not child.template_override:
+                        if child.template.parent:
+                            parent = template2type[
+                                child.template.parent.id]
+                        else:
+                            parent = None
+                        old_parent = (
+                            child.parent.id if child.parent else None)
+                        if parent != old_parent:
+                            child.parent = parent
+                            to_save.append(child)
+            childs = sum((c.childs for c in childs), ())
+        self.__class__.save(to_save)
 
 
 class OpenType(Wizard):
@@ -1083,7 +1107,7 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
                         values[name][account.id] += getattr(deferral, name)
         else:
             with Transaction().set_context(fiscalyear=fiscalyear.id,
-                    date=None, periods=None):
+                    date=None, periods=None, from_date=None, to_date=None):
                 previous_result = func(accounts, names)
             for name in names:
                 vals = values[name]
@@ -1245,6 +1269,13 @@ class Account(AccountMixin(), ActivePeriodMixin, tree(), ModelSQL, ModelView):
                                     for x in child.template.taxes
                                     if x.id in template2tax])]
                         break
+                if child.template.parent:
+                    parent = template2account[child.template.parent.id]
+                else:
+                    parent = None
+                old_parent = child.parent.id if child.parent else None
+                if parent != old_parent:
+                    values['parent'] = parent
                 if child.template.replaced_by:
                     replaced_by = template2account[
                         child.template.replaced_by.id]
@@ -1546,8 +1577,39 @@ class AccountDeferral(ModelSQL, ModelView):
     def default_line_count(cls):
         return 0
 
-    def get_balance(self, name):
-        return self.debit - self.credit
+    @classmethod
+    def get_balance(cls, deferrals, name):
+        pool = Pool()
+        Account = pool.get('account.account')
+        cursor = Transaction().connection.cursor()
+
+        table = cls.__table__()
+        table_child = cls.__table__()
+        account = Account.__table__()
+        account_child = Account.__table__()
+        balances = defaultdict(Decimal)
+
+        for sub_deferrals in grouped_slice(deferrals):
+            red_sql = reduce_ids(table.id, [d.id for d in sub_deferrals])
+            cursor.execute(*table
+                .join(account, condition=table.account == account.id)
+                .join(account_child,
+                    condition=(account_child.left >= account.left)
+                    & (account_child.right <= account.right))
+                .join(table_child,
+                    condition=(table_child.account == account_child.id)
+                    & (table_child.fiscalyear == table.fiscalyear))
+                .select(
+                    table.id,
+                    Sum(table_child.debit - table_child.credit),
+                    where=red_sql,
+                    group_by=table.id))
+            balances.update(dict(cursor))
+
+        for id_, balance in balances.items():
+            if not isinstance(balance, Decimal):
+                balances[id_] = Decimal(str(balance))
+        return balances
 
     def get_currency(self, name):
         return self.account.currency.id
@@ -1820,6 +1882,23 @@ class _GeneralLedgerAccount(ActivePeriodMixin, ModelSQL, ModelView):
         return [('id', 'in', ids)]
 
     @classmethod
+    def _debit_credit_context(cls):
+        period_ids, from_date, to_date = None, None, None
+        context = Transaction().context
+        if context.get('start_period') or context.get('end_period'):
+            start_period_ids = set(cls.get_period_ids('start_balance'))
+            end_period_ids = set(cls.get_period_ids('end_balance'))
+            period_ids = list(end_period_ids.difference(start_period_ids))
+        elif context.get('from_date') or context.get('to_date'):
+            from_date = context.get('from_date')
+            to_date = context.get('to_date')
+        return {
+            'periods': period_ids,
+            'from_date': from_date,
+            'to_date': to_date,
+            }
+
+    @classmethod
     def get_debit_credit(cls, records, name):
         Account = cls._get_account()
 
@@ -1894,7 +1973,11 @@ class GeneralLedgerAccountContext(ModelView):
     'General Ledger Account Context'
     __name__ = 'account.general_ledger.account.context'
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
-        required=True)
+        required=True,
+        domain=[
+            ('company', '=', Eval('company')),
+            ],
+        depends=['company'])
     start_period = fields.Many2One('account.period', 'Start Period',
         domain=[
             ('fiscalyear', '=', Eval('fiscalyear')),
@@ -1920,7 +2003,7 @@ class GeneralLedgerAccountContext(ModelView):
                 ()),
             ],
         states={
-            'readonly': (Eval('start_period', 'False')
+            'readonly': (Eval('start_period', False)
                 | Eval('end_period', False)),
             },
         depends=['to_date', 'start_period', 'end_period'])
@@ -1931,7 +2014,7 @@ class GeneralLedgerAccountContext(ModelView):
                 ()),
             ],
         states={
-            'readonly': (Eval('start_period', 'False')
+            'readonly': (Eval('start_period', False)
                 | Eval('end_period', False)),
             },
         depends=['from_date', 'start_period', 'end_period'])
@@ -1982,6 +2065,12 @@ class GeneralLedgerAccountContext(ModelView):
     def default_to_date(cls):
         return Transaction().context.get('to_date')
 
+    @fields.depends('company', 'fiscalyear', methods=['on_change_fiscalyear'])
+    def on_change_company(self):
+        if self.fiscalyear and self.fiscalyear.company != self.company:
+            self.fiscalyear = None
+            self.on_change_fiscalyear()
+
     @fields.depends('fiscalyear', 'start_period', 'end_period')
     def on_change_fiscalyear(self):
         if (self.start_period
@@ -1991,29 +2080,25 @@ class GeneralLedgerAccountContext(ModelView):
                 and self.end_period.fiscalyear != self.fiscalyear):
             self.end_period = None
 
-    @fields.depends('start_period', 'end_period', 'from_date')
-    def on_change_with_from_date(self):
-        if self.start_period or self.end_period:
-            return None
-        return self.from_date
+    @fields.depends('start_period')
+    def on_change_start_period(self):
+        if self.start_period:
+            self.from_date = self.to_date = None
 
-    @fields.depends('start_period', 'end_period', 'to_date')
-    def on_change_with_to_date(self):
-        if self.start_period or self.end_period:
-            return None
-        return self.to_date
+    @fields.depends('end_period')
+    def on_change_end_period(self):
+        if self.end_period:
+            self.from_date = self.to_date = None
 
-    @fields.depends('from_date', 'to_date', 'start_period')
-    def on_change_with_start_period(self):
-        if self.from_date or self.to_date:
-            return None
-        return self.start_period
+    @fields.depends('from_date')
+    def on_change_from_date(self):
+        if self.from_date:
+            self.start_period = self.end_period = None
 
-    @fields.depends('from_date', 'to_date', 'end_period')
-    def on_change_with_end_period(self):
-        if self.from_date or self.to_date:
-            return None
-        return self.end_period
+    @fields.depends('to_date')
+    def on_change_to_date(self):
+        if self.to_date:
+            self.start_period = self.end_period = None
 
 
 class GeneralLedgerAccountParty(_GeneralLedgerAccount):
@@ -2168,10 +2253,7 @@ class GeneralLedgerLine(ModelSQL, ModelView):
             else:
                 column = Column(line, fname).as_(fname)
             columns.append(column)
-        start_period_ids = set(LedgerAccount.get_period_ids('start_balance'))
-        end_period_ids = set(LedgerAccount.get_period_ids('end_balance'))
-        period_ids = list(end_period_ids.difference(start_period_ids))
-        with Transaction().set_context(periods=period_ids):
+        with Transaction().set_context(LedgerAccount._debit_credit_context()):
             line_query, fiscalyear_ids = Line.query_get(line)
         return line.join(move, condition=line.move == move.id
             ).join(account, condition=line.account == account.id
@@ -2373,27 +2455,41 @@ class IncomeStatementContext(ModelView):
             ('fiscalyear', '=', Eval('fiscalyear')),
             ('start_date', '<=', (Eval('end_period'), 'start_date'))
             ],
-        depends=['end_period', 'fiscalyear'])
+        states={
+            'invisible': Eval('from_date', False) | Eval('to_date', False),
+            },
+        depends=['end_period', 'fiscalyear', 'from_date', 'to_date'])
     end_period = fields.Many2One('account.period', 'End Period',
         domain=[
             ('fiscalyear', '=', Eval('fiscalyear')),
             ('start_date', '>=', (Eval('start_period'), 'start_date')),
             ],
-        depends=['start_period', 'fiscalyear'])
+        states={
+            'invisible': Eval('from_date', False) | Eval('to_date', False),
+            },
+        depends=['start_period', 'fiscalyear', 'from_date', 'to_date'])
     from_date = fields.Date("From Date",
         domain=[
             If(Eval('to_date') & Eval('from_date'),
                 ('from_date', '<=', Eval('to_date')),
                 ()),
             ],
-        depends=['to_date'])
+        states={
+            'invisible': (
+                Eval('start_period', False) | Eval('end_period', False)),
+            },
+        depends=['to_date', 'start_period', 'end_period'])
     to_date = fields.Date("To Date",
         domain=[
             If(Eval('from_date') & Eval('to_date'),
                 ('to_date', '>=', Eval('from_date')),
                 ()),
             ],
-        depends=['from_date'])
+        states={
+            'invisible': (
+                Eval('start_period', False) | Eval('end_period', False)),
+            },
+        depends=['from_date', 'start_period', 'end_period'])
     company = fields.Many2One('company.company', 'Company', required=True)
     posted = fields.Boolean('Posted Move', help="Only include posted moves.")
     comparison = fields.Boolean('Comparison')
@@ -2463,10 +2559,40 @@ class IncomeStatementContext(ModelView):
     def default_comparison(cls):
         return False
 
-    @fields.depends('fiscalyear')
+    @fields.depends('company', 'fiscalyear', methods=['on_change_fiscalyear'])
+    def on_change_company(self):
+        if self.fiscalyear and self.fiscalyear.company != self.company:
+            self.fiscalyear = None
+            self.on_change_fiscalyear()
+
+    @fields.depends('fiscalyear', 'start_period', 'end_period')
     def on_change_fiscalyear(self):
-        self.start_period = None
-        self.end_period = None
+        if (self.start_period
+                and self.start_period.fiscalyear != self.fiscalyear):
+            self.start_period = None
+        if (self.end_period
+                and self.end_period.fiscalyear != self.fiscalyear):
+            self.end_period = None
+
+    @fields.depends('start_period')
+    def on_change_start_period(self):
+        if self.start_period:
+            self.from_date = self.to_date = None
+
+    @fields.depends('end_period')
+    def on_change_end_period(self):
+        if self.end_period:
+            self.from_date = self.to_date = None
+
+    @fields.depends('from_date')
+    def on_change_from_date(self):
+        if self.from_date:
+            self.start_period = self.end_period = None
+
+    @fields.depends('to_date')
+    def on_change_to_date(self):
+        if self.to_date:
+            self.start_period = self.end_period = None
 
     @classmethod
     def view_attributes(cls):
@@ -2756,14 +2882,18 @@ class CreateChartProperties(ModelView):
     account_receivable = fields.Many2One('account.account',
             'Default Receivable Account',
             domain=[
+                ('closed', '!=', True),
                 ('type.receivable', '=', True),
+                ('party_required', '=', True),
                 ('company', '=', Eval('company')),
             ],
             depends=['company'])
     account_payable = fields.Many2One('account.account',
             'Default Payable Account',
             domain=[
+                ('closed', '!=', True),
                 ('type.payable', '=', True),
+                ('party_required', '=', True),
                 ('company', '=', Eval('company')),
             ],
             depends=['company'])
@@ -2878,9 +3008,11 @@ class CreateChart(Wizard):
 
         receivable_accounts = Account.search([
                 ('type.receivable', '=', True),
+                ('company', '=', self.account.company.id),
                 ], limit=2)
         payable_accounts = Account.search([
                 ('type.payable', '=', True),
+                ('company', '=', self.account.company.id),
                 ], limit=2)
 
         if len(receivable_accounts) == 1:
