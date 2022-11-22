@@ -64,11 +64,6 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="journal_view_list_cash"/>
             <field name="act_window" ref="act_journal_open_cash"/>
         </record>
-        <menuitem
-            parent="menu_reporting"
-            action="act_journal_open_cash"
-            sequence="50"
-            id="menu_journal_open_cash"/>
 
         <record model="ir.model.access" id="access_journal">
             <field name="model" search="[('model', '=', 'account.journal')]"/>

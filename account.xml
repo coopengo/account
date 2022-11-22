@@ -770,12 +770,6 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_account_balance_sheet_tree"/>
         </record>
 
-        <menuitem
-            parent="menu_reporting"
-            action="act_account_balance_sheet_tree"
-            sequence="20"
-            id="menu_open_balance_sheet"/>
-
         <record model="ir.ui.view" id="balance_sheet_context_view_form">
             <field name="model">account.balance_sheet.context</field>
             <field name="type">form</field>
@@ -810,12 +804,6 @@ this repository contains the full copyright notices and license terms. -->
             <field name="view" ref="account_income_statement_view_tree"/>
             <field name="act_window" ref="act_account_income_statement_tree"/>
         </record>
-
-        <menuitem
-            parent="menu_reporting"
-            action="act_account_income_statement_tree"
-            sequence="20"
-            id="menu_open_income_statement"/>
 
         <record model="ir.ui.view" id="income_statement_context_view_form">
             <field name="model">account.income_statement.context</field>

@@ -6,8 +6,7 @@ this repository contains the full copyright notices and license terms. -->
     <field name="date"/>
     <label name="company"/>
     <field name="company"/>
-    <label name="posted"/>
-    <field name="posted"/>
+    <newline/>
     <label name="type"/>
     <field name="type"/>
     <label name="unit"/>
