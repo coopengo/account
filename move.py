@@ -431,6 +431,7 @@ class Move(ModelSQL, ModelView):
                 raise PostError(
                     gettext('account.msg_post_unbalanced_move',
                         move=move.rec_name))
+        reconciliations = []
         for move in moves:
             move.state = 'posted'
             if not move.post_number:
@@ -443,9 +444,11 @@ class Move(ModelSQL, ModelView):
                 if ((l.debit == l.credit == Decimal('0'))
                     and l.account.reconcile)]
             to_reconcile = sorted(to_reconcile, key=keyfunc)
-            for _, zero_lines in groupby(to_reconcile, keyfunc):
-                Line.reconcile(list(zero_lines))
+            reconciliations += [
+                list(x) for _, x in groupby(to_reconcile, keyfunc)]
         cls.save(moves)
+        if reconciliations:
+            Line.reconcile(*reconciliations)
 
 
 class Reconciliation(ModelSQL, ModelView):
