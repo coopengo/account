@@ -436,7 +436,8 @@ class Move(ModelSQL, ModelView):
                 return l.party, l.account
             to_reconcile = [l for l in move.lines
                 if ((l.debit == l.credit == Decimal('0'))
-                    and l.account.reconcile)]
+                    and l.account.reconcile
+                    and not l.reconciliation)]
             to_reconcile = sorted(to_reconcile, key=keyfunc)
             reconciliations += [
                 list(x) for _, x in groupby(to_reconcile, keyfunc)]
